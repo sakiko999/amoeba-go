@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'unsafe-inline'; connect-src 'self' ws:"
+    />
+    <!-- style-src 'unsafe-inline'：renderer 注入 <style>；connect-src ws: 供 electron-vite dev 的 HMR。导航拦截在主进程 -->
+    <title>Clock</title>
+    <style>
+      :root {
+        --bg: #16161e;
+        --surface: #1a1b26;
+        --fg: #c0caf5;
+        --muted: #9aa0ce;
+        --dim: #565f89;
+        --border: #292e42;
+        --accent: #3d59a1;
+        --btn: #1f2335;
+        --good: #9ece6a;
+      }
+      /* 亮色由 renderer 根据主进程广播设置 data-theme 切换 */
+      :root[data-theme="light"] {
+        --bg: #f0f1f8;
+        --surface: #ffffff;
+        --fg: #3b3f5c;
+        --muted: #6b7099;
+        --dim: #9297b8;
+        --border: #d8dbeb;
+        --accent: #2e4a8f;
+        --btn: #e6e8f4;
+        --good: #3c7a3c;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: var(--bg);
+        color: var(--fg);
+      }
+    </style>
+  </head>
+  <body>
+    <main id="app"></main>
+    <!-- electron-vite：dev 直接转换 ./renderer.ts，build 打包产物并重写引用 -->
+    <script type="module" src="./renderer.ts"></script>
+  </body>
+</html>

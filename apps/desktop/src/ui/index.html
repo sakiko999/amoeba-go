@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'unsafe-inline'; connect-src 'self' ws:"
+    />
+    <!-- style-src 'unsafe-inline'：本页内联 <style>；connect-src ws: 供 electron-vite dev 的 HMR。导航拦截在主进程 -->
+    <title>Tabs Demo</title>
+    <style>
+      /* tab 条视觉移植自 cherry-studio AppShellTabBar（Chrome 风格）。
+         高度 44px 与主进程 tabs.ts 的 TABBAR_HEIGHT 保持一致；
+         状态色公式照搬 ShellNavigation.css：hover=fg 4%、active=fg 12% + 全亮前景。
+         亮暗两套变量由 document.documentElement.dataset.theme 切换（主进程广播）。 */
+      :root {
+        color-scheme: dark;
+        --bg: #16161e;
+        --border: #292e42;
+        --dim: #565f89;
+        --ring: #7dcfff;
+        --sidebar: #1a1b26;
+        --sidebar-foreground: #c0caf5;
+        --muted-foreground: #9aa0ce;
+        --sidebar-accent: #24283b;
+        --tab-nav-fg: color-mix(
+          in oklab,
+          var(--muted-foreground) 88%,
+          var(--sidebar-foreground)
+        );
+        --tab-hover-surface: color-mix(
+          in srgb,
+          var(--sidebar-foreground) 4%,
+          transparent
+        );
+        --tab-active-surface: color-mix(
+          in srgb,
+          var(--sidebar-foreground) 12%,
+          transparent
+        );
+        --tab-state-transition:
+          background-color 200ms ease-in-out, color 200ms ease-in-out;
+      }
+      :root[data-theme="light"] {
+        color-scheme: light;
+        --bg: #f0f1f8;
+        --border: #d8dbeb;
+        --dim: #9297b8;
+        --ring: #2e5dab;
+        --sidebar: #e6e7f2;
+        --sidebar-foreground: #3b3f5c;
+        --muted-foreground: #6b7099;
+        --sidebar-accent: #d5d7ea;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        font:
+          13px/1.5 system-ui,
+          "Segoe UI",
+          sans-serif;
+        background: var(--bg);
+        color: var(--sidebar-foreground);
+        user-select: none;
+        overflow: hidden;
+      }
+      /* 窗口按钮为原生 titleBarOverlay（cherry Windows 同款）：整条可拖动窗口，
+         右侧留出 overlay 宽度（公式照搬其 WINDOW_CONTROLS_OVERLAY_WIDTH） */
+      #tabbar {
+        height: 44px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0 8px;
+        padding-right: calc(
+          100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw)
+        );
+        background: var(--sidebar);
+        margin-top: 1px solid transparent;
+        border-bottom: 1px solid var(--border);
+        -webkit-app-region: drag;
+      }
+      #strip {
+        display: flex;
+        flex: 1;
+        min-width: 0;
+        align-items: center;
+        gap: 4px;
+        overflow-x: auto;
+        padding-right: 4px;
+        scrollbar-width: none;
+      }
+      #strip::-webkit-scrollbar {
+        display: none;
+      }
+      .tab {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        height: 30px;
+        min-width: 56px;
+        max-width: 160px;
+        flex: 1 1 0;
+        padding: 0 8px;
+        border: 0;
+        border-radius: 10px;
+        font: inherit;
+        color: var(--tab-nav-fg);
+        background: transparent;
+        cursor: default;
+        -webkit-app-region: no-drag;
+        /* flex/margin/padding 供关闭 collapse 动画；opacity 延迟淡出避免压成竖线 */
+        transition:
+          var(--tab-state-transition),
+          flex 200ms ease,
+          margin 200ms ease,
+          padding 200ms ease,
+          opacity 40ms linear 140ms;
+      }
+      .tab:hover {
+        background: var(--tab-hover-surface);
+      }
+      .tab.active {
+        color: var(--sidebar-foreground);
+        background: var(--tab-active-surface);
+        font-weight: 500;
+      }
+      .tab:focus-visible,
+      .tab .close:focus-visible,
+      .newtab-btn:focus-visible,
+      .icon-btn:focus-visible {
+        outline: none;
+        box-shadow: inset 0 0 0 1px
+          color-mix(in oklab, var(--ring) 60%, var(--sidebar-foreground));
+      }
+      .tab .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex: none;
+      }
+      .tab .label {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-align: left;
+        font-size: 12px;
+        line-height: 1.4;
+        -webkit-mask-image: linear-gradient(
+          to right,
+          black 80%,
+          transparent 100%
+        );
+        mask-image: linear-gradient(to right, black 80%, transparent 100%);
+      }
+      /* Chrome 式 X：active 常显，其余 hover 展开；宽度随透明度一起收放，不留空位 */
+      .tab .close {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+        height: 18px;
+        width: 0;
+        margin-left: auto;
+        padding: 0;
+        overflow: hidden;
+        border: 0;
+        border-radius: 4px;
+        opacity: 0;
+        color: inherit;
+        background: none;
+        cursor: pointer;
+        pointer-events: none;
+        transition: all 150ms;
+      }
+      .tab.active .close,
+      .tab.closing .close,
+      .tab:hover .close {
+        width: 18px;
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .tab .close:hover {
+        background: color-mix(
+          in srgb,
+          var(--sidebar-foreground) 10%,
+          transparent
+        );
+      }
+      /* 关闭 collapse：收缩到 0 宽后由主进程移除（margin 抵消 strip 的 4px gap） */
+      .tab.closing {
+        flex: 0 0 0px;
+        min-width: 0;
+        padding: 0;
+        margin-right: -4px;
+        overflow: hidden;
+        pointer-events: none;
+        opacity: 0;
+      }
+      /* Launchpad 式 “+”：sticky 贴最后 tab、不随滚动消失 */
+      .newtab-btn {
+        position: sticky;
+        right: 0;
+        margin-left: 2px;
+        height: 28px;
+        width: 28px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border: 0;
+        border-radius: 10px;
+        color: var(--muted-foreground);
+        background: transparent;
+        cursor: pointer;
+        -webkit-app-region: no-drag;
+        transition: var(--tab-state-transition);
+      }
+      .newtab-btn:hover {
+        color: var(--sidebar-foreground);
+        background: var(--sidebar-accent);
+      }
+      /* 主题切换 / 调试菜单图标按钮 */
+      .icon-btn {
+        height: 28px;
+        width: 28px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border: 0;
+        border-radius: 10px;
+        color: var(--muted-foreground);
+        background: transparent;
+        cursor: pointer;
+        -webkit-app-region: no-drag;
+        transition: var(--tab-state-transition);
+      }
+      .icon-btn:hover {
+        color: var(--sidebar-foreground);
+        background: var(--sidebar-accent);
+      }
+      #empty {
+        position: absolute;
+        inset: 44px 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--dim);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        /* id 选择器特异性足以覆盖各元素自身的 transition 声明 */
+        #tabbar *,
+        #tabbar {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header id="tabbar">
+      <div id="strip" role="tablist" aria-label="Tabs"></div>
+      <button
+        id="debug-btn"
+        class="icon-btn"
+        type="button"
+        aria-label="调试"
+      ></button>
+      <button
+        id="theme-btn"
+        class="icon-btn"
+        type="button"
+        aria-label="切换亮色主题"
+      ></button>
+    </header>
+    <div id="empty">没有打开的 tab —— 点上方 + 新建</div>
+    <!-- electron-vite：dev 直接转换 ./renderer.ts，build 打包产物并重写引用 -->
+    <script type="module" src="./renderer.ts"></script>
+  </body>
+</html>

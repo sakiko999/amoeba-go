@@ -1,0 +1,24 @@
+{
+  "name": "electron-tabs-demo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "bun run --cwd apps/desktop build",
+    "dev": "bun run --cwd apps/desktop dev",
+    "smoke": "bun run build && bun run --cwd apps/desktop smoke",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome lint .",
+    "fmt": "bun fmt ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.4",
+    "@types/node": "^24.19.2",
+    "typescript": "^7.0.2"
+  },
+  "overrides": {
+    "@types/node": "^24"
+  }
+}

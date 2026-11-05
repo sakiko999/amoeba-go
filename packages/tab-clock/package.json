@@ -1,0 +1,10 @@
+{
+  "name": "@tabs/clock",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@tabs/sdk": "workspace:*"
+  }
+}
