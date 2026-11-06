@@ -1,0 +1,41 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      // 宿主 dev：注册表扫描完成（[startup] registry）即代表 inspector 已就绪
+      "label": "dev: desktop",
+      "type": "shell",
+      "command": "bun run dev",
+      "options": { "cwd": "${workspaceFolder}" },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "electron-vite",
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "starting electron app\\.\\.\\.",
+          "endsPattern": "\\[startup\\] registry"
+        }
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      // 独立 media-manager：窗口加载完成后 inspector 9230 肯定已监听
+      "label": "dev: media",
+      "type": "shell",
+      "command": "bun run media:debug",
+      "options": { "cwd": "${workspaceFolder}" },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "electron-vite",
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "starting electron app\\.\\.\\.",
+          "endsPattern": "\\[startup\\] media-manager ready"
+        }
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    }
+  ]
+}

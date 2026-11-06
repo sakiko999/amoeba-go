@@ -101,14 +101,15 @@ F12 可开关当前 webContents（host 或任意 tab）的 devtools；tab 条右
 
 ### VS Code 调试
 
-仓库自带 `.vscode/launch.json`，先启动对应 dev 进程，再选配置 attach：
+仓库自带 `.vscode/launch.json` + `tasks.json`：主进程/独立应用配置的 `preLaunchTask` 会自动启动
+对应 dev 进程（后台任务，等到就绪日志出现再 attach），按 F5 即可；renderer 配置不重复启动 dev。
 
-| 配置                         | 先运行                | 说明                                                                                                                      |
-| ---------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `Desktop: Main (9229)`       | `bun run dev`         | 宿主主进程；`sourceMaps` + `outFiles` 已配，可直接在 `apps/desktop/src/main/**/*.ts` 下断点，electron-vite 重启后自动重连 |
-| `Desktop: Renderer (9333)`   | `bun run dev`         | host 或任意静态 tab 的 renderer；attach 时选择 target，`webRoot` 为仓库根                                                 |
-| `Media Manager: Main (9230)` | `bun run media:debug` | media-manager 独立应用主进程，源码映射到 `packages/media-manager/src/main/**/*.ts`                                        |
-| `Desktop: Main + Renderer`   | `bun run dev`         | 复合配置，一次 attach 主进程与渲染进程                                                                                    |
+| 配置                         | 自动启动的 task | 说明                                                                                                                      |
+| ---------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `Desktop: Main (9229)`       | `dev: desktop`  | 宿主主进程；`sourceMaps` + `outFiles` 已配，可直接在 `apps/desktop/src/main/**/*.ts` 下断点，electron-vite 重启后自动重连 |
+| `Desktop: Renderer (9333)`   | —               | host 或任意静态 tab 的 renderer；attach 时选择 target，`webRoot` 为仓库根；单独使用需先跑 `bun run dev`                   |
+| `Media Manager: Main (9230)` | `dev: media`    | media-manager 独立应用主进程，源码映射到 `packages/media-manager/src/main/**/*.ts`                                        |
+| `Desktop: Main + Renderer`   | `dev: desktop`  | 复合配置，一次 attach 主进程与渲染进程                                                                                    |
 
 宿主 dev 已默认带 `--inspect=9229 --remoteDebuggingPort=9333 --sourcemap`；也可用
 Chrome/Edge 打开 `chrome://inspect` 添加 `localhost:9229`（主进程）或 `localhost:9333`（renderer）。
