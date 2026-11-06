@@ -101,12 +101,12 @@ packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后�
 
 ### 生产产物
 
-| 形态                   | 命令                                        | 产物                                                            |
-| ---------------------- | ------------------------------------------- | --------------------------------------------------------------- |
-| 宿主（asar 分发）      | `bun run desktop:dist`                      | `apps/desktop/release/Tabs Demo-win32-x64/Tabs Demo.exe`        |
-| 宿主（本地运行）       | `bun run preview`                           | `apps/desktop/out/`                                             |
-| media-manager 独立应用 | `bun run --cwd packages/media-manager dist` | `packages/media-manager/release/Media Manager-win32-x64/`       |
-| media-manager 页面包   | `bun run pages:prepare`                     | `packages/media-manager/page-dist/` → `apps/desktop/out/pages/` |
+| 形态                   | 命令                                        | 产物                                                           |
+| ---------------------- | ------------------------------------------- | -------------------------------------------------------------- |
+| 宿主（asar 分发）      | `bun run desktop:dist`                      | `apps/desktop/release/Tabs Demo-win32-x64/Tabs Demo.exe`       |
+| 宿主（本地运行）       | `bun run preview`                           | `apps/desktop/out/`                                            |
+| media-manager 独立应用 | `bun run --cwd packages/media-manager dist` | `packages/media-manager/release/Media Manager-win32-x64/`      |
+| media-manager 页面包   | `bun run pages:prepare`                     | `packages/media-manager/out/page/` → `apps/desktop/out/pages/` |
 
 - 产物运行时零依赖：main 侧代码由 electron-vite 打进 `out/main`。因此 tab 子包与 SDK 必须放
   `devDependencies`——`dependencies` 会被 electron-vite externalize，而 asar 内没有 node_modules。

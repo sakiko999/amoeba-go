@@ -6,9 +6,7 @@
       "!**/dist",
       "!**/out",
       "!**/node_modules",
-      "!**/page-dist",
       "!**/release",
-      "!apps/desktop/pages",
       "!tmp"
     ]
   },
