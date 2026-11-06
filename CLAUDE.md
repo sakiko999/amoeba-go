@@ -8,5 +8,7 @@
 - [ ] 用 TMDB_TOKEN 实测 TMDB 渠道，并找网络条件验证豆瓣渠道
 - [!] runtime 页面 main 只接受 CJS（宿主 createRequire + require.cache 失效实现热重载）；页面 main 等价完整主进程权限，安装必须警告
 - [ ] 手动跑 `bun run dev` 验证 + 菜单：打开媒体库页面、外部页面安装/卸载/重载
+- [!] media-manager 发布物是 out/ + package.json（运行时零依赖）；不要为独立分发把 @demo/ui 源码搬出 monorepo，成本高收益为零
+- [ ] 待确认后落地 media-manager 独立分发打包（@electron/packager asar → electron-builder）
 
 <!-- cc-todo:end -->
