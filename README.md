@@ -90,6 +90,7 @@ packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后�
 | `bun run smoke`                             | 无头冒烟：静态 tab + 已注册页面全部加载完则退出码 0      |
 | `bun run pages:prepare`                     | 构建 media-manager 页面包并同步到 apps/desktop/pages     |
 | `bun run media`                             | media-manager dev（独立 Electron 应用，HMR）             |
+| `bun run media:debug`                       | 同上，另开主进程 inspector 9230 + sourcemap              |
 | `bun run media:smoke`                       | media-manager 无头冒烟                                   |
 | `bun run --cwd packages/media-manager dist` | media-manager 独立分发（asar，产物在 release/）          |
 | `bun run typecheck`                         | `tsc --noEmit`（TypeScript 7 原生）                      |
@@ -98,13 +99,20 @@ packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后�
 
 F12 可开关当前 webContents（host 或任意 tab）的 devtools；tab 条右侧 bug 按钮提供统一的调试菜单（主进程 / 启动器界面 / 内容页）。
 
-主进程调试：`bun run dev` 默认以 `--inspect=9229` 启动主进程（修改主进程文件时 electron-vite
-自动重启，inspector 仍在）。用 Chrome/Edge 打开 `chrome://inspect` 添加 `localhost:9229`，
-或用 VS Code attach：
+### VS Code 调试
 
-```jsonc
-{ "type": "node", "request": "attach", "name": "Attach Main", "port": 9229 }
-```
+仓库自带 `.vscode/launch.json`，先启动对应 dev 进程，再选配置 attach：
+
+| 配置                         | 先运行                | 说明                                                                                                                      |
+| ---------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `Desktop: Main (9229)`       | `bun run dev`         | 宿主主进程；`sourceMaps` + `outFiles` 已配，可直接在 `apps/desktop/src/main/**/*.ts` 下断点，electron-vite 重启后自动重连 |
+| `Desktop: Renderer (9333)`   | `bun run dev`         | host 或任意静态 tab 的 renderer；attach 时选择 target，`webRoot` 为仓库根                                                 |
+| `Media Manager: Main (9230)` | `bun run media:debug` | media-manager 独立应用主进程，源码映射到 `packages/media-manager/src/main/**/*.ts`                                        |
+| `Desktop: Main + Renderer`   | `bun run dev`         | 复合配置，一次 attach 主进程与渲染进程                                                                                    |
+
+宿主 dev 已默认带 `--inspect=9229 --remoteDebuggingPort=9333 --sourcemap`；也可用
+Chrome/Edge 打开 `chrome://inspect` 添加 `localhost:9229`（主进程）或 `localhost:9333`（renderer）。
+runtime 页面（`page://`）的 renderer 用 F12 / 调试菜单，页面 main 扩展挂在宿主主进程的 attach 会话里。
 
 生产构建不带 inspector；无 inspector 时 bug 菜单的「调试主进程」会带 `--inspect=9229` 重启。
 

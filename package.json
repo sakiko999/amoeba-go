@@ -11,6 +11,7 @@
     "smoke": "bun run build && bun run --cwd apps/desktop smoke",
     "pages:prepare": "bun run --cwd packages/media-manager pack:page",
     "media": "bun run --cwd packages/media-manager dev",
+    "media:debug": "bun run --cwd packages/media-manager dev:debug",
     "media:build": "bun run --cwd packages/media-manager build",
     "media:smoke": "bun run media:build && bun run --cwd packages/media-manager smoke",
     "typecheck": "tsc --noEmit",
