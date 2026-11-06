@@ -4,12 +4,18 @@
   "workspaces": {
     "": {
       "name": "electron-tabs-demo",
+      "dependencies": {
+        "react": "^19.3.1",
+        "react-dom": "^19.3.1",
+      },
       "devDependencies": {
         "@biomejs/biome": "^2.6.4",
+        "@tailwindcss/vite": "^4.3.3",
         "@types/bun": "^1.4.4",
         "@types/node": "^24.19.2",
         "@types/react": "^19",
         "@types/react-dom": "^19",
+        "tailwindcss": "^4.3.3",
         "typescript": "^7.0.2",
       },
     },
@@ -22,9 +28,12 @@
         "@tabs/sysinfo": "workspace:*",
       },
       "devDependencies": {
+        "@demo/ui": "workspace:*",
         "@pages/sdk": "workspace:*",
+        "@vitejs/plugin-react": "^6.2.1",
         "electron": "^45.2.3",
         "electron-vite": "^6.0.0",
+        "lucide-react": "^1.69.0",
         "vite": "^8.3.6",
       },
     },

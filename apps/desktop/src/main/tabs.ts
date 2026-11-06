@@ -52,6 +52,8 @@ interface TabEntry {
   /** 创建时固化 webContents 引用与 id：destroyed 之后 view.webContents 不可再访问 */
   wc: WebContents;
   wcId: number;
+  /** did-finish-load 前不显示 view，host 在内容区渲染过渡页 */
+  loading: boolean;
 }
 
 interface MountInput {
@@ -150,6 +152,7 @@ export class TabManager {
       ...input,
       wc: input.view.webContents,
       wcId: input.view.webContents.id,
+      loading: true,
     };
     this.entries.set(entry.instanceId, entry);
     this.byWebContents.set(entry.wcId, entry.instanceId);
@@ -157,6 +160,14 @@ export class TabManager {
     hardenWebContents(entry.wc);
     // 页面自己 window.close() 等外部销毁也走同一套清理
     entry.wc.once("destroyed", () => this.removeEntry(entry));
+    // 加载完成才显示 view；此前 activate() 保持它不可见，内容区由 host 过渡页占位
+    entry.wc.once("did-finish-load", () => {
+      entry.loading = false;
+      if (this.activeId === entry.instanceId) {
+        entry.view.setVisible(true);
+      }
+      this.broadcast();
+    });
     entry.wc.loadURL(url).catch((err: unknown) => {
       console.error(`tab ${entry.instanceId} failed to load:`, err);
       this.close(entry.instanceId);
@@ -169,7 +180,7 @@ export class TabManager {
     if (!this.entries.has(instanceId)) return;
     this.activeId = instanceId;
     for (const entry of this.entries.values()) {
-      entry.view.setVisible(entry.instanceId === instanceId);
+      entry.view.setVisible(entry.instanceId === instanceId && !entry.loading);
     }
     this.layout();
     this.broadcast();
@@ -368,6 +379,7 @@ export class TabManager {
       kind: entry.kind,
       title: entry.title,
       active: entry.instanceId === this.activeId,
+      loading: entry.loading,
     };
   }
 

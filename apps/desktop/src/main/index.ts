@@ -325,10 +325,22 @@ async function main(): Promise<void> {
         ? manager.webContentsOf(summary.instanceId)
         : undefined;
       if (!summary || !wc) throw new Error(`smoke: cannot create tab ${id}`);
+      if (summary.loading !== true) {
+        throw new Error(`smoke: ${id} should start in loading state`);
+      }
       if (id === "media-manager") mediaWc = wc;
       loads.push(
         new Promise<void>((resolve, reject) => {
           wc.once("did-finish-load", () => {
+            const state = manager
+              ?.summaries()
+              .find((t) => t.instanceId === summary.instanceId);
+            if (state?.loading !== false) {
+              reject(
+                new Error(`smoke: ${id} still loading after did-finish-load`),
+              );
+              return;
+            }
             console.log(`[timing] tab ${id}: ${Date.now() - tabStarted}ms`);
             resolve();
           });
@@ -345,6 +357,19 @@ async function main(): Promise<void> {
       setTimeout(() => reject(new Error("smoke timeout after 30s")), 30_000);
     });
     await Promise.race([Promise.all(loads), timeout]);
+
+    // 过渡页数据流：loading 投影必须到达 host。DOM 断言在无头环境有竞态
+    // （页面加载极快时 React 会把 loading=true/false 合并成一次提交），
+    // 这里查 renderer 的观测点 window.__loadingSeen
+    const loadingSeen = (await win?.webContents.executeJavaScript(
+      "window.__loadingSeen ?? []",
+    )) as string[] | undefined;
+    if (!loadingSeen?.includes("media-manager")) {
+      throw new Error(
+        `smoke: loading state never reached host (${JSON.stringify(loadingSeen)})`,
+      );
+    }
+    console.log("SMOKE: loading projection ok", loadingSeen);
 
     // 页面 bridge 冒烟：pageBridge 必须与页面自有 preload 叠加（window.tab + hostState）
     if (mediaWc !== undefined) {

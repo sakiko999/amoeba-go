@@ -7,6 +7,8 @@
  */
 
 import { defineConfig } from "electron-vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import { resolve } from "node:path";
 
 const repoRoot = resolve(__dirname, "../..");
@@ -34,6 +36,11 @@ export default defineConfig({
   },
   renderer: {
     root: repoRoot,
+    // react 只处理宿主 ui 的 tsx（html 入口与 tab 子包纯 ts 不进 babel）；tailwind 处理宿主 styles.css
+    plugins: [
+      react({ include: /apps\/desktop\/src\/ui\/.*\.tsx?$/ }),
+      tailwindcss(),
+    ],
     build: {
       outDir: resolve(__dirname, "out/renderer"),
       rollupOptions: {

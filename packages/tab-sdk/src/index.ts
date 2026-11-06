@@ -23,6 +23,8 @@ export interface TabSummary {
   kind: string;
   title: string;
   active: boolean;
+  /** 页面 did-finish-load 前为 true：view 尚不显示，host 渲染过渡页 */
+  loading?: boolean;
 }
 
 /** 主进程聚合的运行环境信息（renderer 无法自取，必须走 IPC）。 */
