@@ -22,6 +22,7 @@
         "@tabs/sysinfo": "workspace:*",
       },
       "devDependencies": {
+        "@pages/sdk": "workspace:*",
         "electron": "^45.2.3",
         "electron-vite": "^6.0.0",
         "vite": "^8.3.6",
@@ -36,6 +37,7 @@
         "react-dom": "^19.3.0",
       },
       "devDependencies": {
+        "@pages/sdk": "workspace:*",
         "@tailwindcss/vite": "^4.3.3",
         "@types/react": "^19",
         "@types/react-dom": "^19",
@@ -45,6 +47,9 @@
         "tailwindcss": "^4.3.3",
         "vite": "^8.3.6",
       },
+    },
+    "packages/page-sdk": {
+      "name": "@pages/sdk",
     },
     "packages/tab-clock": {
       "name": "@tabs/clock",
@@ -196,6 +201,8 @@
     "@media-manager/app": ["@media-manager/app@workspace:packages/media-manager"],
 
     "@oxc-project/types": ["@oxc-project/types@0.156.0", "https://r.cnpmjs.org/@oxc-project/types/-/types-0.156.0.tgz", {}, "sha512-1Duyg48TdJNdyhEB8Xn1L36bT9Pv6GUtlKjHxOys8xkaF/rQq3XJE+bAurSK/AgIz5mGFsb77cn9Pb20+WCScw=="],
+
+    "@pages/sdk": ["@pages/sdk@workspace:packages/page-sdk"],
 
     "@radix-ui/number": ["@radix-ui/number@1.1.3", "https://r.cnpmjs.org/@radix-ui/number/-/number-1.1.3.tgz", {}, "sha512-Road2bidD0uu/1BGDOWNdPI06g0lIRy6IF9GZcIrDK2KGItfor8IQwQa+yM2ERgHM1MmHxaxpTzk0/Jp42lNfA=="],
 

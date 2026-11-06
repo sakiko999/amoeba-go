@@ -145,8 +145,12 @@ api.onTabsChanged((next) => {
   tabs = next;
   render();
 });
-void api.listKinds().then((k) => {
-  kinds = k;
-  render();
-});
+const refreshKinds = (): void => {
+  void api.listKinds().then((k) => {
+    kinds = k;
+    render();
+  });
+};
+api.onKindsChanged(refreshKinds);
+refreshKinds();
 render();

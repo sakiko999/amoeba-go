@@ -1,81 +1,150 @@
 /**
- * TabManager：tab 实例 = 一个 WebContentsView（独立 webContents / preload / 内存 partition / 生命周期），
- * 挂在 BrowserWindow 的 contentView 上，叠在 host ui 之上：顶部 40px 留给 tab 条，其余归活动 tab。
+ * TabManager：tab 实例 = 一个 WebContentsView（独立 webContents / preload / 生命周期），
+ * 挂在 BrowserWindow 的 contentView 上，叠在 host ui 之上：顶部 44px 留给 tab 条，其余归活动 tab。
+ * 静态 tab（编译期子包）与 runtime 页面（page://）共用这套生命周期：
+ * - 静态 tab：每次实例一个内存 partition
+ * - 页面：persist:page-<id> 分区（localStorage 跨实例/重启保留），preload 来自页面包
  * 所有 tab 状态的唯一权威源在这里，host 页面只做投影（tabs:changed）。
  */
 
 import { Menu, WebContentsView, app } from "electron";
+import type {
+  BrowserWindow,
+  MenuItemConstructorOptions,
+  WebContents,
+} from "electron";
 import { join } from "node:path";
-import type { BrowserWindow, WebContents } from "electron";
 import type { TabManifest, TabSummary, Whoami } from "@tabs/sdk";
+import type { PageActions } from "./pages/actions";
+import type { PageRegistry, PageRuntime } from "./pages/registry";
 import { TAB_KINDS } from "./registry";
 import { tabUrl } from "./renderTarget";
 
 /** host 页面里 tab 条的高度；主进程与 ui/index.html 里保持一致。 */
 const TABBAR_HEIGHT = 44;
 
+const HOST_PRELOAD = join(app.getAppPath(), "out", "preload", "index.js");
+
 interface TabEntry {
   instanceId: string;
   kind: string;
   title: string;
+  /** 页面 tab 才有：来源页面 id */
+  pageId?: string;
   view: WebContentsView;
   /** 创建时固化 webContents 引用与 id：destroyed 之后 view.webContents 不可再访问 */
   wc: WebContents;
   wcId: number;
 }
 
+interface MountInput {
+  instanceId: string;
+  kind: string;
+  title: string;
+  pageId?: string;
+  view: WebContentsView;
+}
+
 export class TabManager {
   private readonly win: BrowserWindow;
+  private readonly pages: PageRegistry;
+  private readonly actions: PageActions;
   private readonly entries = new Map<string, TabEntry>();
   private readonly byWebContents = new Map<number, string>();
   private activeId: string | undefined;
   private seq = 0;
 
-  constructor(win: BrowserWindow) {
+  constructor(win: BrowserWindow, pages: PageRegistry, actions: PageActions) {
     this.win = win;
+    this.pages = pages;
+    this.actions = actions;
     win.on("resize", () => this.layout());
     // host 重载（Ctrl+R / devtools reload）后重发整份状态，避免 tab 条与主进程脱节
     win.webContents.on("did-finish-load", () => this.broadcast());
   }
 
+  /** 静态 tab + 所有 active 页面，供 host 的圆点颜色与菜单使用 */
   get kinds(): readonly TabManifest[] {
-    return TAB_KINDS;
+    return [
+      ...TAB_KINDS,
+      ...this.pages
+        .list()
+        .filter((page) => page.state === "active")
+        .map((page) => ({
+          id: page.id,
+          title: page.name,
+          color: page.color,
+        })),
+    ];
   }
 
-  create(kind: string): TabSummary | undefined {
-    const manifest = TAB_KINDS.find((m) => m.id === kind);
-    if (!manifest) return undefined;
+  /** id 既可以是静态 tab kind，也可以是页面 id */
+  create(id: string): TabSummary | undefined {
+    const staticManifest = TAB_KINDS.find((m) => m.id === id);
+    if (staticManifest !== undefined) {
+      const instanceId = `${id}-${++this.seq}`;
+      return this.mount(
+        {
+          instanceId,
+          kind: id,
+          title: staticManifest.title,
+          view: this.createView(HOST_PRELOAD, instanceId),
+        },
+        tabUrl(id),
+      );
+    }
 
-    const instanceId = `${kind}-${++this.seq}`;
-    // 独立内存 partition：实例间 storage 互不可见（不持久，随 tab 关闭即清）
-    const view = new WebContentsView({
+    const page = this.pages.get(id);
+    if (page === undefined || page.state !== "active") return undefined;
+    return this.createPageTab(page);
+  }
+
+  private createPageTab(page: PageRuntime): TabSummary {
+    const instanceId = `${page.manifest.id}-${++this.seq}`;
+    return this.mount(
+      {
+        instanceId,
+        kind: page.manifest.id,
+        title: page.manifest.name,
+        pageId: page.manifest.id,
+        view: this.createView(
+          page.preloadPath ?? HOST_PRELOAD,
+          `persist:page-${page.manifest.id}`,
+        ),
+      },
+      page.entryUrl,
+    );
+  }
+
+  private createView(preload: string, partition: string): WebContentsView {
+    return new WebContentsView({
       webPreferences: {
-        preload: join(app.getAppPath(), "out", "preload", "index.js"),
-        partition: instanceId,
+        preload,
+        partition,
         contextIsolation: true,
         sandbox: true,
         nodeIntegration: false,
       },
     });
+  }
+
+  private mount(input: MountInput, url: string): TabSummary {
     const entry: TabEntry = {
-      instanceId,
-      kind,
-      title: manifest.title,
-      view,
-      wc: view.webContents,
-      wcId: view.webContents.id,
+      ...input,
+      wc: input.view.webContents,
+      wcId: input.view.webContents.id,
     };
-    this.entries.set(instanceId, entry);
-    this.byWebContents.set(entry.wcId, instanceId);
-    this.win.contentView.addChildView(view);
+    this.entries.set(entry.instanceId, entry);
+    this.byWebContents.set(entry.wcId, entry.instanceId);
+    this.win.contentView.addChildView(entry.view);
     hardenWebContents(entry.wc);
     // 页面自己 window.close() 等外部销毁也走同一套清理
     entry.wc.once("destroyed", () => this.removeEntry(entry));
-    entry.wc.loadURL(tabUrl(kind)).catch((err: unknown) => {
-      console.error(`tab ${instanceId} failed to load:`, err);
-      this.close(instanceId);
+    entry.wc.loadURL(url).catch((err: unknown) => {
+      console.error(`tab ${entry.instanceId} failed to load:`, err);
+      this.close(entry.instanceId);
     });
-    this.activate(instanceId);
+    this.activate(entry.instanceId);
     return this.summaryOf(entry);
   }
 
@@ -109,27 +178,84 @@ export class TabManager {
     }
   }
 
+  /** 关闭某个页面打开的全部 tab（页面卸载/重载前调用） */
+  closeByPage(pageId: string): void {
+    const ids = [...this.entries.values()]
+      .filter((entry) => entry.pageId === pageId)
+      .map((entry) => entry.instanceId);
+    this.closeMany(ids);
+  }
+
+  /** 页面安装/卸载后通知 host 重新拉取 kinds（圆点颜色） */
+  notifyKindsChanged(): void {
+    if (this.win.isDestroyed()) return;
+    this.win.webContents.send("tabs:kinds-changed");
+  }
+
   /** “+” 新建菜单：host 页面 DOM 会被 tab 的原生子视图盖住，必须由主进程弹原生 Menu。 */
   popupNewTabMenu(): void {
-    const menu = Menu.buildFromTemplate(
-      this.kinds.map((k) => ({
+    const pages = this.pages.list();
+    const template: MenuItemConstructorOptions[] = [
+      ...TAB_KINDS.map((k) => ({
         label: `新建 ${k.title}`,
         click: () => {
           this.create(k.id);
         },
       })),
-    );
-    menu.popup({ window: this.win });
+      ...pages.map((page) => ({
+        label: `新建 ${page.name}`,
+        enabled: page.state === "active",
+        click: () => {
+          this.create(page.id);
+        },
+      })),
+      { type: "separator" },
+      {
+        label: "安装页面…",
+        click: () => {
+          void this.actions.install();
+        },
+      },
+    ];
+    if (pages.length > 0) {
+      template.push({
+        label: "管理页面",
+        submenu: pages.map((page) => ({
+          label:
+            page.state === "error" ? `${page.name}（扩展错误）` : page.name,
+          submenu: [
+            {
+              label: "重载",
+              click: () => {
+                void this.actions.reload(page.id);
+              },
+            },
+            ...(page.source === "external"
+              ? [
+                  {
+                    label: "卸载",
+                    click: () => {
+                      void this.actions.uninstall(page.id);
+                    },
+                  },
+                ]
+              : []),
+          ],
+        })),
+      });
+    }
+    Menu.buildFromTemplate(template).popup({ window: this.win });
   }
 
-  /** tab 右键菜单（同上，必须原生 Menu）：关闭 / 关闭其他 / 关闭右侧。 */
+  /** tab 右键菜单（同上，必须原生 Menu）：关闭 / 关闭其他 / 关闭右侧；页面 tab 加管理项。 */
   popupTabContextMenu(instanceId: string): void {
     const order = this.summaries();
     const index = order.findIndex((t) => t.instanceId === instanceId);
     if (index < 0) return;
+    const entry = this.entries.get(instanceId);
     const others = order.filter((t) => t.instanceId !== instanceId);
     const toRight = order.slice(index + 1);
-    const menu = Menu.buildFromTemplate([
+    const template: MenuItemConstructorOptions[] = [
       {
         label: "关闭",
         enabled: true,
@@ -153,8 +279,29 @@ export class TabManager {
             instanceId,
           ),
       },
-    ]);
-    menu.popup({ window: this.win });
+    ];
+    const page =
+      entry?.pageId !== undefined ? this.pages.get(entry.pageId) : undefined;
+    if (page !== undefined) {
+      template.push(
+        { type: "separator" },
+        {
+          label: "重载页面",
+          click: () => {
+            void this.actions.reload(page.manifest.id);
+          },
+        },
+      );
+      if (page.source === "external") {
+        template.push({
+          label: "卸载页面",
+          click: () => {
+            void this.actions.uninstall(page.manifest.id);
+          },
+        });
+      }
+    }
+    Menu.buildFromTemplate(template).popup({ window: this.win });
   }
 
   /** 由 tab 自己发起的关闭（IPC 用 sender 定位调用者）。 */

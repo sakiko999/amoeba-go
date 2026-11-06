@@ -1,0 +1,116 @@
+/**
+ * 页面的用户动作：安装 / 重载 / 卸载。
+ * 安装会读取 manifest 并弹出明确的信任警告（main.js = 完整主进程权限）；
+ * 卸载/重载先关闭该页面已打开的 tab，再通知注册表。
+ */
+
+import { dialog } from "electron";
+import type { BrowserWindow } from "electron";
+import type { PageSummary } from "@pages/sdk";
+import { readPageManifest } from "./manifest";
+import type { PageRegistry } from "./registry";
+
+export interface PageActions {
+  install(): Promise<void>;
+  reload(id: string): Promise<void>;
+  uninstall(id: string): Promise<void>;
+  list(): readonly PageSummary[];
+}
+
+const messageOf = (err: unknown): string =>
+  err instanceof Error ? err.message : String(err);
+
+export function createPageActions(opts: {
+  pages: PageRegistry;
+  getWindow(): BrowserWindow | undefined;
+  closeTabs(pageId: string): void;
+  openPage(pageId: string): void;
+  onChanged(): void;
+}): PageActions {
+  const fail = (err: unknown): void => {
+    dialog.showErrorBox("页面操作失败", messageOf(err));
+  };
+  const window = (): BrowserWindow | undefined => {
+    const win = opts.getWindow();
+    return win !== undefined && !win.isDestroyed() ? win : undefined;
+  };
+
+  return {
+    list: () => opts.pages.list(),
+
+    async install(): Promise<void> {
+      const win = window();
+      if (win === undefined) return;
+      try {
+        const picked = await dialog.showOpenDialog(win, {
+          title: "选择页面包目录（含 page.json）",
+          properties: ["openDirectory"],
+        });
+        const dir = picked.filePaths[0];
+        if (picked.canceled || dir === undefined) return;
+
+        const manifest = await readPageManifest(dir);
+        const trust =
+          manifest.main !== undefined
+            ? "该页面包含 main.js，将以完整 Node.js 权限在宿主主进程中执行。"
+            : "该页面包含自己的 renderer / preload 代码，将在宿主中运行。";
+        const choice = await dialog.showMessageBox(win, {
+          type: "warning",
+          title: "安装页面",
+          message: `安装「${manifest.name}」（${manifest.id}）？`,
+          detail: `${trust}\n\n只安装你信任的来源。页面会被复制到用户数据目录。`,
+          buttons: ["取消", "安装"],
+          defaultId: 0,
+          cancelId: 0,
+        });
+        if (choice.response !== 1) return;
+
+        await opts.pages.install(dir);
+        opts.openPage(manifest.id);
+        opts.onChanged();
+      } catch (err) {
+        fail(err);
+      }
+    },
+
+    async reload(id: string): Promise<void> {
+      const win = window();
+      if (win === undefined) return;
+      try {
+        opts.closeTabs(id);
+        await opts.pages.reload(id);
+        opts.openPage(id);
+        opts.onChanged();
+      } catch (err) {
+        fail(err);
+      }
+    },
+
+    async uninstall(id: string): Promise<void> {
+      const win = window();
+      if (win === undefined) return;
+      const page = opts.pages.get(id);
+      if (page === undefined) return;
+      try {
+        const choice = await dialog.showMessageBox(win, {
+          type: "warning",
+          title: "卸载页面",
+          message: `卸载「${page.manifest.name}」？`,
+          detail:
+            "将关闭该页面的 tab 并停用其主进程扩展。页面文件保留在用户数据目录；" +
+            "重启宿主后会重新扫描到它。彻底移除请手动删除对应目录。",
+          buttons: ["取消", "卸载"],
+          defaultId: 0,
+          cancelId: 0,
+        });
+        if (choice.response !== 1) return;
+
+        opts.closeTabs(id);
+        await opts.pages.uninstall(id);
+        opts.onChanged();
+      } catch (err) {
+        fail(err);
+      }
+    },
+  };
+}

@@ -1,7 +1,8 @@
 /**
- * 主进程入口：注册 IPC → 建窗口 → TabManager → 载入 host ui → 打开第一个 tab。
- * `--smoke`：无头冒烟模式，三个 tab 都成功加载后 exit 0；did-fail-load 立即判失败。
- * renderer 加载：dev 走 electron-vite dev server，生产走 app:// 自定义协议。
+ * 主进程入口：页面注册表 → IPC → 窗口 → TabManager → host ui。
+ * 静态 tab（packages/tab-*）走编译期 MPA；runtime 页面（page://）由 PageRegistry 扫描
+ * 内置 `pages/` 与用户数据目录，支持安装/卸载/重载，无需重启宿主。
+ * `--smoke`：无头冒烟，静态 tab 与已注册页面全部加载后 exit 0；did-fail-load 立即失败。
  */
 
 import {
@@ -18,6 +19,9 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import os from "node:os";
 import type { SystemInfo, TabSummary, Theme } from "@tabs/sdk";
+import { createPageActions } from "./pages/actions";
+import { registerPageProtocol } from "./pages/protocol";
+import { PageRegistry } from "./pages/registry";
 import { TAB_KINDS } from "./registry";
 import { TabManager, hardenWebContents, toggleDevtools } from "./tabs";
 import { hostUrl } from "./renderTarget";
@@ -25,8 +29,17 @@ import { hostUrl } from "./renderTarget";
 const SMOKE = process.argv.includes("--smoke");
 const INSPECT_ARG = "--inspect=9229";
 
+// 冒烟必须隔离 userData：外部安装的页面/持久分区不能影响结果
+if (SMOKE) {
+  app.setPath(
+    "userData",
+    join(app.getPath("temp"), `tabs-smoke-${process.pid}`),
+  );
+}
+
 let manager: TabManager | undefined;
 let win: BrowserWindow | undefined;
+let pages: PageRegistry | undefined;
 
 /* ---------- 主题（唯一状态源；demo 不持久化，重启回深色） ---------- */
 let theme: Theme = "dark";
@@ -54,7 +67,7 @@ ipcMain.on("theme:toggle", (e) => {
 });
 
 /* ---------- host（tab 条）侧 ---------- */
-ipcMain.handle("tabs:list-kinds", () => TAB_KINDS);
+ipcMain.handle("tabs:list-kinds", () => manager?.kinds ?? TAB_KINDS);
 ipcMain.handle("tabs:create", (_e, kind: string): TabSummary => {
   const summary = manager?.create(kind);
   if (!summary) throw new Error(`unknown tab kind: ${kind}`);
@@ -148,11 +161,20 @@ function denyAllPermissions(ses: Session): void {
   ses.setPermissionCheckHandler(() => false);
 }
 
-// app:// → out/renderer（须在 app ready 前注册 scheme）
+// app:// 静态 tab 与 page:// runtime 页面（须在 app ready 前注册 scheme）
 protocol.registerSchemesAsPrivileged([
   {
     scheme: "app",
     privileges: { standard: true, secure: true, supportFetchAPI: true },
+  },
+  {
+    scheme: "page",
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      corsEnabled: true,
+    },
   },
 ]);
 
@@ -168,17 +190,28 @@ function registerAppProtocol(ses: Session): void {
   });
 }
 
+function registerSessionProtocols(ses: Session): void {
+  registerAppProtocol(ses);
+  if (pages !== undefined) registerPageProtocol(ses, pages);
+  denyAllPermissions(ses);
+}
+
 async function main(): Promise<void> {
   if (SMOKE) app.disableHardwareAcceleration(); // 冒烟环境可能无 GPU，纯软件渲染更稳
   await app.whenReady();
 
-  registerAppProtocol(session.defaultSession);
-  denyAllPermissions(session.defaultSession);
-  // 每个 tab 实例的独立 partition session 也要覆盖（协议 + 权限）
-  app.on("session-created", (ses) => {
-    registerAppProtocol(ses);
-    denyAllPermissions(ses);
+  pages = await PageRegistry.create({
+    builtinDir: join(app.getAppPath(), "pages"),
+    externalDir: join(app.getPath("userData"), "pages"),
+    reservedIds: TAB_KINDS.map((kind) => kind.id),
+    getWindow: () => win,
+    log: (...args) => console.log("[pages]", ...args),
   });
+  await pages.activateAll();
+
+  registerSessionProtocols(session.defaultSession);
+  // 每个 tab/页面实例的 partition session 也要覆盖（协议 + 权限）
+  app.on("session-created", (ses) => registerSessionProtocols(ses));
 
   win = new BrowserWindow({
     width: 1080,
@@ -197,39 +230,59 @@ async function main(): Promise<void> {
       nodeIntegration: false,
     },
   });
-  manager = new TabManager(win);
+
+  const actions = createPageActions({
+    pages,
+    getWindow: () => win,
+    closeTabs: (pageId) => manager?.closeByPage(pageId),
+    openPage: (pageId) => {
+      manager?.create(pageId);
+    },
+    onChanged: () => manager?.notifyKindsChanged(),
+  });
+  manager = new TabManager(win, pages, actions);
   hardenWebContents(win.webContents);
 
   await win.loadURL(hostUrl());
 
   if (SMOKE) {
+    const staticIds = TAB_KINDS.map((kind) => kind.id);
+    const pageIds = pages
+      .list()
+      .filter((page) => page.state === "active")
+      .map((page) => page.id);
+    if (pages.list().length === 0) {
+      console.log(
+        "smoke: no pages registered (run bun run pages:prepare to install media-manager)",
+      );
+    }
     const loads: Promise<void>[] = [];
-    for (const kind of TAB_KINDS) {
-      const summary = manager.create(kind.id);
+    for (const id of [...staticIds, ...pageIds]) {
+      const summary = manager.create(id);
       const wc = summary
         ? manager.webContentsOf(summary.instanceId)
         : undefined;
-      if (!summary || !wc)
-        throw new Error(`smoke: cannot create tab ${kind.id}`);
+      if (!summary || !wc) throw new Error(`smoke: cannot create tab ${id}`);
       loads.push(
         new Promise<void>((resolve, reject) => {
           wc.once("did-finish-load", () => resolve());
           // 加载失败时错误页同样会触发 did-finish-load，必须显式捕获 fail 才不算成功
           wc.once("did-fail-load", (_e, code, desc, _url, isMainFrame) => {
             if (isMainFrame) {
-              reject(
-                new Error(`smoke: ${kind.id} load failed: ${desc} (${code})`),
-              );
+              reject(new Error(`smoke: ${id} load failed: ${desc} (${code})`));
             }
           });
         }),
       );
     }
     const timeout = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error("smoke timeout after 15s")), 15_000);
+      setTimeout(() => reject(new Error("smoke timeout after 30s")), 30_000);
     });
     await Promise.race([Promise.all(loads), timeout]);
-    console.log(`SMOKE OK: ${loads.length}/${TAB_KINDS.length} tabs loaded`);
+    console.log(
+      `SMOKE OK: ${loads.length} tabs loaded (${staticIds.length} static + ${pageIds.length} pages)`,
+    );
+    void pages.dispose();
     app.exit(0);
     return;
   }
@@ -239,6 +292,9 @@ async function main(): Promise<void> {
   if (first) manager.create(first.id);
 }
 
+app.on("before-quit", () => {
+  void pages?.dispose();
+});
 app.on("window-all-closed", () => app.quit());
 
 main().catch((err: unknown) => {

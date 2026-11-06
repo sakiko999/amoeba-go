@@ -6,9 +6,10 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "bun run --cwd apps/desktop build",
+    "build": "bun run pages:prepare && bun run --cwd apps/desktop build",
     "dev": "bun run --cwd apps/desktop dev",
     "smoke": "bun run build && bun run --cwd apps/desktop smoke",
+    "pages:prepare": "bun run --cwd packages/media-manager pack:page",
     "media": "bun run --cwd packages/media-manager dev",
     "media:build": "bun run --cwd packages/media-manager build",
     "media:smoke": "bun run media:build && bun run --cwd packages/media-manager smoke",

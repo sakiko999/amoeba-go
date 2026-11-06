@@ -7,8 +7,11 @@ bun workspaces monorepo；**每个 tab = 一个子包**，运行时每个 tab �
 ```
 apps/desktop ──────────────────────────────────────────────┐
 │  main (node)                                             │
-│   ├─ registry.ts      tab 种类清单（全仓库唯一注册点）      │
-│   ├─ tabs.ts          TabManager：WebContentsView 增删/布局│
+│   ├─ registry.ts      静态 tab 清单（编译期）              │
+│   ├─ tabs.ts          TabManager：静态 tab + runtime 页面  │
+│   │                   （WebContentsView 增删/布局/菜单）    │
+│   ├─ pages/           PageRegistry：扫描/安装/卸载/重载页面 │
+│   │                   page:// 协议 + main 扩展生命周期     │
 │   └─ index.ts         窗口 + IPC + --smoke 冒烟           │
 │  preload (sandbox)    按角色注入 window.host / window.tab │
 │  ui (browser)         tab 条 + “+” 菜单（host 页面）       │
@@ -19,8 +22,14 @@ packages/tab-clock / tab-notes / tab-sysinfo
    manifest（id/title/color）+ index.html + renderer.ts
    经 electron-vite 多页构建到 out/renderer/（产物路径 = 源路径相对仓库根）
 
-packages/ui            @demo/ui：全仓公共 shadcn 组件库（CLI 全量生成，61 组件 + 主题 CSS）
-packages/media-manager submodule：媒体库浏览器（Electron 前端 + 后端，React 19 + Tailwind 4 + @demo/ui；只读）
+apps/desktop/pages/<id>/    runtime 页面包（构建产物，gitignored）
+   page.json + renderer/ + preload/ + 可选 main.js（CJS）
+   page://<id>/<entry>，每页面 persist:page-<id> 分区
+
+packages/page-sdk       @pages/sdk：页面包契约（PageManifest / main 扩展上下文）
+packages/ui             @demo/ui：全仓公共 shadcn 组件库（CLI 全量生成，61 组件 + 主题 CSS）
+packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后端；刮削/NFO/整理）
+                        也可打包为 runtime 页面包（bun run pages:prepare）
 ```
 
 要点：
@@ -36,29 +45,74 @@ packages/media-manager submodule：媒体库浏览器（Electron 前端 + 后端
 - renderer 加载：dev 走 electron-vite dev server（`ELECTRON_RENDERER_URL`），生产走 `app://` 自定义协议映射 `out/renderer`——ESM 模块脚本需要 http 型 origin，file:// 不行；协议须按 session 注册（每个 tab 的独立 partition 是另一个 session）。
 - 调试入口：tab 条的 bug 按钮弹出原生菜单——调试主进程（带 `--inspect=9229` 重启，`chrome://inspect` 连接）、调试启动器界面（host 页面 DevTools）、调试内容页面（当前 tab DevTools）；F12 仍可开关当前焦点 webContents 的 devtools。
 
+### Runtime 页面（热插拔）
+
+- 页面包 = `page.json` + `renderer/` + `preload/` + 可选 `main.js`（CJS 主进程扩展）。
+  内置页面从 `apps/desktop/pages/` 扫描，外部页面安装到 `userData/pages/<id>/`。
+- `page://<id>/<entry>` 协议按 session 注册，路径用 `relative + realpath` 双重校验；
+  页面 view 沿用 sandbox / contextIsolation / 权限全拒 / 导航拦截。
+- `+` 菜单底部：安装页面…（选目录 + 信任警告 + 复制）、管理页面（重载 / 卸载）；
+  页面 tab 右键也可重载/卸载。安装、卸载、重载均无需重启宿主（安装/卸载内置 tab 期构建的
+  tab 不受影响）。
+- 页面 main 扩展通过 `createRequire` 加载，重载时清 `require.cache`；宿主包装并跟踪
+  `ipc.handle/on`，卸载时精确移除。页面可声明并发使用宿主窗口（`ctx.getWindow()`）。
+- 页面 tab 使用 `persist:page-<id>` 分区：localStorage 跨 tab 关闭/宿主重启保留
+  （media-manager 的媒体库根因此不会丢）。
+- 安全边界：页面的 `main.js` 等于完整主进程权限，安装时强制警告（只装可信来源）；卸载只做
+  运行时注销、不删除用户目录；重启后会重新扫描到该页面。
+
 ## 命令
 
-| 命令                  | 作用                                         |
-| --------------------- | -------------------------------------------- |
-| `bun install`         | 安装（bun workspaces）                       |
-| `bun run dev`         | electron-vite dev（HMR、主进程改动自动重启） |
-| `bun run build`       | electron-vite build → `apps/desktop/out/`    |
-| `bun run smoke`       | 无头冒烟：3 个 tab 全部加载完则退出码 0      |
-| `bun run media`       | media-manager dev（独立 Electron 应用，HMR） |
-| `bun run media:smoke` | media-manager 无头冒烟                       |
-| `bun run typecheck`   | `tsc --noEmit`（TypeScript 7 原生）          |
-| `bun run lint`        | `biome lint .`                               |
-| `bun run fmt`         | `bun fmt .`                                  |
+| 命令                    | 作用                                                 |
+| ----------------------- | ---------------------------------------------------- |
+| `bun install`           | 安装（bun workspaces）                               |
+| `bun run dev`           | electron-vite dev（HMR、主进程改动自动重启）         |
+| `bun run build`         | electron-vite build → `apps/desktop/out/`            |
+| `bun run smoke`         | 无头冒烟：静态 tab + 已注册页面全部加载完则退出码 0  |
+| `bun run pages:prepare` | 构建 media-manager 页面包并同步到 apps/desktop/pages |
+| `bun run media`         | media-manager dev（独立 Electron 应用，HMR）         |
+| `bun run media:smoke`   | media-manager 无头冒烟                               |
+| `bun run typecheck`     | `tsc --noEmit`（TypeScript 7 原生）                  |
+| `bun run lint`          | `biome lint .`                                       |
+| `bun run fmt`           | `bun fmt .`                                          |
 
 F12 可开关当前 webContents（host 或任意 tab）的 devtools；tab 条右侧 bug 按钮提供统一的调试菜单（主进程 / 启动器界面 / 内容页）。
 
-## 新增一个 tab
+## 新增一个 tab（编译期）
 
 1. 复制 `packages/tab-clock` → `packages/tab-foo`：改 `package.json` 的 name，改 manifest 的 `id`（目录名必须是 `tab-<id>`，与 id 一致）。
 2. 在 `apps/desktop` 里 `bun add @tabs/foo`（workspace 链接）。
 3. `apps/desktop/src/main/registry.ts` 加一行 import + 数组项。
 
 构建产物、“+” 菜单、IPC、类型全部自动跟进，不需要动其他文件。
+
+## 新增一个 runtime 页面（无需改宿主）
+
+页面包目录结构：
+
+```
+my-page/
+├── page.json          { id, name, color?, entry, preload?, main? }
+├── index.html         入口（entry）
+├── preload.js         sandbox CJS preload（可选）
+└── main.js            可选主进程扩展（CJS，导出 activate/deactivate）
+```
+
+`main.js`：
+
+```js
+exports.activate = (ctx) => {
+  ctx.ipc.handle("my:ping", () => "pong");
+  // ctx.pageRoot / ctx.dataDir / ctx.manifest / ctx.getWindow() / ctx.log()
+};
+exports.deactivate = () => {
+  /* 清理 IPC 之外的资源；IPC 由宿主兜底移除 */
+};
+```
+
+安装方式：把目录复制到 `apps/desktop/pages/<id>/`（内置）或运行宿主后从 `+` 菜单
+「安装页面…」选择目录（外部，会弹出主进程权限警告）。页面 main 只接受 CJS；页面 id 必须
+是小写 DNS label 且不能与静态 tab id 冲突。契约类型见 `packages/page-sdk`。
 
 ## 已知简化（升级路径）
 

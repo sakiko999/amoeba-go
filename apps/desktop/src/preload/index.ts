@@ -28,6 +28,9 @@ if (whoami.role === "host") {
     onTabsChanged: (cb) => {
       ipcRenderer.on("tabs:changed", (_e, tabs: TabSummary[]) => cb(tabs));
     },
+    onKindsChanged: (cb) => {
+      ipcRenderer.on("tabs:kinds-changed", () => cb());
+    },
   };
   contextBridge.exposeInMainWorld("host", host);
 } else if (whoami.role === "tab") {

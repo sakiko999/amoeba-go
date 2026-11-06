@@ -67,6 +67,8 @@ export interface HostApi {
   closeTab(instanceId: string): void;
   /** 主进程每次 tab 状态变化都会回调；host 页面只注册一次，无 unsubscribe（demo 取舍） */
   onTabsChanged(cb: (tabs: TabSummary[]) => void): void;
+  /** runtime 页面安装/卸载/重载后重新拉取 kinds（tab 圆点颜色） */
+  onKindsChanged(cb: () => void): void;
 }
 
 /** preload 启动时 sendSync("app:whoami") 的返回值；unknown 一律不注入 bridge。 */
