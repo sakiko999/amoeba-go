@@ -3,14 +3,13 @@
   "configurations": [
     {
       // 启动时自动跑 tasks.json 的 dev: desktop（inspector 9229 + renderer 9333）
-      // 主进程被 electron-vite 热重启后自动重连
+      // 不设 restart：关窗即断（electron-vite 随 Electron 退出）；改主进程触发热重启后重新 F5
       "type": "node",
       "request": "attach",
       "name": "Desktop: Main (9229)",
       "preLaunchTask": "dev: desktop",
       "port": 9229,
       "address": "127.0.0.1",
-      "restart": true,
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": ["${workspaceFolder}/apps/desktop/out/main/**/*.js"]
@@ -29,13 +28,13 @@
     },
     {
       // 启动时自动跑 tasks.json 的 dev: media（独立 media-manager，inspector 9230）
+      // 同样不设 restart：关窗即断，热重启主进程后重新 F5
       "type": "node",
       "request": "attach",
       "name": "Media Manager: Main (9230)",
       "preLaunchTask": "dev: media",
       "port": 9230,
       "address": "127.0.0.1",
-      "restart": true,
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": ["${workspaceFolder}/packages/media-manager/out/main/**/*.js"]
