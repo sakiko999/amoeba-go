@@ -9,7 +9,9 @@
 
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Button } from "@demo/ui";
+// 按子路径导入：barrel（"@demo/ui"）在 dev 下没有 tree-shaking，会把 60+ 组件及其
+// 全部依赖都转换/请求一遍，host 首屏要多花十几秒
+import { Button } from "@demo/ui/components/ui/button";
 import {
   DndContext,
   PointerSensor,
@@ -166,6 +168,8 @@ function App() {
     refreshKinds();
     api.onStateChanged((state: HostState) => setTheme(state.theme));
     void api.state().then((state) => setTheme(state.theme));
+    // React 首帧提交后再撤掉内联启动骨架（index.html 的 #boot），避免空白交接
+    document.getElementById("boot")?.remove();
   }, []);
 
   // @demo/ui 主题用 .dark class；dataset.theme 留给少量读取它的旧样式

@@ -4,9 +4,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./theme.css": "./src/styles/theme.css",
-    "./components/*": "./src/components/*",
-    "./lib/*": "./src/lib/*",
-    "./hooks/*": "./src/hooks/*"
+    "./components/*": "./src/components/*.tsx",
+    "./lib/*": "./src/lib/*.ts",
+    "./hooks/*": "./src/hooks/*.ts"
   },
   "peerDependencies": {
     "react": "^19",
