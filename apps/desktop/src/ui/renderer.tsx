@@ -28,12 +28,7 @@ import {
 } from "@dnd-kit/sortable";
 import { restrictToHorizontalAxis } from "@dnd-kit/modifiers";
 import { CSS } from "@dnd-kit/utilities";
-// 按图标子路径导入：barrel 会让 Vite 预构建整包（1500+ 图标，dev 首屏秒级等待）
-import Bug from "lucide-react/icons/bug";
-import Moon from "lucide-react/icons/moon";
-import Plus from "lucide-react/icons/plus";
-import Sun from "lucide-react/icons/sun";
-import X from "lucide-react/icons/x";
+import { Bug, Moon, Plus, Sun, X } from "lucide-react";
 import {
   hostApi,
   type HostState,
