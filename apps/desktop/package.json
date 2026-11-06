@@ -3,7 +3,7 @@
   "private": true,
   "main": "out/main/index.js",
   "scripts": {
-    "dev": "bun run scripts/sync-pages.ts && electron-vite dev --inspect=9229",
+    "dev": "bun run scripts/sync-pages.ts && electron-vite dev --inspect=9229 --sourcemap",
     "build": "bun run scripts/sync-pages.ts && electron-vite build",
     "start": "electron .",
     "smoke": "electron . --smoke"
