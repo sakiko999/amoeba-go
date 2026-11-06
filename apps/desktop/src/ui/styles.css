@@ -5,6 +5,7 @@
  */
 
 @import "@demo/ui/theme.css";
+@source ".";
 @source "../../../../packages/ui/src";
 
 html,
@@ -14,7 +15,8 @@ body,
 }
 body {
   margin: 0;
-  background: var(--background);
+  /* 不设背景：主题 class 由 React 在首帧（useLayoutEffect）设置，之前露出窗口底色，
+     避免暗色主题下 tailwind 变量默认取 light 值而闪一下亮色 */
   color: var(--foreground);
   font:
     13px/1.5 system-ui,

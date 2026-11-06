@@ -57,6 +57,15 @@ export default defineConfig({
       react({ include: /apps\/desktop\/src\/ui\/.*\.tsx?$/ }),
       tailwindcss(),
     ],
+    server: {
+      // dev server 就绪时先转换宿主入口，Electron 请求页面时少等一轮按需编译
+      warmup: {
+        clientFiles: [
+          "apps/desktop/src/ui/renderer.tsx",
+          "apps/desktop/src/ui/styles.css",
+        ],
+      },
+    },
     build: {
       outDir: resolve(__dirname, "out/renderer"),
       rollupOptions: {

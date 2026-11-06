@@ -7,7 +7,7 @@
  * 内容过渡页：tab 的 view 在 did-finish-load 前不可见，由这里渲染 loading 占位。
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 // 按子路径导入：barrel（"@demo/ui"）在 dev 下没有 tree-shaking，会把 60+ 组件及其
 // 全部依赖都转换/请求一遍，host 首屏要多花十几秒
@@ -28,7 +28,12 @@ import {
 } from "@dnd-kit/sortable";
 import { restrictToHorizontalAxis } from "@dnd-kit/modifiers";
 import { CSS } from "@dnd-kit/utilities";
-import { Bug, Moon, Plus, Sun, X } from "lucide-react";
+// 按图标子路径导入：barrel 会让 Vite 预构建整包（1500+ 图标，dev 首屏秒级等待）
+import Bug from "lucide-react/icons/bug";
+import Moon from "lucide-react/icons/moon";
+import Plus from "lucide-react/icons/plus";
+import Sun from "lucide-react/icons/sun";
+import X from "lucide-react/icons/x";
 import {
   hostApi,
   type HostState,
@@ -172,8 +177,8 @@ function App() {
     document.getElementById("boot")?.remove();
   }, []);
 
-  // @demo/ui 主题用 .dark class；dataset.theme 留给少量读取它的旧样式
-  useEffect(() => {
+  // @demo/ui 主题用 .dark class；用 layout effect 在首帧 paint 前切换，暗色启动不会闪亮色
+  useLayoutEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
     document.documentElement.dataset.theme = theme;
   }, [theme]);
@@ -281,7 +286,7 @@ function App() {
         </Button>
       </header>
       {tabs.length === 0 && (
-        <div className="absolute inset-x-0 bottom-0 top-11 flex items-center justify-center text-muted-foreground/60">
+        <div className="absolute inset-x-0 bottom-0 top-11 flex items-center justify-center bg-background text-muted-foreground/60">
           没有打开的 tab —— 点上方 + 新建
         </div>
       )}

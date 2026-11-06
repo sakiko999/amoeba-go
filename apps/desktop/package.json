@@ -3,7 +3,7 @@
   "private": true,
   "main": "out/main/index.js",
   "scripts": {
-    "dev": "bun run scripts/sync-pages.ts && electron-vite dev --inspect=9229 --remoteDebuggingPort=9333 --sourcemap",
+    "dev": "bun run scripts/check-dev-ports.ts && bun run scripts/sync-pages.ts && electron-vite dev --inspect=9229 --remoteDebuggingPort=9333 --sourcemap",
     "build": "bun run scripts/sync-pages.ts && electron-vite build",
     "start": "electron .",
     "smoke": "electron . --smoke"

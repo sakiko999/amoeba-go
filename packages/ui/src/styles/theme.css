@@ -1,4 +1,6 @@
-@import "tailwindcss";
+/* source(none)：关闭自动源检测，由使用方用 @source 精确声明扫描目录，避免 dev 下
+   每次编译都扫整个 monorepo（会包含 media-manager 等无关源码，首屏多等几秒） */
+@import "tailwindcss" source(none);
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
