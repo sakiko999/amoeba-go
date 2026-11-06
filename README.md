@@ -18,6 +18,9 @@ apps/desktop ──────────────────────�
 packages/tab-clock / tab-notes / tab-sysinfo
    manifest（id/title/color）+ index.html + renderer.ts
    经 electron-vite 多页构建到 out/renderer/（产物路径 = 源路径相对仓库根）
+
+packages/ui            @demo/ui：全仓公共 shadcn 组件库（CLI 全量生成，61 组件 + 主题 CSS）
+packages/media-manager submodule：媒体库浏览器（Electron 前端 + 后端，React 19 + Tailwind 4 + @demo/ui；只读）
 ```
 
 要点：
@@ -41,6 +44,8 @@ packages/tab-clock / tab-notes / tab-sysinfo
 | `bun run dev`       | electron-vite dev（HMR、主进程改动自动重启） |
 | `bun run build`     | electron-vite build → `apps/desktop/out/`    |
 | `bun run smoke`     | 无头冒烟：3 个 tab 全部加载完则退出码 0      |
+| `bun run media`     | media-manager dev（独立 Electron 应用，HMR） |
+| `bun run media:smoke` | media-manager 无头冒烟                     |
 | `bun run typecheck` | `tsc --noEmit`（TypeScript 7 原生）          |
 | `bun run lint`      | `biome lint .`                               |
 | `bun run fmt`       | `bun fmt .`                                  |

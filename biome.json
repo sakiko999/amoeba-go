@@ -3,10 +3,23 @@
   "files": {
     "includes": ["**", "!**/dist", "!**/out", "!**/node_modules", "!tmp"]
   },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
   "formatter": {
     "enabled": false
   },
   "linter": {
     "enabled": true
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["packages/ui/src/components/**", "packages/ui/src/hooks/**"],
+      "linter": {
+        "enabled": false
+      }
+    }
+  ]
 }

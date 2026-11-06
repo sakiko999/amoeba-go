@@ -5,9 +5,9 @@
     "moduleResolution": "bundler",
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "types": ["node"],
+    "jsx": "react-jsx",
     "strict": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
@@ -17,6 +17,8 @@
   "include": [
     "apps/*/src/**/*.ts",
     "apps/*/electron.vite.config.ts",
-    "packages/*/src/**/*.ts"
+    "packages/*/src/**/*.ts",
+    "packages/*/src/**/*.tsx",
+    "packages/*/electron.vite.config.ts"
   ]
 }
