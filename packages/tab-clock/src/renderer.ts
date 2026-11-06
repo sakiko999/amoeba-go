@@ -2,7 +2,7 @@
  * Clock tab：独立 WebContentsView 里的实时时钟。
  * 展示 tab 的独立生命周期：视图创建时启动 interval，关闭 tab 时随 webContents 一起销毁。
  */
-import { dom, tabApi, type Theme } from "@tabs/sdk";
+import { dom, tabApi, type Theme } from "@host/sdk";
 
 const api = tabApi();
 const root = dom<HTMLElement>("#app");

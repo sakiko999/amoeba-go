@@ -14,7 +14,7 @@ import type {
   WebContents,
 } from "electron";
 import { join } from "node:path";
-import type { TabManifest, TabSummary, Whoami } from "@tabs/sdk";
+import type { TabManifest, TabSummary, Whoami } from "@host/sdk";
 import type { PageActions } from "./pages/actions";
 import type { PageRegistry, PageRuntime } from "./pages/registry";
 import { TAB_KINDS } from "./registry";

@@ -32,7 +32,7 @@ import {
   type TabManifest,
   type TabSummary,
   type Theme,
-} from "@tabs/sdk";
+} from "@host/sdk";
 import "./styles.css";
 
 const api = hostApi();

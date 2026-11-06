@@ -6,6 +6,6 @@
 import { manifest as clock } from "@tabs/clock";
 import { manifest as notes } from "@tabs/notes";
 import { manifest as sysinfo } from "@tabs/sysinfo";
-import type { TabManifest } from "@tabs/sdk";
+import type { TabManifest } from "@host/sdk";
 
 export const TAB_KINDS: readonly TabManifest[] = [clock, notes, sysinfo];

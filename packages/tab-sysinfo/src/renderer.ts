@@ -2,7 +2,7 @@
  * System tab：主进程聚合的运行环境信息 + IPC 往返延迟演示。
  * 展示 renderer 无法自取、必须经 preload → main 的数据（process.versions 等）。
  */
-import { dom, tabApi, type SystemInfo, type Theme } from "@tabs/sdk";
+import { dom, tabApi, type SystemInfo, type Theme } from "@host/sdk";
 
 const api = tabApi();
 const root = dom<HTMLElement>("#app");

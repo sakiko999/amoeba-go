@@ -2,7 +2,7 @@
  * Notes tab：textarea 草稿 + 把字数同步进 tab 条标题（tab → main → host 联动）。
  * 草稿存在 tab 实例专属的内存 partition localStorage 里，随 tab 关闭即清（demo 不做持久化）。
  */
-import { dom, tabApi, type Theme } from "@tabs/sdk";
+import { dom, tabApi, type Theme } from "@host/sdk";
 
 const api = tabApi();
 const root = dom<HTMLElement>("#app");

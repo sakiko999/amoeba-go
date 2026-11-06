@@ -8,7 +8,7 @@
  */
 
 import { contextBridge, ipcRenderer } from "electron";
-import type { HostState, TabApi, Theme, Whoami } from "@tabs/sdk";
+import type { HostState, TabApi, Theme, Whoami } from "@host/sdk";
 
 const whoami = ipcRenderer.sendSync("app:whoami") as Whoami;
 if (whoami.role === "tab") {

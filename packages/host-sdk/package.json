@@ -1,5 +1,5 @@
 {
-  "name": "@tabs/sdk",
+  "name": "@host/sdk",
   "private": true,
   "exports": {
     ".": "./src/index.ts"

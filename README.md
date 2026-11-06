@@ -26,7 +26,7 @@ apps/desktop/pages/<id>/    runtime 页面包（构建产物，gitignored）
    page.json + renderer/ + preload/ + 可选 main.js（CJS）
    page://<id>/<entry>，每页面 persist:page-<id> 分区
 
-packages/tab-sdk        @tabs/sdk：宿主契约（tab / runtime 页面 / HostState 渠道）
+packages/host-sdk        @host/sdk：宿主契约（tab / runtime 页面 / HostState 渠道）
 packages/ui             @demo/ui：全仓公共 shadcn 组件库（CLI 全量生成，61 组件 + 主题 CSS）
 packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后端；刮削/NFO/整理）
                         也可打包为 runtime 页面包（bun run pages:prepare）
@@ -53,7 +53,7 @@ packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后�
 - 状态变更 → 更新 `titleBarOverlay`，并向 host、所有静态 tab、所有 runtime 页面广播
   `host:state`；同时发 `theme:changed` 兼容旧 tab。
 - 页面接入（preload）：`sendSync("host:state:sync")` 首帧同步取初始状态，`on("host:state")`
-  订阅变更；渠道常量与类型来自 `packages/tab-sdk`（`HOST_STATE_CHANNELS` / `HostState`）。
+  订阅变更；渠道常量与类型来自 `packages/host-sdk`（`HOST_STATE_CHANNELS` / `HostState`）。
   media-manager 的 preload 已注入 `window.hostState`，renderer 在首帧前切换 `.dark` 类。
 - 静态 tab 用 `window.tab.state()/onStateChanged()` 订阅整份状态；`theme()/onThemeChanged`
   保留兼容（内部仍是同一份状态）。
@@ -153,7 +153,7 @@ exports.deactivate = () => {
 
 安装方式：把目录复制到 `apps/desktop/pages/<id>/`（内置）或运行宿主后从 `+` 菜单
 「安装页面…」选择目录（外部，会弹出主进程权限警告）。页面 main 只接受 CJS；页面 id 必须
-是小写 DNS label 且不能与静态 tab id 冲突。契约类型见 `packages/tab-sdk`。
+是小写 DNS label 且不能与静态 tab id 冲突。契约类型见 `packages/host-sdk`。
 
 ## 已知简化（升级路径）
 

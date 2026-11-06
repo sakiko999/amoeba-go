@@ -18,5 +18,6 @@
 - [ ] 若 `library:scan` 耗时仍大：做扫描结果缓存（按库根 + mtime）与首屏先展示上次结果、后台增量刷新
 - [!] 修改主进程文件会触发 electron-vite 重启，inspector 会断开并在同一端口重新监听；VS Code 需要重新 attach，`chrome://inspect` 需要重新点一次。生产构建不带 inspector，那时 bug 菜单的「调试主进程」才会带 `--inspect=9229` 重启。
 - [ ] 手动 `bun run dev` 目测宿主新 tab 条（@demo/ui 主题）与 media-manager 过渡页的实际观感
+- [ ] 手动 `bun run dev` 验一下 tab 拖拽手感与窗口按钮区颜色（拖拽是交互，自动化只覆盖到数据链）
 
 <!-- cc-todo:end -->

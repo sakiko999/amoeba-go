@@ -95,7 +95,7 @@ contextIsolation / 权限全拒。media-manager 用同一份 backend 同时跑�
 - 抽通用页面工具链：`@pages/cli create/pack/validate` + 模板 + devUrl（嵌入 HMR）。
 - 宿主打包：packager/asar + 打包后 smoke；`app://`/`page://` 改 `readFile`；单实例。
 - vite input 从 `TAB_KINDS` 生成，消除双注册源。
-- `@tabs/sdk`（原 @pages/sdk 已并入）产出可发布的 JS+d.ts；manifest 增加 `apiVersion/minHostVersion`。
+- `@host/sdk`（原 @pages/sdk 已并入）产出可发布的 JS+d.ts；manifest 增加 `apiVersion/minHostVersion`。
 - 补 registry/protocol/manifest 单测与并发 reload 集成测试；smoke 把 `state=error` 视为失败。
 
 ### P2

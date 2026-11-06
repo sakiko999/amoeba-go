@@ -12,7 +12,7 @@ import type {
   TabSummary,
   Theme,
   Whoami,
-} from "@tabs/sdk";
+} from "@host/sdk";
 
 const whoami = ipcRenderer.sendSync("app:whoami") as Whoami;
 

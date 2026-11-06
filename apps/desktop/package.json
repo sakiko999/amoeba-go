@@ -11,7 +11,7 @@
   "dependencies": {
     "@tabs/clock": "workspace:*",
     "@tabs/notes": "workspace:*",
-    "@tabs/sdk": "workspace:*",
+    "@host/sdk": "workspace:*",
     "@tabs/sysinfo": "workspace:*"
   },
   "devDependencies": {

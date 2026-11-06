@@ -5,6 +5,6 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@tabs/sdk": "workspace:*"
+    "@host/sdk": "workspace:*"
   }
 }
