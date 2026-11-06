@@ -4,6 +4,29 @@
  * 页面扩展按需断言成 BrowserWindow。
  */
 
+/* ---------- 宿主状态（页面 preload 订阅的主题等全局状态） ---------- */
+
+export type Theme = "dark" | "light";
+
+/** 宿主唯一状态源；新增全局状态时在这里加字段（页面按整份状态订阅） */
+export interface HostState {
+  theme: Theme;
+}
+
+export type HostStatePatch = Partial<HostState>;
+
+/** 宿主与页面 preload 之间的固定 IPC 渠道名 */
+export const HOST_STATE_CHANNELS = {
+  /** sendSync：preload 首帧同步取初始状态 */
+  sync: "host:state:sync",
+  /** invoke：随时取当前状态 */
+  get: "host:state:get",
+  /** 只有宿主 UI 能写；页面只读 */
+  set: "host:state:set",
+  /** 主进程 → 所有 webContents 的状态变更广播 */
+  changed: "host:state",
+} as const;
+
 /** 页面包根目录下的 page.json */
 export interface PageManifest {
   /** URL host 用，必须是小写 DNS label：[a-z0-9-] */

@@ -14,15 +14,17 @@ import {
   protocol,
   session,
 } from "electron";
-import type { Session } from "electron";
+import type { Session, WebContents } from "electron";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import os from "node:os";
+import { HOST_STATE_CHANNELS } from "@pages/sdk";
 import type { SystemInfo, TabSummary, Theme } from "@tabs/sdk";
 import { createPageActions } from "./pages/actions";
 import { registerPageProtocol } from "./pages/protocol";
 import { PageRegistry } from "./pages/registry";
 import { TAB_KINDS } from "./registry";
+import { HostStateStore } from "./state";
 import { TabManager, hardenWebContents, toggleDevtools } from "./tabs";
 import { hostUrl } from "./renderTarget";
 
@@ -41,29 +43,48 @@ let manager: TabManager | undefined;
 let win: BrowserWindow | undefined;
 let pages: PageRegistry | undefined;
 
-/* ---------- 主题（唯一状态源；demo 不持久化，重启回深色） ---------- */
-let theme: Theme = "dark";
+/* ---------- 宿主状态（唯一状态源；广播给 host、静态 tab 与 runtime 页面） ---------- */
+const stateStore = new HostStateStore();
 /** titleBarOverlay 颜色随主题走（窗口按钮为原生 overlay，cherry Windows 同款） */
 const OVERLAY_COLORS: Record<Theme, { color: string; symbolColor: string }> = {
   dark: { color: "#1a1b26", symbolColor: "#c0caf5" },
   light: { color: "#e6e7f2", symbolColor: "#3b3f5c" },
 };
 
-ipcMain.handle("theme:get", () => theme);
-ipcMain.on("theme:toggle", (e) => {
-  // 只有 host 的 tab 条有切换入口，tab 页面无权改全局主题
-  if (
-    !win ||
-    win.isDestroyed() ||
-    manager?.whoami(e.sender.id).role !== "host"
-  ) {
+const isHost = (wcId: number): boolean => manager?.whoami(wcId).role === "host";
+
+/** 整份状态广播；theme:changed 保留给尚未迁移到 state API 的旧 tab */
+function broadcastState(): void {
+  if (!win || win.isDestroyed()) return;
+  const state = stateStore.get();
+  win.setTitleBarOverlay(OVERLAY_COLORS[state.theme]);
+  for (const wc of [win.webContents, ...(manager?.tabWebContents() ?? [])]) {
+    wc.send(HOST_STATE_CHANNELS.changed, state);
+    wc.send("theme:changed", state.theme);
+  }
+}
+
+// sync 供页面 preload 首帧同步取值；页面只读，写入仅限 host（tab 条）
+ipcMain.on(HOST_STATE_CHANNELS.sync, (e) => {
+  e.returnValue = stateStore.get();
+});
+ipcMain.handle(HOST_STATE_CHANNELS.get, () => stateStore.get());
+ipcMain.on(HOST_STATE_CHANNELS.set, (e, patch: unknown) => {
+  if (!isHost(e.sender.id) || patch === null || typeof patch !== "object") {
     return;
   }
-  theme = theme === "dark" ? "light" : "dark";
-  win.setTitleBarOverlay(OVERLAY_COLORS[theme]);
-  for (const wc of [win.webContents, ...manager.tabWebContents()]) {
-    wc.send("theme:changed", theme);
-  }
+  const theme = (patch as { theme?: unknown }).theme;
+  if (theme !== "dark" && theme !== "light") return;
+  stateStore.set({ theme });
+});
+// 兼容旧 tab / host 的 theme API
+ipcMain.handle("theme:get", () => stateStore.get().theme);
+ipcMain.on("theme:toggle", (e) => {
+  // 只有 host 的 tab 条有切换入口，tab 页面无权改全局主题
+  if (!isHost(e.sender.id)) return;
+  stateStore.set({
+    theme: stateStore.get().theme === "dark" ? "light" : "dark",
+  });
 });
 
 /* ---------- host（tab 条）侧 ---------- */
@@ -199,6 +220,7 @@ function registerSessionProtocols(ses: Session): void {
 async function main(): Promise<void> {
   if (SMOKE) app.disableHardwareAcceleration(); // 冒烟环境可能无 GPU，纯软件渲染更稳
   await app.whenReady();
+  stateStore.load();
 
   pages = await PageRegistry.create({
     builtinDir: join(app.getAppPath(), "pages"),
@@ -222,7 +244,10 @@ async function main(): Promise<void> {
     backgroundColor: "#16161e",
     // 无系统标题栏：tab 条即标题栏（drag 区 + 原生 overlay 窗口按钮，高 44 与 tab 条一致）
     titleBarStyle: "hidden",
-    titleBarOverlay: { ...OVERLAY_COLORS.dark, height: 44 },
+    titleBarOverlay: {
+      ...OVERLAY_COLORS[stateStore.get().theme],
+      height: 44,
+    },
     webPreferences: {
       preload: join(app.getAppPath(), "out", "preload", "index.js"),
       contextIsolation: true,
@@ -242,6 +267,8 @@ async function main(): Promise<void> {
   });
   manager = new TabManager(win, pages, actions);
   hardenWebContents(win.webContents);
+  // 状态变更 → overlay + 所有 webContents（host / 静态 tab / runtime 页面）
+  stateStore.subscribe(() => broadcastState());
 
   await win.loadURL(hostUrl());
 
@@ -257,12 +284,14 @@ async function main(): Promise<void> {
       );
     }
     const loads: Promise<void>[] = [];
+    let mediaWc: WebContents | undefined;
     for (const id of [...staticIds, ...pageIds]) {
       const summary = manager.create(id);
       const wc = summary
         ? manager.webContentsOf(summary.instanceId)
         : undefined;
       if (!summary || !wc) throw new Error(`smoke: cannot create tab ${id}`);
+      if (id === "media-manager") mediaWc = wc;
       loads.push(
         new Promise<void>((resolve, reject) => {
           wc.once("did-finish-load", () => resolve());
@@ -279,6 +308,25 @@ async function main(): Promise<void> {
       setTimeout(() => reject(new Error("smoke timeout after 30s")), 30_000);
     });
     await Promise.race([Promise.all(loads), timeout]);
+
+    // 状态透传冒烟：切换宿主主题，media 页面必须跟随（页面 preload 订阅 host:state）
+    if (mediaWc !== undefined) {
+      const readTheme = (): Promise<unknown> =>
+        mediaWc?.executeJavaScript("document.documentElement.dataset.theme");
+      const before = await readTheme();
+      const next = before === "dark" ? "light" : "dark";
+      stateStore.set({ theme: next });
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      const after = await readTheme();
+      if (after !== next) {
+        throw new Error(
+          `smoke: theme not propagated to media page (expected ${next}, got ${String(after)})`,
+        );
+      }
+      stateStore.set({ theme: before === "dark" ? "dark" : "light" });
+      console.log("SMOKE: theme propagated to media page");
+    }
+
     console.log(
       `SMOKE OK: ${loads.length} tabs loaded (${staticIds.length} static + ${pageIds.length} pages)`,
     );

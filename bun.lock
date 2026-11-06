@@ -65,6 +65,9 @@
     },
     "packages/tab-sdk": {
       "name": "@tabs/sdk",
+      "devDependencies": {
+        "@pages/sdk": "workspace:*",
+      },
     },
     "packages/tab-sysinfo": {
       "name": "@tabs/sysinfo",

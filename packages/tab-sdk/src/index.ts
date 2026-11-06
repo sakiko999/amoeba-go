@@ -1,7 +1,11 @@
 /**
  * Tab SDK：shell（apps/desktop）与各 tab 子包之间的唯一契约。
- * 纯类型 + 几个运行时小工具，零依赖。
+ * 纯类型 + 几个运行时小工具；HostState 类型来自 @pages/sdk（页面与 tab 共用）。
  */
+
+import type { HostState, Theme } from "@pages/sdk";
+
+export type { HostState, HostStatePatch, Theme } from "@pages/sdk";
 
 /** 一个 tab 种类的静态描述，由每个 tab 子包导出一份。 */
 export interface TabManifest {
@@ -32,8 +36,7 @@ export interface SystemInfo {
   node: string;
 }
 
-/** 主题：主进程唯一持有并广播到 host 与所有 tab；demo 不持久化，重启回深色。 */
-export type Theme = "dark" | "light";
+/* 主题（Theme）与 HostState 由 @pages/sdk 定义并 re-export。 */
 
 /** 每个 tab 页面里 window.tab 的形状（由 preload 注入）。 */
 export interface TabApi {
@@ -45,7 +48,13 @@ export interface TabApi {
   /** IPC 往返演示，resolve "pong:<value> @ <kind>" */
   ping(value: string): Promise<string>;
   systemInfo(): Promise<SystemInfo>;
+  /** 宿主全局状态的当前快照 */
+  state(): Promise<HostState>;
+  /** 订阅整份宿主状态（主题、后续新增字段） */
+  onStateChanged(cb: (state: HostState) => void): void;
+  /** 兼容旧 tab：等价于 state().theme */
   theme(): Promise<Theme>;
+  /** 兼容旧 tab：等价于 onStateChanged 的 theme 切片 */
   onThemeChanged(cb: (theme: Theme) => void): void;
 }
 
@@ -61,7 +70,11 @@ export interface HostApi {
   toggleTheme(): void;
   /** 请主进程弹原生调试菜单（主进程 inspector / 启动器界面 / 当前 tab 的 DevTools） */
   openDebugMenu(): void;
+  state(): Promise<HostState>;
+  onStateChanged(cb: (state: HostState) => void): void;
+  /** 兼容旧接口：等价于 state().theme */
   theme(): Promise<Theme>;
+  /** 兼容旧接口：等价于 onStateChanged 的 theme 切片 */
   onThemeChanged(cb: (theme: Theme) => void): void;
   activateTab(instanceId: string): void;
   closeTab(instanceId: string): void;

@@ -5,7 +5,14 @@
  */
 
 import { contextBridge, ipcRenderer } from "electron";
-import type { HostApi, TabApi, TabSummary, Theme, Whoami } from "@tabs/sdk";
+import type {
+  HostApi,
+  HostState,
+  TabApi,
+  TabSummary,
+  Theme,
+  Whoami,
+} from "@tabs/sdk";
 
 const whoami = ipcRenderer.sendSync("app:whoami") as Whoami;
 
@@ -19,6 +26,10 @@ if (whoami.role === "host") {
       ipcRenderer.send("tabs:context-menu", instanceId),
     toggleTheme: () => ipcRenderer.send("theme:toggle"),
     openDebugMenu: () => ipcRenderer.send("debug:menu"),
+    state: () => ipcRenderer.invoke("host:state:get"),
+    onStateChanged: (cb) => {
+      ipcRenderer.on("host:state", (_e, state: HostState) => cb(state));
+    },
     theme: () => ipcRenderer.invoke("theme:get"),
     onThemeChanged: (cb) => {
       ipcRenderer.on("theme:changed", (_e, theme: Theme) => cb(theme));
@@ -45,6 +56,10 @@ if (whoami.role === "host") {
     },
     ping: (value) => ipcRenderer.invoke("tab:ping", value),
     systemInfo: () => ipcRenderer.invoke("tab:system-info"),
+    state: () => ipcRenderer.invoke("host:state:get"),
+    onStateChanged: (cb) => {
+      ipcRenderer.on("host:state", (_e, state: HostState) => cb(state));
+    },
     theme: () => ipcRenderer.invoke("theme:get"),
     onThemeChanged: (cb) => {
       ipcRenderer.on("theme:changed", (_e, theme: Theme) => cb(theme));

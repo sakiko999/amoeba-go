@@ -40,10 +40,24 @@ packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后�
 - 安全默认：拦截一切导航与 `window.open`（主进程 `hardenWebContents`）、权限请求默认全拒、preload 未知角色不注入任何桥。
 - 每个 tab 实例独立 webContents + 独立内存 partition（storage 互不可见，关闭即清）；多开同一个 tab kind 互不串数据。
 - tab 条为 Chrome 风格 44px（视觉移植自 [cherry-studio](tmp/cherry-studio) 的 `AppShellTabBar`：状态色 color-mix 公式、标题渐隐、hover 展开的 X、关闭 collapse 动画、中键/双击关闭）；cherry-studio 本体是单 renderer 内 React tab（TabsProvider + 每 tab 独立 MemoryRouter + `<Activity>` KeepAlive），与本项目“每 tab 一个 WebContentsView”是两种架构，这里只抄了 UI 层。
-- 无系统标题栏：tab 条即标题栏（拖拽区），右侧窗口按钮为原生 `titleBarOverlay`（cherry Windows 同款，高 44 随主题变色）；tab 条尾部有亮/暗切换按钮，主题由主进程唯一持有并 `theme:changed` 广播到 host 与所有 tab（每个 tab 是独立 webContents，各自切换 `<html data-theme>`）。
+- 无系统标题栏：tab 条即标题栏（拖拽区），右侧窗口按钮为原生 `titleBarOverlay`（cherry Windows 同款，高 44 随主题变色）；tab 条尾部有亮/暗切换按钮，主题由主进程 `HostStateStore` 唯一持有，经 `host:state` 广播到 host、静态 tab 与 runtime 页面（`theme:changed` 保留给旧 tab）。
 - “+” 新建与 tab 右键菜单（关闭/关闭其他/关闭右侧）由主进程 `Menu.popup()` 弹出：host 页面 DOM 会被 tab 的原生子视图遮挡，DOM 菜单不可行。
 - renderer 加载：dev 走 electron-vite dev server（`ELECTRON_RENDERER_URL`），生产走 `app://` 自定义协议映射 `out/renderer`——ESM 模块脚本需要 http 型 origin，file:// 不行；协议须按 session 注册（每个 tab 的独立 partition 是另一个 session）。
 - 调试入口：tab 条的 bug 按钮弹出原生菜单——调试主进程（带 `--inspect=9229` 重启，`chrome://inspect` 连接）、调试启动器界面（host 页面 DevTools）、调试内容页面（当前 tab DevTools）；F12 仍可开关当前焦点 webContents 的 devtools。
+
+### 宿主状态（HostState）
+
+- `apps/desktop/src/main/state.ts` 的 `HostStateStore` 是唯一状态源：`get / set / subscribe`，
+  持久化到 `userData/host-state.json`（坏文件/非法值回退默认 dark）。新增全局状态只需扩展
+  `HostState` 与 `set()` 校验，广播层自动覆盖。
+- 状态变更 → 更新 `titleBarOverlay`，并向 host、所有静态 tab、所有 runtime 页面广播
+  `host:state`；同时发 `theme:changed` 兼容旧 tab。
+- 页面接入（preload）：`sendSync("host:state:sync")` 首帧同步取初始状态，`on("host:state")`
+  订阅变更；渠道常量与类型来自 `packages/page-sdk`（`HOST_STATE_CHANNELS` / `HostState`）。
+  media-manager 的 preload 已注入 `window.hostState`，renderer 在首帧前切换 `.dark` 类。
+- 静态 tab 用 `window.tab.state()/onStateChanged()` 订阅整份状态；`theme()/onThemeChanged`
+  保留兼容（内部仍是同一份状态）。
+- smoke 会真实切换一次宿主主题并断言 media 页面跟随（`SMOKE: theme propagated`）。
 
 ### Runtime 页面（热插拔）
 
@@ -117,7 +131,7 @@ exports.deactivate = () => {
 ## 已知简化（升级路径）
 
 - tab 条未抄 cherry-studio 的 pin 区、拖拽排序、close-in-place 宽度冻结、tab 间 hairline divider（升级路径：useTabDrag + 冻结/thaw 状态机 + 独立 divider 元素）。
-- 主题仅亮/暗两态（cherry 有跟随系统），不持久化，重启回深色。
+- 主题仅亮/暗两态（cherry 有跟随系统）；状态已持久化在 `userData/host-state.json`。
 - `onTabsChanged` 无 unsubscribe、whoami 用一次 `sendSync`（页面级生命周期，demo 取舍；host 重载靠 did-finish-load 重广播补齐）。
 - 关闭全部 tab 后是空态，不自动重建首页。
 - tsconfig 是单一 program（main/renderer 共用 DOM + node 类型），类型层不区分运行环境 → 升级路径：拆 project references。

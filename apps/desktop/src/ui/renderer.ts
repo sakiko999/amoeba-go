@@ -9,9 +9,9 @@
 import {
   dom,
   hostApi,
+  type HostState,
   type TabManifest,
   type TabSummary,
-  type Theme,
 } from "@tabs/sdk";
 
 const api = hostApi();
@@ -123,7 +123,8 @@ function render(): void {
   empty.style.display = tabs.length === 0 ? "flex" : "none";
 }
 
-function applyTheme(theme: Theme): void {
+function applyState(state: HostState): void {
+  const theme = state.theme;
   document.documentElement.dataset.theme = theme;
   themeBtn.innerHTML = theme === "dark" ? SUN_ICON : MOON_ICON;
   themeBtn.ariaLabel = theme === "dark" ? "切换亮色主题" : "切换暗色主题";
@@ -134,8 +135,8 @@ themeBtn.addEventListener("click", () => api.toggleTheme());
 debugBtn.innerHTML = BUG_ICON;
 debugBtn.title = "调试";
 debugBtn.addEventListener("click", () => api.openDebugMenu());
-api.onThemeChanged(applyTheme);
-void api.theme().then(applyTheme);
+api.onStateChanged(applyState);
+void api.state().then(applyState);
 
 api.onTabsChanged((next) => {
   // 主进程已移除的 tab 清出动画集，避免重开同名实例时误判 closing
