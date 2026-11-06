@@ -7,7 +7,7 @@
  * 所有 tab 状态的唯一权威源在这里，host 页面只做投影（tabs:changed）。
  */
 
-import { Menu, WebContentsView, app } from "electron";
+import { Menu, session, WebContentsView, app } from "electron";
 import type {
   BrowserWindow,
   MenuItemConstructorOptions,
@@ -24,6 +24,23 @@ import { tabUrl } from "./renderTarget";
 const TABBAR_HEIGHT = 44;
 
 const HOST_PRELOAD = join(app.getAppPath(), "out", "preload", "index.js");
+const PAGE_BRIDGE_PRELOAD = join(
+  app.getAppPath(),
+  "out",
+  "preload",
+  "pageBridge.js",
+);
+
+/** 每个页面 session 只叠加一次宿主 bridge（页面自有 preload 保持不变） */
+const bridgedPartitions = new Set<string>();
+
+function ensurePageBridge(partition: string): void {
+  if (bridgedPartitions.has(partition)) return;
+  session
+    .fromPartition(partition)
+    .registerPreloadScript({ type: "frame", filePath: PAGE_BRIDGE_PRELOAD });
+  bridgedPartitions.add(partition);
+}
 
 interface TabEntry {
   instanceId: string;
@@ -95,22 +112,22 @@ export class TabManager {
     }
 
     const page = this.pages.get(id);
-    if (page === undefined || page.state !== "active") return undefined;
+    // inactive 只在页面激活完成前出现；main 扩展失败（error）仍允许打开 renderer
+    if (page === undefined || page.state === "inactive") return undefined;
     return this.createPageTab(page);
   }
 
   private createPageTab(page: PageRuntime): TabSummary {
     const instanceId = `${page.manifest.id}-${++this.seq}`;
+    const partition = `persist:page-${page.manifest.id}`;
+    ensurePageBridge(partition);
     return this.mount(
       {
         instanceId,
         kind: page.manifest.id,
         title: page.manifest.name,
         pageId: page.manifest.id,
-        view: this.createView(
-          page.preloadPath ?? HOST_PRELOAD,
-          `persist:page-${page.manifest.id}`,
-        ),
+        view: this.createView(page.preloadPath ?? HOST_PRELOAD, partition),
       },
       page.entryUrl,
     );
@@ -204,7 +221,7 @@ export class TabManager {
       })),
       ...pages.map((page) => ({
         label: `新建 ${page.name}`,
-        enabled: page.state === "active",
+        enabled: page.state !== "inactive",
         click: () => {
           this.create(page.id);
         },

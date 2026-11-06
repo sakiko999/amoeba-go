@@ -24,7 +24,11 @@ export default defineConfig({
     build: {
       outDir: "out/preload",
       rollupOptions: {
-        input: resolve(__dirname, "src/preload/index.ts"),
+        input: {
+          // 宿主页面与静态 tab 用 index；runtime 页面用 pageBridge 叠加
+          index: resolve(__dirname, "src/preload/index.ts"),
+          pageBridge: resolve(__dirname, "src/preload/pageBridge.ts"),
+        },
       },
     },
   },

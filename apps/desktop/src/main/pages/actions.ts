@@ -65,9 +65,18 @@ export function createPageActions(opts: {
         });
         if (choice.response !== 1) return;
 
-        await opts.pages.install(dir);
-        opts.openPage(manifest.id);
+        const summary = await opts.pages.install(dir);
+        opts.openPage(summary.id);
         opts.onChanged();
+        if (summary.state === "error") {
+          await dialog.showMessageBox(win, {
+            type: "warning",
+            title: "页面已安装，但主进程扩展加载失败",
+            message: `「${summary.name}」的 renderer 仍可打开，但其 main.js 未能激活。`,
+            detail: summary.error ?? "未知错误",
+            buttons: ["知道了"],
+          });
+        }
       } catch (err) {
         fail(err);
       }
@@ -78,9 +87,18 @@ export function createPageActions(opts: {
       if (win === undefined) return;
       try {
         opts.closeTabs(id);
-        await opts.pages.reload(id);
+        const summary = await opts.pages.reload(id);
         opts.openPage(id);
         opts.onChanged();
+        if (summary.state === "error") {
+          await dialog.showMessageBox(win, {
+            type: "warning",
+            title: "页面已重载，但主进程扩展加载失败",
+            message: `「${summary.name}」的 renderer 仍可打开，但其 main.js 未能激活。`,
+            detail: summary.error ?? "未知错误",
+            buttons: ["知道了"],
+          });
+        }
       } catch (err) {
         fail(err);
       }

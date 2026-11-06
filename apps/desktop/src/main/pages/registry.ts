@@ -85,6 +85,27 @@ function createIpcTracker(): IpcTracker {
   };
 }
 
+const ACTIVATE_TIMEOUT_MS = 8_000;
+
+/** 页面 main 的 activate 可能永不 resolve；超时后降级为 error，不拖死宿主 */
+async function withTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  message: string,
+): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(message)), ms);
+      }),
+    ]);
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
+}
+
 const encodeEntry = (entry: string): string =>
   entry.split(/[\\/]/).filter(Boolean).map(encodeURIComponent).join("/");
 
@@ -110,7 +131,10 @@ export class PageRegistry {
 
   rootOf(id: string): string | undefined {
     const page = this.pages.get(id);
-    return page?.state === "active" ? page.root : undefined;
+    // active / error 都允许加载 renderer；只有尚未激活（inactive）才拒绝
+    return page !== undefined && page.state !== "inactive"
+      ? page.root
+      : undefined;
   }
 
   async activateAll(): Promise<void> {
@@ -290,11 +314,22 @@ export class PageRegistry {
         log: (...args) =>
           this.opts.log?.(`[page:${page.manifest.id}]`, ...args),
       };
-      await target.activate(ctx);
+      // 先挂 deactivate：activate 中途抛错/超时时仍能回滚它已占用的资源
       page.deactivate = () => target.deactivate?.();
+      await withTimeout(
+        Promise.resolve(target.activate(ctx)),
+        ACTIVATE_TIMEOUT_MS,
+        `main activate timeout (${page.manifest.id})`,
+      );
       page.tracker = tracker;
       page.state = "active";
     } catch (err) {
+      try {
+        await page.deactivate?.();
+      } catch (deactivateErr) {
+        this.log("deactivate after failed activate:", deactivateErr);
+      }
+      page.deactivate = undefined;
       tracker.dispose();
       page.state = "error";
       page.error = err instanceof Error ? err.message : String(err);

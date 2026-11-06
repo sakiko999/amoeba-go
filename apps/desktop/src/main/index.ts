@@ -220,6 +220,7 @@ function registerSessionProtocols(ses: Session): void {
 async function main(): Promise<void> {
   if (SMOKE) app.disableHardwareAcceleration(); // 冒烟环境可能无 GPU，纯软件渲染更稳
   await app.whenReady();
+  const started = Date.now();
   stateStore.load();
 
   pages = await PageRegistry.create({
@@ -229,8 +230,10 @@ async function main(): Promise<void> {
     getWindow: () => win,
     log: (...args) => console.log("[pages]", ...args),
   });
-  await pages.activateAll();
+  const scanMs = Date.now() - started;
 
+  // 先装 session 策略（协议 + 权限），再建窗，最后才激活页面 main；
+  // 页面 activate 里创建 session 也会命中 session-created 监听
   registerSessionProtocols(session.defaultSession);
   // 每个 tab/页面实例的 partition session 也要覆盖（协议 + 权限）
   app.on("session-created", (ses) => registerSessionProtocols(ses));
@@ -271,21 +274,40 @@ async function main(): Promise<void> {
   stateStore.subscribe(() => broadcastState());
 
   await win.loadURL(hostUrl());
+  console.log(
+    `[startup] registry ${scanMs}ms, host ui ${Date.now() - started}ms`,
+  );
+
+  // 窗口/session 策略就绪后再激活页面 main；非 smoke 走后台，避免阻塞首屏
+  const activation = pages.activateAll().then(() => {
+    manager?.notifyKindsChanged();
+    console.log(`[startup] pages activated in ${Date.now() - started}ms`);
+  });
 
   if (SMOKE) {
+    await activation;
     const staticIds = TAB_KINDS.map((kind) => kind.id);
-    const pageIds = pages
-      .list()
-      .filter((page) => page.state === "active")
-      .map((page) => page.id);
     if (pages.list().length === 0) {
       console.log(
         "smoke: no pages registered (run bun run pages:prepare to install media-manager)",
       );
     }
+    const failedPages = pages.list().filter((page) => page.state === "error");
+    if (failedPages.length > 0) {
+      throw new Error(
+        `smoke: page main failed: ${failedPages
+          .map((page) => `${page.id}: ${page.error ?? "unknown"}`)
+          .join("; ")}`,
+      );
+    }
+    const pageIds = pages
+      .list()
+      .filter((page) => page.state !== "inactive")
+      .map((page) => page.id);
     const loads: Promise<void>[] = [];
     let mediaWc: WebContents | undefined;
     for (const id of [...staticIds, ...pageIds]) {
+      const tabStarted = Date.now();
       const summary = manager.create(id);
       const wc = summary
         ? manager.webContentsOf(summary.instanceId)
@@ -294,7 +316,10 @@ async function main(): Promise<void> {
       if (id === "media-manager") mediaWc = wc;
       loads.push(
         new Promise<void>((resolve, reject) => {
-          wc.once("did-finish-load", () => resolve());
+          wc.once("did-finish-load", () => {
+            console.log(`[timing] tab ${id}: ${Date.now() - tabStarted}ms`);
+            resolve();
+          });
           // 加载失败时错误页同样会触发 did-finish-load，必须显式捕获 fail 才不算成功
           wc.once("did-fail-load", (_e, code, desc, _url, isMainFrame) => {
             if (isMainFrame) {
@@ -308,6 +333,23 @@ async function main(): Promise<void> {
       setTimeout(() => reject(new Error("smoke timeout after 30s")), 30_000);
     });
     await Promise.race([Promise.all(loads), timeout]);
+
+    // 页面 bridge 冒烟：pageBridge 必须与页面自有 preload 叠加（window.tab + hostState）
+    if (mediaWc !== undefined) {
+      const bridge = (await mediaWc.executeJavaScript(
+        "({ kind: window.tab?.kind, theme: window.hostState?.initial?.theme, media: typeof window.media?.scanLibrary === 'function' })",
+      )) as { kind?: string; theme?: string; media?: boolean };
+      if (
+        bridge.kind !== "media-manager" ||
+        bridge.media !== true ||
+        typeof bridge.theme !== "string"
+      ) {
+        throw new Error(
+          `smoke: page bridge incomplete: ${JSON.stringify(bridge)}`,
+        );
+      }
+      console.log("SMOKE: page bridge ok", bridge);
+    }
 
     // 状态透传冒烟：切换宿主主题，media 页面必须跟随（页面 preload 订阅 host:state）
     if (mediaWc !== undefined) {
@@ -334,6 +376,10 @@ async function main(): Promise<void> {
     app.exit(0);
     return;
   }
+
+  void activation.catch((err: unknown) =>
+    console.error("[pages] activation failed:", err),
+  );
 
   // 默认打开第一个 tab（此刻 host 已 did-finish-load，broadcast 一定能到达）
   const first = TAB_KINDS[0];

@@ -72,6 +72,11 @@ packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后�
   `ipc.handle/on`，卸载时精确移除。页面可声明并发使用宿主窗口（`ctx.getWindow()`）。
 - 页面 tab 使用 `persist:page-<id>` 分区：localStorage 跨 tab 关闭/宿主重启保留
   （media-manager 的媒体库根因此不会丢）。
+- 宿主通过 `session.registerPreloadScript` 叠加 `pageBridge`：页面即使自带 preload，也能拿到
+  `window.tab`（instanceId/kind/setTitle/close/ping/systemInfo/state/onStateChanged）与
+  `window.hostState`（initial + onChanged）。页面自有 preload 不要再注入这两个同名全局。
+- 启动顺序：先建窗口并注册 session 策略，再后台激活页面 main（每页 8s 超时）；main 激活失败
+  时 renderer 仍可打开，菜单与安装/重载对话框会显示错误原因。
 - 安全边界：页面的 `main.js` 等于完整主进程权限，安装时强制警告（只装可信来源）；卸载只做
   运行时注销、不删除用户目录；重启后会重新扫描到该页面。
 
@@ -98,8 +103,10 @@ F12 可开关当前 webContents（host 或任意 tab）的 devtools；tab 条右
 1. 复制 `packages/tab-clock` → `packages/tab-foo`：改 `package.json` 的 name，改 manifest 的 `id`（目录名必须是 `tab-<id>`，与 id 一致）。
 2. 在 `apps/desktop` 里 `bun add @tabs/foo`（workspace 链接）。
 3. `apps/desktop/src/main/registry.ts` 加一行 import + 数组项。
+4. `apps/desktop/electron.vite.config.ts` 的 renderer input 加 `"tabs/foo/index": resolve(repoRoot, "packages/tab-foo/src/index.html")`。
 
-构建产物、“+” 菜单、IPC、类型全部自动跟进，不需要动其他文件。
+第 4 步目前仍是手写（构建期 MPA 入口无法从 registry.ts 自动推导）；漏掉时 dev 正常、生产构建
+不会产出该 tab 的 HTML。
 
 ## 新增一个 runtime 页面（无需改宿主）
 
