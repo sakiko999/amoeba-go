@@ -116,22 +116,25 @@ ipcMain.on("debug:menu", (e) => {
     return;
   }
   const active = manager.activeWebContents();
-  const inspecting = process.argv.some((arg) => arg.startsWith("--inspect"));
+  // electron-vite 的 --inspect=<port> 会设置该 env 并由 Electron 子进程继承
+  const inspectPort = process.env.V8_INSPECTOR_PORT;
+  const inspecting = inspectPort !== undefined;
   // dev 下 app.relaunch 会脱离 electron-vite 的管理，触发 Vite 重新优化时 tab 加载失败
   const devMode = process.env.ELECTRON_RENDERER_URL !== undefined;
   const menu = Menu.buildFromTemplate([
     {
       // 主进程是 Node 进程没有 DevTools，只能开 inspector；重启附加 --inspect 后在浏览器 chrome://inspect 连接
-      label:
-        devMode || inspecting
-          ? "主进程 inspector 已开启（chrome://inspect 连 9229）"
-          : "调试主进程（重启并开启 --inspect=9229）",
+      label: inspecting
+        ? `主进程 inspector 已开启（chrome://inspect 连 ${inspectPort}）`
+        : "调试主进程（重启并开启 --inspect=9229）",
       enabled: !devMode && !inspecting,
       click: () => {
         if (devMode || inspecting) return;
         console.log(
           "relaunching with --inspect=9229; attach via chrome://inspect",
         );
+        // 让 relaunch 的新进程也能通过 env 判断 inspector 已开启
+        process.env.V8_INSPECTOR_PORT = "9229";
         app.relaunch({ args: [...process.argv.slice(1), INSPECT_ARG] });
         app.exit(0);
       },
@@ -279,7 +282,8 @@ async function main(): Promise<void> {
 
   await win.loadURL(hostUrl());
   console.log(
-    `[startup] registry ${scanMs}ms, host ui ${Date.now() - started}ms`,
+    `[startup] registry ${scanMs}ms, host ui ${Date.now() - started}ms ` +
+      `(inspector ${process.env.V8_INSPECTOR_PORT ?? "off"})`,
   );
 
   // 窗口/session 策略就绪后再激活页面 main；非 smoke 走后台，避免阻塞首屏
