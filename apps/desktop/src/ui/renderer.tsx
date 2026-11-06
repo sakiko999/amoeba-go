@@ -24,6 +24,7 @@ import {
   horizontalListSortingStrategy,
   useSortable,
 } from "@dnd-kit/sortable";
+import { restrictToHorizontalAxis } from "@dnd-kit/modifiers";
 import { CSS } from "@dnd-kit/utilities";
 import { Bug, Moon, Plus, Sun, X } from "lucide-react";
 import {
@@ -214,6 +215,7 @@ function App() {
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
+          modifiers={[restrictToHorizontalAxis]}
           onDragEnd={onDragEnd}
         >
           <div

@@ -20,8 +20,8 @@ import type { PageRegistry, PageRuntime } from "./pages/registry";
 import { TAB_KINDS } from "./registry";
 import { tabUrl } from "./renderTarget";
 
-/** host 页面里 tab 条的高度；主进程与 ui/index.html 里保持一致。 */
-const TABBAR_HEIGHT = 44;
+/** host 页面里 tab 条的高度；主进程、ui 样式与 titleBarOverlay 保持一致。 */
+export const TABBAR_HEIGHT = 44;
 
 const HOST_PRELOAD = join(app.getAppPath(), "out", "preload", "index.js");
 const PAGE_BRIDGE_PRELOAD = join(

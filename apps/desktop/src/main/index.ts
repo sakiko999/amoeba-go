@@ -25,7 +25,12 @@ import { registerPageProtocol } from "./pages/protocol";
 import { PageRegistry } from "./pages/registry";
 import { TAB_KINDS } from "./registry";
 import { HostStateStore } from "./state";
-import { TabManager, hardenWebContents, toggleDevtools } from "./tabs";
+import {
+  TABBAR_HEIGHT,
+  TabManager,
+  hardenWebContents,
+  toggleDevtools,
+} from "./tabs";
 import { hostUrl } from "./renderTarget";
 
 const SMOKE = process.argv.includes("--smoke");
@@ -50,7 +55,9 @@ const OVERLAY_COLORS: Record<Theme, { color: string; symbolColor: string }> = {
   dark: { color: "#171717", symbolColor: "#fafafa" },
   light: { color: "#fafafa", symbolColor: "#0a0a0a" },
 };
-/** 窗口底色与 theme.css 的 --background 对齐（首帧/加载过渡时露出的颜色） */
+/** 让 overlay 高度比 tab 条少 1px，底边露出 DOM 的 border-bottom（原生 overlay 会盖住 DOM 绘制） */
+const OVERLAY_HEIGHT = TABBAR_HEIGHT - 1;
+/** 窗口底色与 theme.css 的 --background 对齐（主题切换后露出的颜色） */
 const BACKGROUND_COLORS: Record<Theme, string> = {
   dark: "#0a0a0a",
   light: "#ffffff",
@@ -62,7 +69,10 @@ const isHost = (wcId: number): boolean => manager?.whoami(wcId).role === "host";
 function broadcastState(): void {
   if (!win || win.isDestroyed()) return;
   const state = stateStore.get();
-  win.setTitleBarOverlay(OVERLAY_COLORS[state.theme]);
+  win.setTitleBarOverlay({
+    ...OVERLAY_COLORS[state.theme],
+    height: OVERLAY_HEIGHT,
+  });
   win.setBackgroundColor(BACKGROUND_COLORS[state.theme]);
   for (const wc of [win.webContents, ...(manager?.tabWebContents() ?? [])]) {
     wc.send(HOST_STATE_CHANNELS.changed, state);
@@ -260,12 +270,13 @@ async function main(): Promise<void> {
     minWidth: 640,
     minHeight: 420,
     title: "Electron Tabs Demo",
-    backgroundColor: BACKGROUND_COLORS[stateStore.get().theme],
+    // 白屏阶段整窗都用 tab 条色，右上角 overlay 才不出现色块；加载后 host UI 会覆盖整窗
+    backgroundColor: OVERLAY_COLORS[stateStore.get().theme].color,
     // 无系统标题栏：tab 条即标题栏（drag 区 + 原生 overlay 窗口按钮，高 44 与 tab 条一致）
     titleBarStyle: "hidden",
     titleBarOverlay: {
       ...OVERLAY_COLORS[stateStore.get().theme],
-      height: 44,
+      height: OVERLAY_HEIGHT,
     },
     webPreferences: {
       preload: join(app.getAppPath(), "out", "preload", "index.js"),
