@@ -15,18 +15,6 @@
       "outFiles": ["${workspaceFolder}/apps/desktop/out/main/**/*.js"]
     },
     {
-      // host 页面与各静态 tab 的 renderer；attach 后 VS Code 会让你选 target
-      // 不单独配 preLaunchTask（避免与 Desktop: Main 重复启动），用组合配置或先跑 dev: desktop
-      // webRoot 是仓库根：dev URL 是 http://localhost:5173/<源路径>
-      "type": "chrome",
-      "request": "attach",
-      "name": "Desktop: Renderer (9333)",
-      "port": 9333,
-      "address": "127.0.0.1",
-      "webRoot": "${workspaceFolder}",
-      "sourceMaps": true
-    },
-    {
       // 启动时自动跑 tasks.json 的 dev: media（独立 media-manager，inspector 9230）
       // 同样不设 restart：关窗即断，热重启主进程后重新 F5
       "type": "node",
@@ -38,12 +26,6 @@
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": ["${workspaceFolder}/packages/media-manager/out/main/**/*.js"]
-    }
-  ],
-  "compounds": [
-    {
-      "name": "Desktop: Main + Renderer",
-      "configurations": ["Desktop: Main (9229)", "Desktop: Renderer (9333)"]
     }
   ]
 }
