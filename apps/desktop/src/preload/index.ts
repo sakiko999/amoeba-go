@@ -36,6 +36,8 @@ if (whoami.role === "host") {
     },
     activateTab: (instanceId) => ipcRenderer.send("tabs:activate", instanceId),
     closeTab: (instanceId) => ipcRenderer.send("tabs:close", instanceId),
+    moveTab: (instanceId, overInstanceId) =>
+      ipcRenderer.send("tabs:move", instanceId, overInstanceId),
     onTabsChanged: (cb) => {
       ipcRenderer.on("tabs:changed", (_e, tabs: TabSummary[]) => cb(tabs));
     },

@@ -7,7 +7,7 @@
 import { app } from "electron";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import type { HostState, HostStatePatch } from "@pages/sdk";
+import type { HostState, HostStatePatch } from "@tabs/sdk";
 
 const DEFAULT_STATE: HostState = { theme: "dark" };
 

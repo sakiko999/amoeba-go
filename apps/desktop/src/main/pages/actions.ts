@@ -6,7 +6,7 @@
 
 import { dialog } from "electron";
 import type { BrowserWindow } from "electron";
-import type { PageSummary } from "@pages/sdk";
+import type { PageSummary } from "@tabs/sdk";
 import { readPageManifest } from "./manifest";
 import type { PageRegistry } from "./registry";
 

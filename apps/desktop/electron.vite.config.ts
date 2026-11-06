@@ -12,6 +12,21 @@ import tailwindcss from "@tailwindcss/vite";
 import { resolve } from "node:path";
 
 const repoRoot = resolve(__dirname, "../..");
+const desktopModules = resolve(__dirname, "node_modules");
+
+/**
+ * renderer root 是仓库根，vite 的 optimizeDeps 会从 root 解析依赖；react 按“谁用谁声明”
+ * 装在 apps/desktop（@demo/ui 是 peer）。这里显式把 react 系列指向本包 node_modules，
+ * 否则 dev 报 Failed to resolve dependency: react，且 @demo/ui 的 react 也无法从 packages/ui 向上解析。
+ * 同版本在 bun store 里是同一份 realpath，仍是单实例。
+ */
+const reactAlias = [
+  "react/jsx-dev-runtime",
+  "react/jsx-runtime",
+  "react-dom/client",
+  "react-dom",
+  "react",
+].map((id) => ({ find: id, replacement: resolve(desktopModules, id) }));
 
 export default defineConfig({
   main: {
@@ -36,6 +51,7 @@ export default defineConfig({
   },
   renderer: {
     root: repoRoot,
+    resolve: { alias: reactAlias },
     // react 只处理宿主 ui 的 tsx（html 入口与 tab 子包纯 ts 不进 babel）；tailwind 处理宿主 styles.css
     plugins: [
       react({ include: /apps\/desktop\/src\/ui\/.*\.tsx?$/ }),

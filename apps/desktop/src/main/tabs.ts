@@ -193,6 +193,23 @@ export class TabManager {
     if (!entry.wc.isDestroyed()) entry.wc.close();
   }
 
+  /** 拖拽排序：把 instanceId 移到 overInstanceId 当前的位置（Map 插入序即 tab 顺序）。 */
+  move(instanceId: string, overInstanceId: string): void {
+    const ids = [...this.entries.keys()];
+    const from = ids.indexOf(instanceId);
+    const to = ids.indexOf(overInstanceId);
+    if (from < 0 || to < 0 || from === to) return;
+    const [moved] = ids.splice(from, 1);
+    if (moved === undefined) return;
+    ids.splice(to, 0, moved);
+    const ordered = ids
+      .map((id) => this.entries.get(id))
+      .filter((entry): entry is TabEntry => entry !== undefined);
+    this.entries.clear();
+    for (const entry of ordered) this.entries.set(entry.instanceId, entry);
+    this.broadcast();
+  }
+
   /** 批量关闭；“首选存活者”在 active 被关掉时接管焦点（对照 cherry-studio closeTabs）。 */
   closeMany(ids: readonly string[], activateId?: string): void {
     for (const id of ids) {

@@ -7,7 +7,7 @@
 
 import { readFile, realpath, stat } from "node:fs/promises";
 import { isAbsolute, join, relative, resolve } from "node:path";
-import type { PageManifest } from "@pages/sdk";
+import type { PageManifest } from "@tabs/sdk";
 
 const ID_RE = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;
 

@@ -10,6 +10,21 @@
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Button } from "@demo/ui";
+import {
+  DndContext,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  horizontalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Bug, Moon, Plus, Sun, X } from "lucide-react";
 import {
   hostApi,
@@ -44,12 +59,32 @@ interface TabItemProps {
   onClose: () => void;
 }
 
+/** 与 styles.css 的 .tab transition 对应；dnd-kit 只负责 transform 位移，其余过渡保留 */
+const TAB_TRANSITION =
+  "background-color 200ms ease-in-out, color 200ms ease-in-out, flex 200ms ease, margin 200ms ease, padding 200ms ease, opacity 40ms linear 140ms";
+
 /** 双击（detail=2）与中键（auxclick button=1）都直接关闭，对照 Chrome/cherry-studio */
 function TabItem({ tab, color, closing, onClose }: TabItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: tab.instanceId });
+
   return (
     <button
+      ref={setNodeRef}
       type="button"
-      className={`tab flex h-[30px] min-w-14 max-w-40 flex-1 basis-0 items-center gap-1.5 rounded-[10px] px-2 text-left text-xs${tab.active ? " active" : ""}${closing ? " closing" : ""}`}
+      className={`tab flex h-[30px] min-w-14 max-w-40 flex-1 basis-0 items-center gap-1.5 rounded-[10px] px-2 text-left text-xs${tab.active ? " active" : ""}${closing ? " closing" : ""}${isDragging ? " dragging" : ""}`}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition: transition ? `${transition}, ${TAB_TRANSITION}` : undefined,
+      }}
+      {...attributes}
+      {...listeners}
       role="tab"
       aria-selected={tab.active}
       aria-label={tab.title}
@@ -153,39 +188,67 @@ function App() {
   // loading 的 active tab：view 还没显示，host 用过渡页占住内容区
   const loading = tabs.find((t) => t.active && t.loading);
 
+  // 5px 激活阈值：区分单击（激活 tab）与拖拽排序
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+  );
+
+  const onDragEnd = (event: DragEndEvent): void => {
+    const { active, over } = event;
+    if (over === null || active.id === over.id) return;
+    // 乐观更新；主进程按同一规则重排后广播，最终以主进程为准
+    setTabs((prev) => {
+      const from = prev.findIndex((t) => t.instanceId === active.id);
+      const to = prev.findIndex((t) => t.instanceId === over.id);
+      return from < 0 || to < 0 ? prev : arrayMove(prev, from, to);
+    });
+    api.moveTab(String(active.id), String(over.id));
+  };
+
   return (
     <>
       <header
         id="tabbar"
         className="flex h-11 items-center gap-1 border-b border-border bg-sidebar px-2"
       >
-        <div
-          id="strip"
-          role="tablist"
-          aria-label="Tabs"
-          className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={onDragEnd}
         >
-          {tabs.map((tab) => (
-            <TabItem
-              key={tab.instanceId}
-              tab={tab}
-              color={colorOf(tab.kind)}
-              closing={closingIds.has(tab.instanceId)}
-              onClose={() => closeTab(tab)}
-            />
-          ))}
-          {/* Launchpad 式 “+”：sticky 贴最后 tab、不随滚动消失 */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="sticky right-0 h-7 w-7 shrink-0"
-            aria-label="新建 tab"
-            title="新建 tab"
-            onClick={() => api.openNewTabMenu()}
+          <div
+            id="strip"
+            role="tablist"
+            aria-label="Tabs"
+            className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            <Plus size={14} aria-hidden="true" />
-          </Button>
-        </div>
+            <SortableContext
+              items={tabs.map((tab) => tab.instanceId)}
+              strategy={horizontalListSortingStrategy}
+            >
+              {tabs.map((tab) => (
+                <TabItem
+                  key={tab.instanceId}
+                  tab={tab}
+                  color={colorOf(tab.kind)}
+                  closing={closingIds.has(tab.instanceId)}
+                  onClose={() => closeTab(tab)}
+                />
+              ))}
+            </SortableContext>
+            {/* Launchpad 式 “+”：sticky 贴最后 tab、不随滚动消失 */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="sticky right-0 h-7 w-7 shrink-0"
+              aria-label="新建 tab"
+              title="新建 tab"
+              onClick={() => api.openNewTabMenu()}
+            >
+              <Plus size={14} aria-hidden="true" />
+            </Button>
+          </div>
+        </DndContext>
         <Button
           variant="ghost"
           size="icon"

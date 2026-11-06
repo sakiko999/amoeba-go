@@ -18,7 +18,7 @@ import type { Session, WebContents } from "electron";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import os from "node:os";
-import { HOST_STATE_CHANNELS } from "@pages/sdk";
+import { HOST_STATE_CHANNELS } from "@tabs/sdk";
 import type { SystemInfo, TabSummary, Theme } from "@tabs/sdk";
 import { createPageActions } from "./pages/actions";
 import { registerPageProtocol } from "./pages/protocol";
@@ -45,10 +45,15 @@ let pages: PageRegistry | undefined;
 
 /* ---------- 宿主状态（唯一状态源；广播给 host、静态 tab 与 runtime 页面） ---------- */
 const stateStore = new HostStateStore();
-/** titleBarOverlay 颜色随主题走（窗口按钮为原生 overlay，cherry Windows 同款） */
+/** titleBarOverlay 颜色随主题走；与 @demo/ui theme.css 的 --sidebar/--sidebar-foreground 对齐 */
 const OVERLAY_COLORS: Record<Theme, { color: string; symbolColor: string }> = {
-  dark: { color: "#1a1b26", symbolColor: "#c0caf5" },
-  light: { color: "#e6e7f2", symbolColor: "#3b3f5c" },
+  dark: { color: "#171717", symbolColor: "#fafafa" },
+  light: { color: "#fafafa", symbolColor: "#0a0a0a" },
+};
+/** 窗口底色与 theme.css 的 --background 对齐（首帧/加载过渡时露出的颜色） */
+const BACKGROUND_COLORS: Record<Theme, string> = {
+  dark: "#0a0a0a",
+  light: "#ffffff",
 };
 
 const isHost = (wcId: number): boolean => manager?.whoami(wcId).role === "host";
@@ -58,6 +63,7 @@ function broadcastState(): void {
   if (!win || win.isDestroyed()) return;
   const state = stateStore.get();
   win.setTitleBarOverlay(OVERLAY_COLORS[state.theme]);
+  win.setBackgroundColor(BACKGROUND_COLORS[state.theme]);
   for (const wc of [win.webContents, ...(manager?.tabWebContents() ?? [])]) {
     wc.send(HOST_STATE_CHANNELS.changed, state);
     wc.send("theme:changed", state.theme);
@@ -103,6 +109,9 @@ ipcMain.on("tabs:activate", (_e, instanceId: string) =>
 );
 ipcMain.on("tabs:close", (_e, instanceId: string) =>
   manager?.close(instanceId),
+);
+ipcMain.on("tabs:move", (_e, instanceId: string, overInstanceId: string) =>
+  manager?.move(instanceId, overInstanceId),
 );
 
 /* ---------- 调试入口（host tab 条的 bug 按钮弹出） ---------- */
@@ -251,7 +260,7 @@ async function main(): Promise<void> {
     minWidth: 640,
     minHeight: 420,
     title: "Electron Tabs Demo",
-    backgroundColor: "#16161e",
+    backgroundColor: BACKGROUND_COLORS[stateStore.get().theme],
     // 无系统标题栏：tab 条即标题栏（drag 区 + 原生 overlay 窗口按钮，高 44 与 tab 条一致）
     titleBarStyle: "hidden",
     titleBarOverlay: {

@@ -17,5 +17,6 @@
 - [!] runtime 页面自带 preload 会替换宿主 preload，渲染侧能力必须由宿主用 registerPreloadScript 叠加，不要要求每个页面重复造桥
 - [ ] 若 `library:scan` 耗时仍大：做扫描结果缓存（按库根 + mtime）与首屏先展示上次结果、后台增量刷新
 - [!] 修改主进程文件会触发 electron-vite 重启，inspector 会断开并在同一端口重新监听；VS Code 需要重新 attach，`chrome://inspect` 需要重新点一次。生产构建不带 inspector，那时 bug 菜单的「调试主进程」才会带 `--inspect=9229` 重启。
+- [ ] 手动 `bun run dev` 目测宿主新 tab 条（@demo/ui 主题）与 media-manager 过渡页的实际观感
 
 <!-- cc-todo:end -->

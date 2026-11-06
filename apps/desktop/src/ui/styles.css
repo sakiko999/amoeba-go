@@ -102,6 +102,13 @@ body {
   background: color-mix(in srgb, var(--sidebar-foreground) 10%, transparent);
 }
 
+/* 拖拽中的 tab：浮起并轻微透明，其余 tab 由 dnd-kit 的 transform 让位 */
+.tab.dragging {
+  z-index: 10;
+  opacity: 0.7;
+  cursor: grabbing;
+}
+
 /* 关闭 collapse：收缩到 0 宽后由主进程移除（margin 抵消 strip 的 gap） */
 .tab.closing {
   flex: 0 0 0px;

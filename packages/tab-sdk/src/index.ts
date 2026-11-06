@@ -1,11 +1,104 @@
 /**
- * Tab SDK：shell（apps/desktop）与各 tab 子包之间的唯一契约。
- * 纯类型 + 几个运行时小工具；HostState 类型来自 @pages/sdk（页面与 tab 共用）。
+ * 宿主 SDK：tab 子包、宿主（apps/desktop）与 runtime 页面包共享的唯一契约。
+ * 包含 tab 契约（TabManifest / TabApi / HostApi）、页面包契约（PageManifest / main 扩展上下文）
+ * 以及宿主全局状态（HostState / HOST_STATE_CHANNELS）。纯类型 + 少量运行时工具，零依赖。
+ * 刻意不引用 electron 类型（本包不安装 electron）：getWindow 返回 unknown，扩展自行断言。
  */
 
-import type { HostState, Theme } from "@pages/sdk";
+/* ---------- 宿主状态（host 页面、tab 与 runtime 页面订阅的主题等全局状态） ---------- */
 
-export type { HostState, HostStatePatch, Theme } from "@pages/sdk";
+export type Theme = "dark" | "light";
+
+/** 宿主唯一状态源；新增全局状态时在这里加字段（各方按整份状态订阅） */
+export interface HostState {
+  theme: Theme;
+}
+
+export type HostStatePatch = Partial<HostState>;
+
+/** 宿主与各 preload 之间的固定 IPC 渠道名 */
+export const HOST_STATE_CHANNELS = {
+  /** sendSync：preload 首帧同步取初始状态 */
+  sync: "host:state:sync",
+  /** invoke：随时取当前状态 */
+  get: "host:state:get",
+  /** 只有宿主 UI 能写；tab 与页面只读 */
+  set: "host:state:set",
+  /** 主进程 → 所有 webContents 的状态变更广播 */
+  changed: "host:state",
+} as const;
+
+/* ---------- runtime 页面包（page.json + 可选 main 扩展） ---------- */
+
+/** 页面包根目录下的 page.json */
+export interface PageManifest {
+  /** URL host 用，必须是小写 DNS label：[a-z0-9-] */
+  id: string;
+  name: string;
+  version?: string;
+  /** tab 圆点颜色，如 "#e0a458" */
+  color?: string;
+  /** 相对包根的入口 HTML */
+  entry: string;
+  /** 相对包根的 sandbox CJS preload */
+  preload?: string;
+  /** 相对包根的 CJS 主进程扩展 */
+  main?: string;
+}
+
+export type PageSource = "builtin" | "external";
+
+/** 宿主视角下的页面状态 */
+export interface PageSummary {
+  id: string;
+  name: string;
+  color: string;
+  source: PageSource;
+  /** active = main 扩展已激活，可以创建 tab */
+  state: "inactive" | "active" | "error";
+  hasMain: boolean;
+  error?: string;
+}
+
+/** 页面 main 扩展拿到的 IPC 事件（结构上是 Electron 事件的最小子集） */
+export interface PageIpcEvent {
+  sender: { id: number };
+  senderFrame?: { url: string } | null;
+}
+
+export type PageIpcHandler = (
+  event: PageIpcEvent,
+  ...args: unknown[]
+) => unknown;
+
+/** 宿主注入的 IPC 注册器：卸载/重载时宿主会清理这里登记的全部 channel */
+export interface PageIpc {
+  handle(channel: string, listener: PageIpcHandler): void;
+  on(channel: string, listener: PageIpcHandler): void;
+}
+
+/** 页面 main 扩展的 activate 上下文 */
+export interface PageMainContext {
+  readonly manifest: Readonly<PageManifest>;
+  /** 包根绝对路径 */
+  readonly pageRoot: string;
+  /** 宿主为该页面准备的持久数据目录（userData/page-data/<id>） */
+  readonly dataDir: string;
+  /** 宿主 app 路径 */
+  readonly appPath: string;
+  readonly ipc: PageIpc;
+  /** BrowserWindow；页面扩展自行断言类型 */
+  getWindow(): unknown;
+  log(...args: unknown[]): void;
+}
+
+/** main.js（CJS）必须导出 activate；deactivate 可选 */
+export interface PageMainModule {
+  activate(ctx: PageMainContext): void | Promise<void>;
+  deactivate?(): void | Promise<void>;
+}
+
+/* ---------- tab（编译期子包与 runtime 页面共用的实例契约） ---------- */
 
 /** 一个 tab 种类的静态描述，由每个 tab 子包导出一份。 */
 export interface TabManifest {
@@ -38,8 +131,6 @@ export interface SystemInfo {
   node: string;
 }
 
-/* 主题（Theme）与 HostState 由 @pages/sdk 定义并 re-export。 */
-
 /** 每个 tab 页面里 window.tab 的形状（由 preload 注入）。 */
 export interface TabApi {
   readonly instanceId: string;
@@ -68,7 +159,7 @@ export interface HostApi {
   openNewTabMenu(): void;
   /** 请主进程在某 tab 上弹原生右键菜单（关闭 / 关闭其他 / 关闭右侧） */
   openTabContextMenu(instanceId: string): void;
-  /** 切换亮/暗主题（主进程广播 theme:changed 给 host 与所有 tab） */
+  /** 切换亮/暗主题（主进程广播 host:state 给 host、tab 与 runtime 页面） */
   toggleTheme(): void;
   /** 请主进程弹原生调试菜单（主进程 inspector / 启动器界面 / 当前 tab 的 DevTools） */
   openDebugMenu(): void;
@@ -80,6 +171,8 @@ export interface HostApi {
   onThemeChanged(cb: (theme: Theme) => void): void;
   activateTab(instanceId: string): void;
   closeTab(instanceId: string): void;
+  /** 拖拽排序：把 instanceId 移到 overInstanceId 当前的位置 */
+  moveTab(instanceId: string, overInstanceId: string): void;
   /** 主进程每次 tab 状态变化都会回调；host 页面只注册一次，无 unsubscribe（demo 取舍） */
   onTabsChanged(cb: (tabs: TabSummary[]) => void): void;
   /** runtime 页面安装/卸载/重载后重新拉取 kinds（tab 圆点颜色） */

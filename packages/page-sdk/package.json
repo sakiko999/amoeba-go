@@ -1,7 +1,0 @@
-{
-  "name": "@pages/sdk",
-  "private": true,
-  "exports": {
-    ".": "./src/index.ts"
-  }
-}

@@ -20,7 +20,7 @@ import type {
   PageManifest,
   PageSource,
   PageSummary,
-} from "@pages/sdk";
+} from "@tabs/sdk";
 import { isInside, readPageManifest } from "./manifest";
 
 export type PageState = "inactive" | "active" | "error";
