@@ -279,7 +279,7 @@ async function main(): Promise<void> {
   stateStore.load();
 
   pages = await PageRegistry.create({
-    builtinDir: join(app.getAppPath(), "pages"),
+    builtinDir: join(app.getAppPath(), "out", "pages"),
     externalDir: join(app.getPath("userData"), "pages"),
     reservedIds: TAB_KINDS.map((kind) => kind.id),
     getWindow: () => win,

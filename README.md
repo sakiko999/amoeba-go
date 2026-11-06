@@ -22,7 +22,7 @@ packages/tab-clock / tab-notes / tab-sysinfo
    manifest（id/title/color）+ index.html + renderer.ts
    经 electron-vite 多页构建到 out/renderer/（产物路径 = 源路径相对仓库根）
 
-apps/desktop/pages/<id>/    runtime 页面包（构建产物，gitignored）
+apps/desktop/out/pages/<id>/    runtime 页面包（构建产物，gitignored）
    page.json + renderer/ + preload/ + 可选 main.js（CJS）
    page://<id>/<entry>，每页面 persist:page-<id> 分区
 
@@ -62,7 +62,7 @@ packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后�
 ### Runtime 页面（热插拔）
 
 - 页面包 = `page.json` + `renderer/` + `preload/` + 可选 `main.js`（CJS 主进程扩展）。
-  内置页面从 `apps/desktop/pages/` 扫描，外部页面安装到 `userData/pages/<id>/`。
+  内置页面从 `apps/desktop/out/pages/` 扫描，外部页面安装到 `userData/pages/<id>/`。
 - `page://<id>/<entry>` 协议按 session 注册，路径用 `relative + realpath` 双重校验；
   页面 view 沿用 sandbox / contextIsolation / 权限全拒 / 导航拦截。
 - `+` 菜单底部：安装页面…（选目录 + 信任警告 + 复制）、管理页面（重载 / 卸载）；
@@ -90,7 +90,7 @@ packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后�
 | `bun run preview`                           | build 后直接以生产模式启动（无 HMR，启动约 1s）          |
 | `bun run desktop:dist`                      | 宿主独立分发（@electron/packager asar → release/）       |
 | `bun run smoke`                             | 无头冒烟：静态 tab + 已注册页面全部加载完则退出码 0      |
-| `bun run pages:prepare`                     | 构建 media-manager 页面包并同步到 apps/desktop/pages     |
+| `bun run pages:prepare`                     | 构建 media-manager 页面包并同步到 apps/desktop/out/pages |
 | `bun run media`                             | media-manager dev（独立 Electron 应用，HMR）             |
 | `bun run media:debug`                       | 同上，另开主进程 inspector 9230 + sourcemap              |
 | `bun run media:smoke`                       | media-manager 无头冒烟                                   |
@@ -101,12 +101,12 @@ packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后�
 
 ### 生产产物
 
-| 形态                   | 命令                                        | 产物                                                        |
-| ---------------------- | ------------------------------------------- | ----------------------------------------------------------- |
-| 宿主（asar 分发）      | `bun run desktop:dist`                      | `apps/desktop/release/Tabs Demo-win32-x64/Tabs Demo.exe`    |
-| 宿主（本地运行）       | `bun run preview`                           | `apps/desktop/out/`                                         |
-| media-manager 独立应用 | `bun run --cwd packages/media-manager dist` | `packages/media-manager/release/Media Manager-win32-x64/`   |
-| media-manager 页面包   | `bun run pages:prepare`                     | `packages/media-manager/page-dist/` → `apps/desktop/pages/` |
+| 形态                   | 命令                                        | 产物                                                            |
+| ---------------------- | ------------------------------------------- | --------------------------------------------------------------- |
+| 宿主（asar 分发）      | `bun run desktop:dist`                      | `apps/desktop/release/Tabs Demo-win32-x64/Tabs Demo.exe`        |
+| 宿主（本地运行）       | `bun run preview`                           | `apps/desktop/out/`                                             |
+| media-manager 独立应用 | `bun run --cwd packages/media-manager dist` | `packages/media-manager/release/Media Manager-win32-x64/`       |
+| media-manager 页面包   | `bun run pages:prepare`                     | `packages/media-manager/page-dist/` → `apps/desktop/out/pages/` |
 
 - 产物运行时零依赖：main 侧代码由 electron-vite 打进 `out/main`。因此 tab 子包与 SDK 必须放
   `devDependencies`——`dependencies` 会被 electron-vite externalize，而 asar 内没有 node_modules。
@@ -168,7 +168,7 @@ exports.deactivate = () => {
 };
 ```
 
-安装方式：把目录复制到 `apps/desktop/pages/<id>/`（内置）或运行宿主后从 `+` 菜单
+安装方式：把目录复制到 `apps/desktop/out/pages/<id>/`（内置）或运行宿主后从 `+` 菜单
 「安装页面…」选择目录（外部，会弹出主进程权限警告）。页面 main 只接受 CJS；页面 id 必须
 是小写 DNS label 且不能与静态 tab id 冲突。契约类型见 `packages/host-sdk`。
 

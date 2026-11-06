@@ -22,5 +22,6 @@
 - [ ] media-manager 的 renderer 仍走 @demo/ui barrel 导入，dev 首屏可同样改子路径（本次只优化了宿主）
 - [!] dev 首次启动若看到 Vite "Re-optimizing dependencies because vite config has changed"，是 config/依赖变更后的一次性重优化，不是端口或进程残留
 - [ ] 手动确认暗色冷启动从骨架到 loading 不再闪亮色，以及 F5 热启动是否稳定在 ~1s（缓存热时）
+- [!] 宿主打包时 tab 子包与 SDK 必须放 devDependencies：electron-vite 会 externalize dependencies，asar 内没有 node_modules 可 require
 
 <!-- cc-todo:end -->

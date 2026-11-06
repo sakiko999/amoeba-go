@@ -157,6 +157,8 @@ export class TabManager {
     this.entries.set(entry.instanceId, entry);
     this.byWebContents.set(entry.wcId, entry.instanceId);
     this.win.contentView.addChildView(entry.view);
+    // WebContentsView 默认白底：页面首帧前露出的应是当前主题的窗口底色，否则暗色下闪白
+    entry.view.setBackgroundColor(this.win.getBackgroundColor());
     hardenWebContents(entry.wc);
     // 页面自己 window.close() 等外部销毁也走同一套清理
     entry.wc.once("destroyed", () => this.removeEntry(entry));

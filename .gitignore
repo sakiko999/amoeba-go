@@ -2,6 +2,5 @@ node_modules/
 dist/
 out/
 release/
-apps/desktop/pages/
 tmp/
 *.log

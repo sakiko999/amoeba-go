@@ -1,5 +1,6 @@
 /**
- * 把 media-manager 的页面包同步到宿主内置页面目录 pages/media-manager。
+ * 把 media-manager 的页面包同步到宿主构建目录 out/pages/media-manager
+ * （不进 app 根目录，避免 out/ 与 pages/ 两套产物并存；打包时随 out/ 一起进 asar）。
  * 页面包不存在时只提示并跳过 —— 宿主仍可运行，只是 + 菜单里没有媒体库。
  * 生成页面包：bun run pages:prepare（monorepo 根）。
  */
@@ -11,7 +12,7 @@ import { join, resolve } from "node:path";
 const appRoot = resolve(import.meta.dir, "..");
 const repoRoot = resolve(appRoot, "../..");
 const source = join(repoRoot, "packages", "media-manager", "page-dist");
-const dest = join(appRoot, "pages", "media-manager");
+const dest = join(appRoot, "out", "pages", "media-manager");
 
 if (!existsSync(join(source, "page.json"))) {
   console.log(
@@ -21,6 +22,6 @@ if (!existsSync(join(source, "page.json"))) {
 }
 
 await rm(dest, { recursive: true, force: true });
-await mkdir(join(appRoot, "pages"), { recursive: true });
+await mkdir(join(appRoot, "out", "pages"), { recursive: true });
 await cp(source, dest, { recursive: true });
 console.log(`pages: synced media-manager → ${dest}`);
