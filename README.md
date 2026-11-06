@@ -87,6 +87,8 @@ packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后�
 | `bun install`                               | 安装（bun workspaces）                                   |
 | `bun run dev`                               | electron-vite dev（HMR、主进程自动重启、inspector 9229） |
 | `bun run build`                             | electron-vite build → `apps/desktop/out/`                |
+| `bun run preview`                           | build 后直接以生产模式启动（无 HMR，启动约 1s）          |
+| `bun run desktop:dist`                      | 宿主独立分发（@electron/packager asar → release/）       |
 | `bun run smoke`                             | 无头冒烟：静态 tab + 已注册页面全部加载完则退出码 0      |
 | `bun run pages:prepare`                     | 构建 media-manager 页面包并同步到 apps/desktop/pages     |
 | `bun run media`                             | media-manager dev（独立 Electron 应用，HMR）             |
@@ -96,6 +98,21 @@ packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后�
 | `bun run typecheck`                         | `tsc --noEmit`（TypeScript 7 原生）                      |
 | `bun run lint`                              | `biome lint .`                                           |
 | `bun run fmt`                               | `bun fmt .`                                              |
+
+### 生产产物
+
+| 形态                   | 命令                                        | 产物                                                        |
+| ---------------------- | ------------------------------------------- | ----------------------------------------------------------- |
+| 宿主（asar 分发）      | `bun run desktop:dist`                      | `apps/desktop/release/Tabs Demo-win32-x64/Tabs Demo.exe`    |
+| 宿主（本地运行）       | `bun run preview`                           | `apps/desktop/out/`                                         |
+| media-manager 独立应用 | `bun run --cwd packages/media-manager dist` | `packages/media-manager/release/Media Manager-win32-x64/`   |
+| media-manager 页面包   | `bun run pages:prepare`                     | `packages/media-manager/page-dist/` → `apps/desktop/pages/` |
+
+- 产物运行时零依赖：main 侧代码由 electron-vite 打进 `out/main`。因此 tab 子包与 SDK 必须放
+  `devDependencies`——`dependencies` 会被 electron-vite externalize，而 asar 内没有 node_modules。
+- `app://` / `page://` 一律用 Node `fs.readFile` 读文件（`net.fetch(file://)` 读不到 asar）。
+- 验收：`"Tabs Demo.exe" --smoke` 退出码须为 0。GUI 应用没有 stdout，smoke 日志写在
+  `%TEMP%/tabs-smoke-<pid>.log`（或由 `TABS_SMOKE_LOG` 指定）。
 
 F12 可开关当前 webContents（host 或任意 tab）的 devtools；tab 条右侧 bug 按钮提供统一的调试菜单（主进程 / 启动器界面 / 内容页）。
 

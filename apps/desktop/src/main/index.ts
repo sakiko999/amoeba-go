@@ -5,18 +5,10 @@
  * `--smoke`：无头冒烟，静态 tab 与已注册页面全部加载后 exit 0；did-fail-load 立即失败。
  */
 
-import {
-  app,
-  BrowserWindow,
-  ipcMain,
-  Menu,
-  net,
-  protocol,
-  session,
-} from "electron";
+import { app, BrowserWindow, ipcMain, Menu, protocol, session } from "electron";
 import type { Session, WebContents } from "electron";
+import { appendFile } from "node:fs/promises";
 import { join } from "node:path";
-import { pathToFileURL } from "node:url";
 import os from "node:os";
 import { HOST_STATE_CHANNELS } from "@host/sdk";
 import type { SystemInfo, TabSummary, Theme } from "@host/sdk";
@@ -32,6 +24,8 @@ import {
   toggleDevtools,
 } from "./tabs";
 import { hostUrl } from "./renderTarget";
+import { isInside } from "./pages/manifest";
+import { serveFile } from "./staticFiles";
 
 const SMOKE = process.argv.includes("--smoke");
 const INSPECT_ARG = "--inspect=9229";
@@ -42,6 +36,39 @@ if (SMOKE) {
     "userData",
     join(app.getPath("temp"), `tabs-smoke-${process.pid}`),
   );
+}
+
+// 打包后 GUI 应用没有 stdout：smoke 或显式 TABS_SMOKE_LOG 时把主进程日志落到文件
+const LOG_FILE =
+  process.env.TABS_SMOKE_LOG ??
+  (SMOKE
+    ? join(app.getPath("temp"), `tabs-smoke-${process.pid}.log`)
+    : undefined);
+if (LOG_FILE !== undefined) {
+  // tee：终端照常输出；打包后 GUI 无 stdout 时以文件为准
+  const toFile = (level: string) => {
+    const write = (...args: unknown[]) => {
+      void appendFile(
+        LOG_FILE,
+        `${new Date().toISOString()} ${level} ${args.map(String).join(" ")}\n`,
+      ).catch(() => undefined);
+    };
+    return write;
+  };
+  const log = console.log.bind(console);
+  const error = console.error.bind(console);
+  console.log = (...args: unknown[]) => {
+    log(...args);
+    toFile("log")(...args);
+  };
+  console.error = (...args: unknown[]) => {
+    error(...args);
+    toFile("err")(...args);
+  };
+  process.on("uncaughtException", (err) => {
+    console.error("uncaughtException", err.stack ?? String(err));
+    process.exit(1);
+  });
 }
 
 let manager: TabManager | undefined;
@@ -225,15 +252,16 @@ protocol.registerSchemesAsPrivileged([
   },
 ]);
 
-/** app:// → out/renderer；必须按 session 注册：每个 tab 实例的独立 partition 是另一个 session。 */
+/** app:// → out/renderer；必须按 session 注册：每个 tab 实例的独立 partition 是另一个 session。
+ *  打包后资源在 app.asar 内，用 fs.readFile（serveFile）而不是 net.fetch(file://)。 */
 function registerAppProtocol(ses: Session): void {
   const root = join(app.getAppPath(), "out", "renderer");
   ses.protocol.handle("app", (request) => {
     const path = decodeURIComponent(new URL(request.url).pathname);
     const file = join(root, path);
     // 防目录穿越：只允许 renderer 根之内的文件
-    if (!file.startsWith(root)) return new Response(null, { status: 404 });
-    return net.fetch(pathToFileURL(file).toString());
+    if (!isInside(root, file)) return new Response(null, { status: 404 });
+    return serveFile(file);
   });
 }
 
@@ -244,6 +272,7 @@ function registerSessionProtocols(ses: Session): void {
 }
 
 async function main(): Promise<void> {
+  console.log(`smoke=${SMOKE} argv=${process.argv.join(" ")}`);
   if (SMOKE) app.disableHardwareAcceleration(); // 冒烟环境可能无 GPU，纯软件渲染更稳
   await app.whenReady();
   const started = Date.now();

@@ -4,11 +4,10 @@
  * 路径校验用 relative + realpath 双重检查，不能只用 startsWith（out/renderer-evil 会绕过）。
  */
 
-import { net } from "electron";
 import type { Session } from "electron";
 import { realpath } from "node:fs/promises";
 import { resolve } from "node:path";
-import { pathToFileURL } from "node:url";
+import { serveFile } from "../staticFiles";
 import { isInside } from "./manifest";
 
 export interface PageRoots {
@@ -30,11 +29,16 @@ export function registerPageProtocol(ses: Session, pages: PageRoots): void {
       const file = resolve(root, rel);
       if (!isInside(root, file)) return notFound();
 
-      const realRoot = await realpath(root);
-      const real = await realpath(file);
-      if (!isInside(realRoot, real)) return notFound();
+      // asar 内 realpath 可能不可用；此时 resolve+isInside 已挡目录穿越
+      try {
+        const realRoot = await realpath(root);
+        const real = await realpath(file);
+        if (!isInside(realRoot, real)) return notFound();
+      } catch {
+        // 忽略：打包形态（app.asar）下走上面的 resolve 校验
+      }
 
-      return net.fetch(pathToFileURL(real).toString());
+      return serveFile(file);
     } catch {
       return notFound();
     }

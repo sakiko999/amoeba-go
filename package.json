@@ -9,6 +9,7 @@
     "build": "bun run pages:prepare && bun run --cwd apps/desktop build",
     "dev": "bun run --cwd apps/desktop dev",
     "preview": "bun run build && bun run --cwd apps/desktop start",
+    "desktop:dist": "bun run --cwd apps/desktop dist",
     "smoke": "bun run build && bun run --cwd apps/desktop smoke",
     "pages:prepare": "bun run --cwd packages/media-manager pack:page",
     "media": "bun run --cwd packages/media-manager dev",
