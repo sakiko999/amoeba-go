@@ -116,20 +116,19 @@ ipcMain.on("debug:menu", (e) => {
     return;
   }
   const active = manager.activeWebContents();
-  const inspecting = process.argv.includes(INSPECT_ARG);
+  const inspecting = process.argv.some((arg) => arg.startsWith("--inspect"));
   // dev 下 app.relaunch 会脱离 electron-vite 的管理，触发 Vite 重新优化时 tab 加载失败
   const devMode = process.env.ELECTRON_RENDERER_URL !== undefined;
   const menu = Menu.buildFromTemplate([
     {
       // 主进程是 Node 进程没有 DevTools，只能开 inspector；重启附加 --inspect 后在浏览器 chrome://inspect 连接
-      label: devMode
-        ? "dev 模式：修改主进程文件由 electron-vite 自动重启"
-        : inspecting
+      label:
+        devMode || inspecting
           ? "主进程 inspector 已开启（chrome://inspect 连 9229）"
           : "调试主进程（重启并开启 --inspect=9229）",
       enabled: !devMode && !inspecting,
       click: () => {
-        if (devMode) return;
+        if (devMode || inspecting) return;
         console.log(
           "relaunching with --inspect=9229; attach via chrome://inspect",
         );

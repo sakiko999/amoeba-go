@@ -82,21 +82,31 @@ packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后�
 
 ## 命令
 
-| 命令                                        | 作用                                                 |
-| ------------------------------------------- | ---------------------------------------------------- |
-| `bun install`                               | 安装（bun workspaces）                               |
-| `bun run dev`                               | electron-vite dev（HMR、主进程改动自动重启）         |
-| `bun run build`                             | electron-vite build → `apps/desktop/out/`            |
-| `bun run smoke`                             | 无头冒烟：静态 tab + 已注册页面全部加载完则退出码 0  |
-| `bun run pages:prepare`                     | 构建 media-manager 页面包并同步到 apps/desktop/pages |
-| `bun run media`                             | media-manager dev（独立 Electron 应用，HMR）         |
-| `bun run media:smoke`                       | media-manager 无头冒烟                               |
-| `bun run --cwd packages/media-manager dist` | media-manager 独立分发（asar，产物在 release/）      |
-| `bun run typecheck`                         | `tsc --noEmit`（TypeScript 7 原生）                  |
-| `bun run lint`                              | `biome lint .`                                       |
-| `bun run fmt`                               | `bun fmt .`                                          |
+| 命令                                        | 作用                                                     |
+| ------------------------------------------- | -------------------------------------------------------- |
+| `bun install`                               | 安装（bun workspaces）                                   |
+| `bun run dev`                               | electron-vite dev（HMR、主进程自动重启、inspector 9229） |
+| `bun run build`                             | electron-vite build → `apps/desktop/out/`                |
+| `bun run smoke`                             | 无头冒烟：静态 tab + 已注册页面全部加载完则退出码 0      |
+| `bun run pages:prepare`                     | 构建 media-manager 页面包并同步到 apps/desktop/pages     |
+| `bun run media`                             | media-manager dev（独立 Electron 应用，HMR）             |
+| `bun run media:smoke`                       | media-manager 无头冒烟                                   |
+| `bun run --cwd packages/media-manager dist` | media-manager 独立分发（asar，产物在 release/）          |
+| `bun run typecheck`                         | `tsc --noEmit`（TypeScript 7 原生）                      |
+| `bun run lint`                              | `biome lint .`                                           |
+| `bun run fmt`                               | `bun fmt .`                                              |
 
 F12 可开关当前 webContents（host 或任意 tab）的 devtools；tab 条右侧 bug 按钮提供统一的调试菜单（主进程 / 启动器界面 / 内容页）。
+
+主进程调试：`bun run dev` 默认以 `--inspect=9229` 启动主进程（修改主进程文件时 electron-vite
+自动重启，inspector 仍在）。用 Chrome/Edge 打开 `chrome://inspect` 添加 `localhost:9229`，
+或用 VS Code attach：
+
+```jsonc
+{ "type": "node", "request": "attach", "name": "Attach Main", "port": 9229 }
+```
+
+生产构建不带 inspector；无 inspector 时 bug 菜单的「调试主进程」会带 `--inspect=9229` 重启。
 
 ## 新增一个 tab（编译期）
 
