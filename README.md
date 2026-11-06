@@ -38,17 +38,17 @@ packages/media-manager submodule：媒体库浏览器（Electron 前端 + 后端
 
 ## 命令
 
-| 命令                | 作用                                         |
-| ------------------- | -------------------------------------------- |
-| `bun install`       | 安装（bun workspaces）                       |
-| `bun run dev`       | electron-vite dev（HMR、主进程改动自动重启） |
-| `bun run build`     | electron-vite build → `apps/desktop/out/`    |
-| `bun run smoke`     | 无头冒烟：3 个 tab 全部加载完则退出码 0      |
-| `bun run media`     | media-manager dev（独立 Electron 应用，HMR） |
-| `bun run media:smoke` | media-manager 无头冒烟                     |
-| `bun run typecheck` | `tsc --noEmit`（TypeScript 7 原生）          |
-| `bun run lint`      | `biome lint .`                               |
-| `bun run fmt`       | `bun fmt .`                                  |
+| 命令                  | 作用                                         |
+| --------------------- | -------------------------------------------- |
+| `bun install`         | 安装（bun workspaces）                       |
+| `bun run dev`         | electron-vite dev（HMR、主进程改动自动重启） |
+| `bun run build`       | electron-vite build → `apps/desktop/out/`    |
+| `bun run smoke`       | 无头冒烟：3 个 tab 全部加载完则退出码 0      |
+| `bun run media`       | media-manager dev（独立 Electron 应用，HMR） |
+| `bun run media:smoke` | media-manager 无头冒烟                       |
+| `bun run typecheck`   | `tsc --noEmit`（TypeScript 7 原生）          |
+| `bun run lint`        | `biome lint .`                               |
+| `bun run fmt`         | `bun fmt .`                                  |
 
 F12 可开关当前 webContents（host 或任意 tab）的 devtools；tab 条右侧 bug 按钮提供统一的调试菜单（主进程 / 启动器界面 / 内容页）。
 
