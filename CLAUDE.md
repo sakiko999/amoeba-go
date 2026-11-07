@@ -1,5 +1,4 @@
 <!-- cc-todo:start -->
-
 ## TODO / 重要信息（cc-todo 自动维护）
 
 - [!] bun 1.4.4 没有内置 lint 子命令：本项目 lint 用 biome（`biome lint .`），format 用内置 `bun fmt`（默认 80 列）
@@ -24,5 +23,7 @@
 - [ ] 手动确认暗色冷启动从骨架到 loading 不再闪亮色，以及 F5 热启动是否稳定在 ~1s（缓存热时）
 - [!] 宿主打包时 tab 子包与 SDK 必须放 devDependencies：electron-vite 会 externalize dependencies，asar 内没有 node_modules 可 require
 - [ ] 手动确认暗色下新建 media-manager tab 不再闪白（view 背景色修复，自动化只能覆盖到数据链）
-
+- [ ] 组件化 v1 已落地并推送（feat/componentize-media-backend + submodule feat/componentize-backend，均含全绿 smoke）；待用户决定是否开 PR 合并
+- [ ] 完整内核 v2 剩余项：pending 态+tab 保活降级、alive 令牌、effect 栈、渲染侧 window.component 服务桥、staging 升级事务、disabled 持久化、卸载删目录
+- [!] media-manager 组件化后：宿主组件包 = out/page（页面）+ out/service（服务）双产物；cache 移到 page-data/media-library；pack:page 已是 pack:components 别名
 <!-- cc-todo:end -->

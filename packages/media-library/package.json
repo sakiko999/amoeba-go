@@ -1,0 +1,17 @@
+{
+  "name": "@tabs/media-library",
+  "version": "0.3.0",
+  "private": true,
+  "description": "媒体库后端服务：扫描 / 刮削 / NFO / 整理。宿主形态 = kind=service 组件（provide media.library）；独立形态由 media-manager 复用同一能力核心。",
+  "exports": {
+    ".": "./src/index.ts",
+    "./probe": "./src/main/probe.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "pack": "bun run scripts/pack.ts"
+  },
+  "devDependencies": {
+    "@host/sdk": "workspace:*"
+  }
+}

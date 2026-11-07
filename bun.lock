@@ -41,6 +41,13 @@
     "packages/host-sdk": {
       "name": "@host/sdk",
     },
+    "packages/media-library": {
+      "name": "@tabs/media-library",
+      "version": "0.3.0",
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+      },
+    },
     "packages/media-manager": {
       "name": "@media-manager/app",
       "version": "0.2.0",
@@ -48,6 +55,7 @@
         "@demo/ui": "workspace:*",
         "@electron/packager": "^20.3.0",
         "@host/sdk": "workspace:*",
+        "@tabs/media-library": "workspace:*",
         "@tailwindcss/vite": "^4.3.3",
         "@types/react": "^19",
         "@types/react-dom": "^19",
@@ -402,6 +410,8 @@
     "@tabs/clock": ["@tabs/clock@workspace:packages/tab-clock"],
 
     "@tabs/desktop": ["@tabs/desktop@workspace:apps/desktop"],
+
+    "@tabs/media-library": ["@tabs/media-library@workspace:packages/media-library"],
 
     "@tabs/notes": ["@tabs/notes@workspace:packages/tab-notes"],
 

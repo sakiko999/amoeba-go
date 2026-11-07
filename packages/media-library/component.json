@@ -1,0 +1,27 @@
+{
+  "id": "media-library",
+  "kind": "service",
+  "name": "媒体库服务",
+  "version": "0.3.0",
+  "main": "main.js",
+  "provides": [
+    {
+      "name": "media.library",
+      "expose": [
+        "pickLibrary",
+        "scanLibrary",
+        "showDetail",
+        "imageToDataUrl",
+        "reveal",
+        "searchMetadata",
+        "scrapePreview",
+        "scrapeApply",
+        "readNfo",
+        "writeNfo",
+        "organizePlan",
+        "organizeApply",
+        "cacheClear"
+      ]
+    }
+  ]
+}
