@@ -1,8 +1,0 @@
-{
-  "id": "rss-channel-huya",
-  "kind": "service",
-  "name": "虎牙渠道",
-  "version": "0.1.0",
-  "main": "main.js",
-  "inject": ["rss.extend"]
-}

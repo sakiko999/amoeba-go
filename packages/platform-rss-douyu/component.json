@@ -1,0 +1,10 @@
+{
+  "id": "platform-rss-douyu",
+  "kind": "service",
+  "name": "RSS 平台 · 斗鱼",
+  "version": "0.1.0",
+  "main": "main.js",
+  "inject": [
+    "rss.extend"
+  ]
+}

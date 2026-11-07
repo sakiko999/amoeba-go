@@ -1,8 +1,0 @@
-{
-  "id": "rss-channel-twitch",
-  "kind": "service",
-  "name": "Twitch渠道",
-  "version": "0.1.0",
-  "main": "main.js",
-  "inject": ["rss.extend"]
-}

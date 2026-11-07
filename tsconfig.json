@@ -26,6 +26,8 @@
   ],
   "exclude": [
     "packages/amoeba",
-    "packages/rss-channel-*/src/channels.ts"
+    "packages/platform-rss-*/src/impl",
+    "packages/platform-rss-*/src/example",
+    "packages/platform-rss-*/src/channels.ts"
   ]
 }

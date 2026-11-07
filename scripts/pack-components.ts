@@ -1,7 +1,7 @@
 /**
  * 打包全部宿主组件包（顺序执行，任一失败即中止）。
  * 基础能力组件：media-manager（页面）/ media-library / rss-browser / rss-service / rss-client
- * 扩展插件组件：rss-channel-*（平台渠道）
+ * platform 扩展组件：platform-rss-*（rss 平台渠道）/ platform-media-*（媒体元数据渠道）
  * 产物统一在各自 packages/<pkg>/out/component（或 out/page），由宿主 sync-pages 同步。
  */
 
@@ -23,11 +23,7 @@ const allPackages = (await readdir(packagesDir, { withFileTypes: true }))
   .filter((e) => e.isDirectory())
   .map((e) => e.name);
 const extensionComponents = allPackages
-  .filter(
-    (name) =>
-      (name.startsWith("rss-channel-") && name !== "rss-channel-kit") ||
-      name.startsWith("media-provider-"),
-  )
+  .filter((name) => name.startsWith("platform-") && name !== "platform-kit")
   .sort();
 
 const components: [string, string][] = [

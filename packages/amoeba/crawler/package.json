@@ -6,7 +6,9 @@
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./channels/*": "./src/channels/*/register.ts"
+    "./factory": "./src/channels/factory.ts",
+    "./passive/buffer": "./src/passive/buffer.ts",
+    "./passive/capture": "./src/passive/capture.ts"
   },
   "scripts": {},
   "dependencies": {

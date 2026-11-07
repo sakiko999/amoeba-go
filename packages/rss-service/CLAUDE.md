@@ -46,22 +46,27 @@ HTTP/WS 服务层、事件直连）是后续工作，届时 `runtime/` 与 `pack
 宿主按 provides/inject 拓扑激活（browser → service → client）；任一服务 reload 时
 依赖它的组件会被级联停用并在恢复后重激活。
 
-## 渠道 = 扩展插件（基础能力 / 平台扩展分离）
+## 渠道 = platform 插件（基础能力 / 平台扩展分离）
 
-- **基础能力**（本包 + crawler 基座）：RSS 内置源 / podcast / 任意 URL 由
-  `packages/amoeba/crawler/src/register-base.ts` 注册（`ensureBuiltinRegistered`），
-  不依赖任何平台插件。
+- **基础能力**（本包 + `packages/amoeba/crawler` 基座）：RSS 内置源 / podcast /
+  任意 URL 由 `crawler/src/register-base.ts` 注册（`ensureBuiltinRegistered`），
+  不依赖任何平台插件。crawler 只保留渠道契约与注册表（`src/index.ts`）、
+  公共装配（`factory.ts`）与被动采集（`passive/*`）。
 - **平台扩展**：9 个平台（apple/bili/douyin/douyu/huya/twitch/weibo/xhs/youtube）
-  各是一个 `kind=service` 组件包 `packages/rss-channel-<platform>`，inject
+  各是一个 `kind=service` 组件包 `packages/platform-rss-<platform>`，**渠道实现
+  自包含在包内 `src/impl/`**（已从 crawler 搬出，不再是 re-export），inject
   `rss.extend`（rss-service provide），activate 时调
   `registerChannelModule(<pageRoot>/channels.js)`。
 - 契约（同一个坑踩过两次，别改）：插件 bundle **导出 `channels: RssChannel[]`
   实例数组**，由**服务进程自己**的 `registerChannel` 注册（`channels.registerPlugin`
   RPC，owner-only）。插件里自己调用注册函数会写进插件 bundle 孤立的注册表。
-- 新平台三步：crawler 侧 `channels/<p>/register.ts` 导出 `xxxChannels` 数组 →
-  `packages/rss-channel-<p>/`（component.json + `defineChannelExtension()` 的
-  main.ts + re-export channels.ts + pack.ts）→ 根 `bun run pages:prepare` 自动发现
-  （`scripts/pack-components.ts` 扫 `rss-channel-*`，排除 kit）并打包进宿主。
+- 新平台：`packages/platform-rss-<p>/`（component.json + `defineRssPlatformExtension()`
+  的 main.ts + `src/impl/` 实现 + `src/channels.ts` 入口 + pack.ts）→ 根
+  `bun run pages:prepare` 自动发现（`scripts/pack-components.ts` 扫 `platform-*`，
+  排除 `platform-kit`）并打包进宿主。平台实现 import 基座用子路径
+  `@amoeba/crawler/factory`、`@amoeba/crawler/passive/*`、
+  `@amoeba/resolve/{host,utils/*,browser/*,platform/<p>}`（不要用 resolve 根 barrel，
+  会把其他平台 client 一起拖进 bundle）。
 
 ## 验证
 
@@ -72,6 +77,6 @@ bun run --cwd packages/rss-service test   # 真实进程生命周期集成（spa
 
 宿主 `bun run smoke` 会真实拉起 browser 代理（CDP 自检）与数据服务（三服务 active），
 并加载 9 个渠道组件（日志 `channels plugin registered`）；`bun run pages:prepare`
-当前打包 17 个组件（5 基础 + 9 rss-channel + 3 media-provider）。
+当前打包 17 个组件（5 基础 + 9 platform-rss + 3 platform-media）。
 真实渠道抓取：dev 宿主里经 rss-client `call("probe.fetch", {channelKey:"weibo:user:search", info:{keyword:"微博"}})`，
 已验证返回真实 RSS（~7KB / ~3s）。强反爬平台（xhs/douyin）需真机登录验证。

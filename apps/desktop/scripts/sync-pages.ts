@@ -34,6 +34,10 @@ async function readManifestId(dir: string): Promise<string | undefined> {
 let synced = 0;
 /** 组件 id → 首个来源目录：out/ 里的旧产物若残留同名 id，不能静默覆盖新组件 */
 const seen = new Map<string, string>();
+// out/pages 是 workspace 组件包的纯投影：先整体清空，避免已删除/改名的旧组件
+// （如 rss-channel-* → platform-rss-*）继续被宿主加载
+const pagesRoot = join(appRoot, "out", "pages");
+await rm(pagesRoot, { recursive: true, force: true });
 for (const pkg of await readdir(packagesDir, { withFileTypes: true })) {
   if (!pkg.isDirectory()) continue;
   const outDir = join(packagesDir, pkg.name, "out");
@@ -52,9 +56,9 @@ for (const pkg of await readdir(packagesDir, { withFileTypes: true })) {
       continue;
     }
     seen.set(id, source);
-    const dest = join(appRoot, "out", "pages", id);
+    const dest = join(pagesRoot, id);
     await rm(dest, { recursive: true, force: true });
-    await mkdir(join(appRoot, "out", "pages"), { recursive: true });
+    await mkdir(pagesRoot, { recursive: true });
     await cp(source, dest, { recursive: true });
     console.log(`pages: synced ${id} (${pkg.name}/${entry.name}) → ${dest}`);
     synced += 1;

@@ -1,8 +1,0 @@
-{
-  "id": "rss-channel-douyin",
-  "kind": "service",
-  "name": "抖音渠道",
-  "version": "0.1.0",
-  "main": "main.js",
-  "inject": ["rss.extend"]
-}

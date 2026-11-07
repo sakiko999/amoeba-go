@@ -7,7 +7,14 @@
   "exports": {
     ".": "./src/index.ts",
     "./errors": "./src/errors.ts",
-    "./media-referrer": "./src/media-referrer.ts"
+    "./media-referrer": "./src/media-referrer.ts",
+    "./host": "./src/host.ts",
+    "./log": "./src/log.ts",
+    "./browser/*": "./src/browser/*.ts",
+    "./utils/*": "./src/utils/*.ts",
+    "./platform/credentials": "./src/platform/credentials.ts",
+    "./platform/apple/catalog": "./src/platform/apple/catalog.ts",
+    "./platform/*": "./src/platform/*/index.ts"
   },
   "scripts": {},
   "dependencies": {
