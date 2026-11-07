@@ -130,26 +130,32 @@ ipcMain.on("theme:toggle", (e) => {
   });
 });
 
-/* ---------- host（tab 条）侧 ---------- */
-ipcMain.handle("tabs:list-kinds", () => manager?.kinds ?? TAB_KINDS);
-ipcMain.handle("tabs:create", (_e, kind: string): TabSummary => {
+/* ---------- host（tab 条）侧：管理通道一律校验调用者是 host（P0-2） ---------- */
+ipcMain.handle("tabs:list-kinds", (e) => {
+  if (!isHost(e.sender.id)) throw new Error("tabs:list-kinds: host only");
+  return manager?.kinds ?? TAB_KINDS;
+});
+ipcMain.handle("tabs:create", (e, kind: string): TabSummary => {
+  if (!isHost(e.sender.id)) throw new Error("tabs:create: host only");
   const summary = manager?.create(kind);
   if (!summary) throw new Error(`unknown tab kind: ${kind}`);
   return summary;
 });
-ipcMain.on("tabs:new-tab-menu", () => manager?.popupNewTabMenu());
-ipcMain.on("tabs:context-menu", (_e, instanceId: string) =>
-  manager?.popupTabContextMenu(instanceId),
-);
-ipcMain.on("tabs:activate", (_e, instanceId: string) =>
-  manager?.activate(instanceId),
-);
-ipcMain.on("tabs:close", (_e, instanceId: string) =>
-  manager?.close(instanceId),
-);
-ipcMain.on("tabs:move", (_e, instanceId: string, overInstanceId: string) =>
-  manager?.move(instanceId, overInstanceId),
-);
+ipcMain.on("tabs:new-tab-menu", (e) => {
+  if (isHost(e.sender.id)) manager?.popupNewTabMenu();
+});
+ipcMain.on("tabs:context-menu", (e, instanceId: string) => {
+  if (isHost(e.sender.id)) manager?.popupTabContextMenu(instanceId);
+});
+ipcMain.on("tabs:activate", (e, instanceId: string) => {
+  if (isHost(e.sender.id)) manager?.activate(instanceId);
+});
+ipcMain.on("tabs:close", (e, instanceId: string) => {
+  if (isHost(e.sender.id)) manager?.close(instanceId);
+});
+ipcMain.on("tabs:move", (e, instanceId: string, overInstanceId: string) => {
+  if (isHost(e.sender.id)) manager?.move(instanceId, overInstanceId);
+});
 
 /* ---------- 调试入口（host tab 条的 bug 按钮弹出） ---------- */
 ipcMain.on("debug:menu", (e) => {
@@ -283,6 +289,8 @@ async function main(): Promise<void> {
     externalDir: join(app.getPath("userData"), "pages"),
     reservedIds: TAB_KINDS.map((kind) => kind.id),
     getWindow: () => win,
+    // 级联停用依赖方前关其 tab；manager 晚于此创建，回调内晚绑定
+    closeTabs: (pageId) => manager?.closeByPage(pageId),
     log: (...args) => console.log("[pages]", ...args),
   });
   const scanMs = Date.now() - started;
@@ -361,9 +369,15 @@ async function main(): Promise<void> {
           .join("; ")}`,
       );
     }
+    // 服务组件必须激活成功（页面依赖它，error 会被上面的 failedPages 抓住）
+    const services = pages.list().filter((page) => page.kind === "service");
+    for (const svc of services) {
+      console.log(`SMOKE: service ${svc.id} state=${svc.state}`);
+    }
+    // 只有页面组件能建 tab；service 无 entry
     const pageIds = pages
       .list()
-      .filter((page) => page.state !== "inactive")
+      .filter((page) => page.kind === "page" && page.state !== "inactive")
       .map((page) => page.id);
     const loads: Promise<void>[] = [];
     let mediaWc: WebContents | undefined;

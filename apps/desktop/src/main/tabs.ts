@@ -82,13 +82,13 @@ export class TabManager {
     win.webContents.on("did-finish-load", () => this.broadcast());
   }
 
-  /** 静态 tab + 所有 active 页面，供 host 的圆点颜色与菜单使用 */
+  /** 静态 tab + 所有 active 的页面组件（service 组件无 UI，不进 kinds） */
   get kinds(): readonly TabManifest[] {
     return [
       ...TAB_KINDS,
       ...this.pages
         .list()
-        .filter((page) => page.state === "active")
+        .filter((page) => page.kind === "page" && page.state === "active")
         .map((page) => ({
           id: page.id,
           title: page.name,
@@ -97,7 +97,7 @@ export class TabManager {
     ];
   }
 
-  /** id 既可以是静态 tab kind，也可以是页面 id */
+  /** id 既可以是静态 tab kind，也可以是页面组件 id（service 组件不可开 tab） */
   create(id: string): TabSummary | undefined {
     const staticManifest = TAB_KINDS.find((m) => m.id === id);
     if (staticManifest !== undefined) {
@@ -116,6 +116,7 @@ export class TabManager {
     const page = this.pages.get(id);
     // inactive 只在页面激活完成前出现；main 扩展失败（error）仍允许打开 renderer
     if (page === undefined || page.state === "inactive") return undefined;
+    if (page.manifest.kind === "service") return undefined;
     return this.createPageTab(page);
   }
 
@@ -129,16 +130,21 @@ export class TabManager {
         kind: page.manifest.id,
         title: page.manifest.name,
         pageId: page.manifest.id,
-        view: this.createView(page.preloadPath ?? HOST_PRELOAD, partition),
+        // 无自有 preload 的页面只靠 session 级 pageBridge 提供能力：
+        // 若再回退 HOST_PRELOAD 会与 pageBridge 重复 expose window.tab 而抛错
+        view: this.createView(page.preloadPath, partition),
       },
-      page.entryUrl,
+      page.entryUrl ?? `page://${page.manifest.id}/`,
     );
   }
 
-  private createView(preload: string, partition: string): WebContentsView {
+  private createView(
+    preload: string | undefined,
+    partition: string,
+  ): WebContentsView {
     return new WebContentsView({
       webPreferences: {
-        preload,
+        ...(preload !== undefined ? { preload } : {}),
         partition,
         contextIsolation: true,
         sandbox: true,
@@ -242,6 +248,7 @@ export class TabManager {
   /** “+” 新建菜单：host 页面 DOM 会被 tab 的原生子视图盖住，必须由主进程弹原生 Menu。 */
   popupNewTabMenu(): void {
     const pages = this.pages.list();
+    const openable = pages.filter((page) => page.kind === "page");
     const template: MenuItemConstructorOptions[] = [
       ...TAB_KINDS.map((k) => ({
         label: `新建 ${k.title}`,
@@ -249,7 +256,7 @@ export class TabManager {
           this.create(k.id);
         },
       })),
-      ...pages.map((page) => ({
+      ...openable.map((page) => ({
         label: `新建 ${page.name}`,
         enabled: page.state !== "inactive",
         click: () => {
@@ -258,7 +265,7 @@ export class TabManager {
       })),
       { type: "separator" },
       {
-        label: "安装页面…",
+        label: "安装组件…",
         click: () => {
           void this.actions.install();
         },
@@ -266,10 +273,14 @@ export class TabManager {
     ];
     if (pages.length > 0) {
       template.push({
-        label: "管理页面",
+        label: "管理组件",
         submenu: pages.map((page) => ({
           label:
-            page.state === "error" ? `${page.name}（扩展错误）` : page.name,
+            page.state === "error"
+              ? `${page.name}（扩展错误）`
+              : page.kind === "service"
+                ? `${page.name}（服务）`
+                : page.name,
           submenu: [
             {
               label: "重载",

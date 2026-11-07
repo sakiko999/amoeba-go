@@ -16,6 +16,7 @@
     "media:debug": "bun run --cwd packages/media-manager dev:debug",
     "media:build": "bun run --cwd packages/media-manager build",
     "media:smoke": "bun run media:build && bun run --cwd packages/media-manager smoke",
+    "test": "bun test apps/desktop",
     "typecheck": "tsc --noEmit",
     "lint": "biome lint .",
     "fmt": "bun fmt ."

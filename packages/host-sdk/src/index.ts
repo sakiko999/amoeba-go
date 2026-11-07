@@ -28,33 +28,70 @@ export const HOST_STATE_CHANNELS = {
   changed: "host:state",
 } as const;
 
-/* ---------- runtime 页面包（page.json + 可选 main 扩展） ---------- */
+/* ---------- runtime 组件包（component.json / page.json + 可选 main 扩展） ---------- */
 
-/** 页面包根目录下的 page.json */
-export interface PageManifest {
-  /** URL host 用，必须是小写 DNS label：[a-z0-9-] */
+/** manifest.provides 的项：声明本组件向其他组件提供的服务 */
+export interface ServiceDeclaration {
+  /**
+   * 全局唯一服务名，形如 "<domain>.<name>"（如 media.library）。
+   * "host." 前缀保留给宿主，组件不得使用。
+   */
+  name: string;
+  /** 允许被依赖方调用的方法名白名单；必须与 ctx.provide 的 expose 一致 */
+  expose?: string[];
+}
+
+/** 两种组件共用的 manifest 字段 */
+export interface ComponentManifestBase {
+  /** 唯一 id：小写 DNS label，同时是目录名、page:// host 与 dataDir 名 */
   id: string;
   name: string;
   version?: string;
-  /** tab 圆点颜色，如 "#e0a458" */
-  color?: string;
-  /** 相对包根的入口 HTML */
-  entry: string;
-  /** 相对包根的 sandbox CJS preload */
-  preload?: string;
-  /** 相对包根的 CJS 主进程扩展 */
+  /** 提供给其他组件的服务（v1：同名服务全局只允许一个提供方） */
+  provides?: ServiceDeclaration[];
+  /** 激活所需的必需服务；提供方未就绪时 activate 内 ctx.require 会抛错 */
+  inject?: string[];
+  /** CJS 主进程扩展；service 组件必填 */
   main?: string;
 }
 
+/** 前端子页面组件：entry 必填，可被宿主创建为 tab */
+export interface PageComponentManifest extends ComponentManifestBase {
+  /** 缺省视为 "page" */
+  kind?: "page";
+  /** 相对包根的入口 HTML（.html） */
+  entry: string;
+  /** 相对包根的 sandbox CJS preload（.js） */
+  preload?: string;
+  /** tab 圆点颜色，如 "#e0a458" */
+  color?: string;
+}
+
+/** 后端服务组件：无 entry/preload/color，不建 tab，启动时自动激活 */
+export interface ServiceComponentManifest extends ComponentManifestBase {
+  kind: "service";
+}
+
+/** 组件 manifest：component.json（优先）或 page.json（旧页面兼容） */
+export type PageManifest = PageComponentManifest | ServiceComponentManifest;
+
+/** 服务名规则：<domain>.<name>，各段小写字母开头的小写 DNS 风格 label */
+export const SERVICE_NAME_RE = /^[a-z][a-z0-9-]*\.[a-z][a-z0-9-]*$/;
+
+/** 宿主保留的服务前缀（v1 宿主自身未注册任何服务，防止组件 inject 后永久等待） */
+export const RESERVED_SERVICE_PREFIX = "host.";
+
 export type PageSource = "builtin" | "external";
 
-/** 宿主视角下的页面状态 */
+/** 宿主视角下的页面/组件状态 */
 export interface PageSummary {
   id: string;
   name: string;
   color: string;
   source: PageSource;
-  /** active = main 扩展已激活，可以创建 tab */
+  /** page = 可开 tab 的前端子页面；service = 纯后端服务组件 */
+  kind: "page" | "service";
+  /** active = main 扩展已激活，可以创建 tab（service：可被其他组件消费） */
   state: "inactive" | "active" | "error";
   hasMain: boolean;
   error?: string;
@@ -75,21 +112,40 @@ export type PageIpcHandler = (
 export interface PageIpc {
   handle(channel: string, listener: PageIpcHandler): void;
   on(channel: string, listener: PageIpcHandler): void;
+  /** 提前移除 handle 登记的 channel（完整卸载仍由宿主 tracker 兜底） */
+  removeHandler(channel: string): void;
+  /** 提前移除 on 登记的监听 */
+  removeListener(channel: string, listener: PageIpcHandler): void;
 }
 
-/** 页面 main 扩展的 activate 上下文 */
+/** ctx.provide 的可选项 */
+export interface ProvideOptions {
+  /** 暴露给依赖方的服务方法名白名单；与 manifest.provides[].expose 声明一致 */
+  expose?: string[];
+}
+
+/** 页面/服务组件 main 扩展的 activate 上下文 */
 export interface PageMainContext {
   readonly manifest: Readonly<PageManifest>;
   /** 包根绝对路径 */
   readonly pageRoot: string;
-  /** 宿主为该页面准备的持久数据目录（userData/page-data/<id>） */
+  /** 宿主为该组件准备的持久数据目录（userData/page-data/<id>） */
   readonly dataDir: string;
   /** 宿主 app 路径 */
   readonly appPath: string;
   readonly ipc: PageIpc;
-  /** BrowserWindow；页面扩展自行断言类型 */
+  /** BrowserWindow；组件扩展自行断言类型 */
   getWindow(): unknown;
   log(...args: unknown[]): void;
+  /**
+   * 注册服务：name 必须已在 manifest.provides 声明，expose 必须与声明一致；
+   * 必须在 activate 返回前调用。激活失败/停用时宿主自动注销。
+   */
+  provide(name: string, impl: object, opts?: ProvideOptions): void;
+  /** 取 inject 声明过的服务实现；提供方未就绪返回 undefined（可选依赖语义） */
+  get(name: string): unknown;
+  /** 取 inject 声明过的必需服务；提供方未就绪抛错（组件进入 error 态） */
+  require<T = unknown>(name: string): T;
 }
 
 /** main.js（CJS）必须导出 activate；deactivate 可选 */

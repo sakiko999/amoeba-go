@@ -1,9 +1,12 @@
 /**
- * 运行时页面注册表：扫描内置/外部页面目录，管理 main 扩展的 activate/deactivate。
+ * 运行时组件注册表：扫描内置/外部组件目录，管理 main 扩展的 activate/deactivate。
+ * - 组件两类：kind=page（前端子页面，entry 必填，可开 tab）与 kind=service（纯后端服务）
  * - 内置目录（app.getAppPath()/pages）优先；外部目录（userData/pages）同 id 冲突则跳过
- * - 页面 main v1 必须是 CJS：createRequire + 清 require.cache 才能可靠热重载
- * - 页面登记的 IPC 由 tracker 兜底清理；页面自己的 deactivate 负责其余资源
- * - 卸载只做运行时注销，不删除用户目录；内置页面只能重载
+ * - 组件 main v1 必须是 CJS：createRequire + 清 require.cache 才能可靠热重载
+ * - 组件登记的 IPC 由 tracker 兜底清理；组件自己的 deactivate 负责其余资源
+ * - 服务表：ctx.provide 注册（须与 manifest.provides 一致），激活按 provides/inject 拓扑排序，
+ *   reload/uninstall 服务组件时级联停用依赖它的组件
+ * - 卸载只做运行时注销，不删除用户目录；内置组件只能重载
  */
 
 import { app, ipcMain, session } from "electron";
@@ -20,19 +23,27 @@ import type {
   PageManifest,
   PageSource,
   PageSummary,
+  ProvideOptions,
 } from "@host/sdk";
 import { isInside, readPageManifest } from "./manifest";
+import {
+  activationOrder,
+  dependentsOf,
+  projectDeps,
+  ServiceTable,
+} from "./services";
 
 export type PageState = "inactive" | "active" | "error";
 
-/** 对外暴露的页面运行时（TabManager / 菜单 / smoke 用） */
+/** 对外暴露的组件运行时（TabManager / 菜单 / smoke 用） */
 export interface PageRuntime {
   readonly manifest: PageManifest;
   readonly root: string;
   readonly source: PageSource;
   readonly state: PageState;
   readonly error?: string;
-  readonly entryUrl: string;
+  /** 仅 kind=page：page:// 入口 URL */
+  readonly entryUrl?: string;
   readonly preloadPath?: string;
   readonly mainPath?: string;
 }
@@ -52,9 +63,11 @@ interface IpcTracker {
 export interface PageRegistryOptions {
   builtinDir: string;
   externalDir: string;
-  /** 静态 tab kind，页面 id 不能与之冲突 */
+  /** 静态 tab kind，组件 id 不能与之冲突 */
   reservedIds: readonly string[];
   getWindow(): BrowserWindow | undefined;
+  /** 级联停用依赖方前关闭其 tab（service reload/uninstall 时调用） */
+  closeTabs?(pageId: string): void;
   onDidChange?(): void;
   log?(...args: unknown[]): void;
 }
@@ -72,6 +85,18 @@ function createIpcTracker(): IpcTracker {
       on(channel, listener) {
         ipcMain.on(channel, listener as never);
         listeners.push({ channel, listener });
+      },
+      removeHandler(channel) {
+        const i = handlers.indexOf(channel);
+        if (i >= 0) handlers.splice(i, 1);
+        ipcMain.removeHandler(channel);
+      },
+      removeListener(channel, listener) {
+        const i = listeners.findIndex(
+          (l) => l.channel === channel && l.listener === listener,
+        );
+        if (i >= 0) listeners.splice(i, 1);
+        ipcMain.removeListener(channel, listener as never);
       },
     },
     dispose() {
@@ -111,6 +136,7 @@ const encodeEntry = (entry: string): string =>
 
 export class PageRegistry {
   private readonly pages = new Map<string, MutablePage>();
+  private readonly services = new ServiceTable();
 
   private constructor(private readonly opts: PageRegistryOptions) {}
 
@@ -137,9 +163,14 @@ export class PageRegistry {
       : undefined;
   }
 
+  /** 按 provides/inject 拓扑激活全部组件（service 先于依赖它的页面） */
   async activateAll(): Promise<void> {
-    for (const page of this.pages.values()) {
-      await this.activateMain(page);
+    const order = activationOrder(
+      [...this.pages.values()].map((p) => projectDeps(p.manifest)),
+    );
+    for (const id of order) {
+      const page = this.pages.get(id);
+      if (page !== undefined) await this.activateMain(page);
     }
   }
 
@@ -147,10 +178,10 @@ export class PageRegistry {
     const sourceRoot = await realpath(sourceDir);
     const manifest = await readPageManifest(sourceRoot);
     if (this.opts.reservedIds.includes(manifest.id)) {
-      throw new Error(`页面 id 与静态 tab 冲突：${manifest.id}`);
+      throw new Error(`组件 id 与静态 tab 冲突：${manifest.id}`);
     }
     if (this.pages.has(manifest.id)) {
-      throw new Error(`页面已安装：${manifest.id}`);
+      throw new Error(`组件已安装：${manifest.id}`);
     }
     const dest = join(this.opts.externalDir, manifest.id);
     if (
@@ -158,7 +189,7 @@ export class PageRegistry {
       isInside(sourceRoot, dest) ||
       isInside(dest, sourceRoot)
     ) {
-      throw new Error(`不能从页面安装目录自身安装：${sourceRoot}`);
+      throw new Error(`不能从组件安装目录自身安装：${sourceRoot}`);
     }
     if (existsSync(dest)) {
       throw new Error(`目标目录已存在，请先手动处理：${dest}`);
@@ -174,7 +205,7 @@ export class PageRegistry {
       const root = await realpath(dest);
       const copied = await readPageManifest(root);
       if (copied.id !== manifest.id) {
-        throw new Error("复制后的 page.json id 与源不一致");
+        throw new Error("复制后的 manifest id 与源不一致");
       }
       const page = this.makePage(copied, root, "external");
       this.pages.set(page.manifest.id, page);
@@ -190,28 +221,73 @@ export class PageRegistry {
 
   async uninstall(id: string): Promise<void> {
     const page = this.pages.get(id);
-    if (page === undefined) throw new Error(`页面不存在：${id}`);
+    if (page === undefined) throw new Error(`组件不存在：${id}`);
     if (page.source === "builtin") {
-      throw new Error("内置页面不能卸载，只能重载");
+      throw new Error("内置组件不能卸载，只能重载");
     }
-    await this.deactivate(page);
+    await this.cascade(id, () => this.deactivate(page));
     this.pages.delete(id);
     this.changed();
   }
 
   async reload(id: string): Promise<PageSummary> {
     const page = this.pages.get(id);
-    if (page === undefined) throw new Error(`页面不存在：${id}`);
+    if (page === undefined) throw new Error(`组件不存在：${id}`);
+    await this.cascade(id, () => this.reloadSelf(page));
+    return this.summaryOf(page);
+  }
+
+  /**
+   * reload/uninstall 的级联包装：先停用依赖本组件服务的组件（关其 tab），
+   * 再执行自身操作；完成后重新激活依赖方——reload 后拿到新服务实例，
+   * uninstall 后因服务缺失进入 error 态（可诊断，好过隐式 inactive）。
+   */
+  private async cascade(id: string, op: () => Promise<void>): Promise<void> {
+    const deps = this.dependentsOf(id);
+    for (const depId of deps) {
+      const dep = this.pages.get(depId);
+      if (dep === undefined) continue;
+      this.opts.closeTabs?.(depId);
+      await this.deactivate(dep);
+    }
+    try {
+      await op();
+    } finally {
+      for (const depId of deps) {
+        const dep = this.pages.get(depId);
+        if (dep !== undefined) await this.activateMain(dep);
+      }
+      this.changed();
+    }
+  }
+
+  /** 依赖本组件 provides 服务（传递闭包不展开，v1 只做一层直接依赖）的其他组件 */
+  private dependentsOf(id: string): string[] {
+    const page = this.pages.get(id);
+    if (page === undefined) return [];
+    const provides = (page.manifest.provides ?? []).map((s) => s.name);
+    if (provides.length === 0) return [];
+    return dependentsOf(
+      provides,
+      [...this.pages.values()].map((p) => projectDeps(p.manifest)),
+    );
+  }
+
+  private async reloadSelf(page: MutablePage): Promise<void> {
     await this.deactivate(page);
-    // 资源名带 hash，清掉 HTTP 缓存才能拿到更新后的 bundle
-    await session
-      .fromPartition(`persist:page-${id}`)
-      .clearCache()
-      .catch((err: unknown) => this.log("clearCache failed:", err));
+    if ((page.manifest.kind ?? "page") === "page") {
+      // 资源名带 hash，清掉 HTTP 缓存才能拿到更新后的 bundle
+      await session
+        .fromPartition(`persist:page-${page.manifest.id}`)
+        .clearCache()
+        .catch((err: unknown) => this.log("clearCache failed:", err));
+    }
     try {
       const manifest = await readPageManifest(page.root);
-      if (manifest.id !== id) {
-        throw new Error(`重载后 page id 改变（${id} → ${manifest.id}），拒绝`);
+      if (manifest.id !== page.manifest.id) {
+        throw new Error(
+          `重载后组件 id 改变（${page.manifest.id} → ${manifest.id}），拒绝`,
+        );
       }
       Object.assign(page, this.makePage(manifest, page.root, page.source));
       await this.activateMain(page);
@@ -219,10 +295,7 @@ export class PageRegistry {
       page.state = "error";
       page.error = err instanceof Error ? err.message : String(err);
       throw err;
-    } finally {
-      this.changed();
     }
-    return this.summaryOf(page);
   }
 
   async dispose(): Promise<void> {
@@ -244,13 +317,13 @@ export class PageRegistry {
         }
         if (this.pages.has(manifest.id)) {
           this.log(
-            `跳过 ${manifest.id}：id 已被 ${this.pages.get(manifest.id)?.source} 页面占用`,
+            `跳过 ${manifest.id}：id 已被 ${this.pages.get(manifest.id)?.source} 组件占用`,
           );
           continue;
         }
         this.pages.set(manifest.id, this.makePage(manifest, root, source));
       } catch (err) {
-        this.log(`跳过非法页面 ${join(dir, entry.name)}：`, err);
+        this.log(`跳过非法组件 ${join(dir, entry.name)}：`, err);
       }
     }
   }
@@ -266,9 +339,12 @@ export class PageRegistry {
       source,
       state: "inactive",
       error: undefined,
-      entryUrl: `page://${manifest.id}/${encodeEntry(manifest.entry)}`,
+      entryUrl:
+        manifest.kind === "service"
+          ? undefined
+          : `page://${manifest.id}/${encodeEntry(manifest.entry)}`,
       preloadPath:
-        manifest.preload !== undefined
+        manifest.kind !== "service" && manifest.preload !== undefined
           ? resolve(root, manifest.preload)
           : undefined,
       mainPath:
@@ -304,6 +380,16 @@ export class PageRegistry {
         throw new Error("main.js 未导出 activate()");
       }
 
+      const declared = page.manifest.provides ?? [];
+      const inject = page.manifest.inject ?? [];
+      const id = page.manifest.id;
+      const assertInjected = (name: string, method: string): void => {
+        if (!inject.includes(name)) {
+          throw new Error(
+            `${method}("${name}") 失败：manifest.inject 未声明该服务`,
+          );
+        }
+      };
       const ctx: PageMainContext = {
         manifest: page.manifest,
         pageRoot: page.root,
@@ -311,8 +397,39 @@ export class PageRegistry {
         appPath: app.getAppPath(),
         ipc: tracker.ipc,
         getWindow: () => this.opts.getWindow(),
-        log: (...args) =>
-          this.opts.log?.(`[page:${page.manifest.id}]`, ...args),
+        log: (...args) => this.opts.log?.(`[page:${id}]`, ...args),
+        provide: (name, impl, options?: ProvideOptions) => {
+          const decl = declared.find((d) => d.name === name);
+          if (decl === undefined) {
+            throw new Error(
+              `provide("${name}") 失败：manifest.provides 未声明该服务`,
+            );
+          }
+          const same = (a?: string[], b?: string[]) =>
+            JSON.stringify(a ?? []) === JSON.stringify(b ?? []);
+          if (!same(decl.expose, options?.expose)) {
+            throw new Error(
+              `provide("${name}") 的 expose 与 manifest.provides 声明不一致`,
+            );
+          }
+          this.services.register(name, {
+            providerId: id,
+            impl,
+            expose: decl.expose,
+          });
+        },
+        get: (name) => {
+          assertInjected(name, "get");
+          return this.services.get(name)?.impl;
+        },
+        require: <T>(name: string): T => {
+          assertInjected(name, "require");
+          const entry = this.services.get(name);
+          if (entry === undefined) {
+            throw new Error(`服务未就绪：${name}（提供方未激活或未安装）`);
+          }
+          return entry.impl as T;
+        },
       };
       // 先挂 deactivate：activate 中途抛错/超时时仍能回滚它已占用的资源
       page.deactivate = () => target.deactivate?.();
@@ -321,6 +438,12 @@ export class PageRegistry {
         ACTIVATE_TIMEOUT_MS,
         `main activate timeout (${page.manifest.id})`,
       );
+      // 声明了 provides 却没有全部注册 = 契约违背（依赖方会等到一个空服务）
+      for (const decl of declared) {
+        if (this.services.get(decl.name)?.providerId !== id) {
+          throw new Error(`activate 返回但未 provide 声明的服务：${decl.name}`);
+        }
+      }
       page.tracker = tracker;
       page.state = "active";
     } catch (err) {
@@ -331,6 +454,7 @@ export class PageRegistry {
       }
       page.deactivate = undefined;
       tracker.dispose();
+      this.services.unregisterByProvider(page.manifest.id);
       page.state = "error";
       page.error = err instanceof Error ? err.message : String(err);
       this.log("main activate failed:", err);
@@ -346,6 +470,7 @@ export class PageRegistry {
     page.deactivate = undefined;
     page.tracker?.dispose();
     page.tracker = undefined;
+    this.services.unregisterByProvider(page.manifest.id);
     page.state = "inactive";
     page.error = undefined;
   }
@@ -354,8 +479,12 @@ export class PageRegistry {
     return {
       id: page.manifest.id,
       name: page.manifest.name,
-      color: page.manifest.color ?? "#565f89",
+      color:
+        page.manifest.kind === "service"
+          ? "#565f89"
+          : (page.manifest.color ?? "#565f89"),
       source: page.source,
+      kind: page.manifest.kind ?? "page",
       state: page.state,
       hasMain: page.mainPath !== undefined,
       error: page.error,
