@@ -69,6 +69,13 @@
         "vite": "^8.3.6",
       },
     },
+    "packages/rss-service": {
+      "name": "@tabs/rss-service",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+      },
+    },
     "packages/tab-clock": {
       "name": "@tabs/clock",
       "dependencies": {
@@ -414,6 +421,8 @@
     "@tabs/media-library": ["@tabs/media-library@workspace:packages/media-library"],
 
     "@tabs/notes": ["@tabs/notes@workspace:packages/tab-notes"],
+
+    "@tabs/rss-service": ["@tabs/rss-service@workspace:packages/rss-service"],
 
     "@tabs/sysinfo": ["@tabs/sysinfo@workspace:packages/tab-sysinfo"],
 

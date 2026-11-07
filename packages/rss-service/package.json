@@ -1,0 +1,16 @@
+{
+  "name": "@tabs/rss-service",
+  "version": "0.1.0",
+  "private": true,
+  "description": "RSS 数据服务组件：以子进程方式承载 amoeba 数据服务（bun + service.js，单写者契约保持），向宿主提供 rss.endpoint 服务。",
+  "exports": {
+    ".": "./src/entry.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "pack": "bun run scripts/pack.ts"
+  },
+  "devDependencies": {
+    "@host/sdk": "workspace:*"
+  }
+}

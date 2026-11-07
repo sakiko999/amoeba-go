@@ -1,0 +1,13 @@
+{
+  "id": "rss-service",
+  "kind": "service",
+  "name": "RSS 数据服务",
+  "version": "0.1.0",
+  "main": "main.js",
+  "provides": [
+    {
+      "name": "rss.endpoint",
+      "expose": ["endpoint", "health", "stop"]
+    }
+  ]
+}

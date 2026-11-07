@@ -26,4 +26,6 @@
 - [ ] 组件化 v1 已落地并推送（feat/componentize-media-backend + submodule feat/componentize-backend，均含全绿 smoke）；待用户决定是否开 PR 合并
 - [ ] 完整内核 v2 剩余项：pending 态+tab 保活降级、alive 令牌、effect 栈、渲染侧 window.component 服务桥、staging 升级事务、disabled 持久化、卸载删目录
 - [!] media-manager 组件化后：宿主组件包 = out/page（页面）+ out/service（服务）双产物；cache 移到 page-data/media-library；pack:page 已是 pack:components 别名
+- [!] 修正早前记录：media-manager 的后端已整体迁到主仓库普通子包 packages/media-library（@tabs/media-library，非 submodule）；submodule 只剩 UI/页面侧；组件产物分别为 media-manager 的 out/page 与 media-library 的 out/component；后端测试命令改为 bun run --cwd packages/media-library test
+- [ ] 待用户决定 feat/componentize-media-backend（主仓库）与 feat/componentize-backend（submodule）是否开 PR 合并；合并前 worktree X:\wtcmb 保留
 <!-- cc-todo:end -->
