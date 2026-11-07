@@ -15,9 +15,16 @@ RSS 数据服务组件（`@tabs/rss-service`，主仓库普通子包）：承载
 - **构建**：`scripts/pack.ts` 在本仓库把 `runtime/main.ts` 打成 `out/component/service.js`
   （bun target 单文件，与 tauri-rss 的 service:build 同构），把 `src/entry.ts` 打成
   组件入口 `main.js`。**没有** `X:\tauri-rss` 路径兜底。
-- **升级**：重新把 tauri-rss 对应目录复制覆盖（packages/amoeba/* + runtime/*），
-  再 `bun run --cwd packages/rss-service pack`。vendor 目录不参与本项目
-  typecheck / biome（见 tsconfig include 与 biome.json 排除项）。
+- **升级（已分叉，不能整目录覆盖）**：平台渠道实现已搬到 `packages/platform-rss-*`，
+  订阅管理已拆到 `packages/rss-subscriptions`。上游 tauri-rss 更新时按边界合并：
+  - `packages/amoeba/crawler/src/`：只合并契约/注册表（index）、factory、passive
+    与 `channels/rss`（基础渠道）
+  - 平台渠道：合并到对应 `platform-rss-<p>/src/impl`（不要再放回 crawler）
+  - `packages/amoeba/core/`：只合并 `processing/deserialize`、`source`、`errors`、
+    `log`、媒体类型
+  - 订阅管理：合并到 `rss-subscriptions`（data-layer/repo/store/schema/...）
+  合并后 `bun run --cwd packages/rss-service pack` 重建 service.js。vendor 目录不参与
+  本项目 typecheck / biome（见 tsconfig include 与 biome.json 排除项）。
 
 ## 包边界：纯抓取基座 vs 订阅管理
 
