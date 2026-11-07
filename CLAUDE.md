@@ -44,4 +44,5 @@
 - [ ] 宿主形态经网关的真实刮削链路（UI 点搜索/刮削 → media.library → api.gateway → platform-media）需真机验收一次，smoke 目前只覆盖注册与自检
 - [ ] 若要插件像 dsh 那样自带 node_modules：pack 时装 production deps 进组件包 + 宿主 createRequire 以组件目录为基准，放开后 api-gateway 的 GraphQL 决策记录里「零依赖」条自然失效
 - [!] 「组件零运行时依赖」不是原则，是历史打包约束：组件现已支持自带 npm 依赖（platform-kit pack 对非 workspace 依赖 external 并 production 安装进产物 node_modules；宿主 createRequire(main.js)/数据服务进程 import 都以组件目录解析）；workspace 依赖仍须内联（asar 内无 workspace 链接）；宿主投影时 sync-pages 把组件 npm 依赖合并成 out/pages/node_modules 共享层（同名同版本去重，冲突版本保留局部）
+- [!] rss 能力暂不启用：pack-components 只打包 api-gateway/media-library/media-manager/platform-media-*（6 组件），gateway 直接提供数据接口；rss-browser/rss-service/rss-client/rss-subscriptions/platform-rss-* 源码保留但不打包，恢复步骤见 scripts/pack-components.ts 注释
 <!-- cc-todo:end -->

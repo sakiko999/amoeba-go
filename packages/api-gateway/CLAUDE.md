@@ -26,6 +26,16 @@ node_modules），引 graphql-js 已无分发障碍，只是没必要——仍�
 演进路径：注册表 handler `(params) => Promise<result>` 与 GraphQL resolver
 同构，未来需要字段裁剪时加「注册表 → SDL」层即可，插件不用改。
 
+## 当前宿主组件面（rss 能力暂不启用）
+
+宿主目前只打包 `api-gateway` + `media-library` + `media-manager` + 三个
+`platform-media-*`。**gateway 就是数据接口层**：页面/域服务经
+`call("<平台>.<操作>")` 取媒体数据（search / fetchMetadata / fetchEpisodes），
+不再依赖 rss 的订阅/抓取/存储/事件栈。rss 域源码（rss-service / rss-client /
+rss-browser / rss-subscriptions / platform-rss-*）保留在仓库但不由
+`scripts/pack-components.ts` 打包；恢复时把三个 rss 基础包加回 baseComponents、
+放开 platform-rss 的发现条件即可。
+
 ## 平台怎么注册
 
 - **media 平台**（platform-kit `defineMediaPlatformExtension`）：provider 包成
