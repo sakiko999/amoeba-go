@@ -33,4 +33,6 @@
 - [!] rss 组件已按职责拆为三包：rss-browser（Electron CDP 代理，provides rss.browser）/ rss-service（数据进程宿主，inject rss.browser）/ rss-client（RPC 访问层，inject rss.endpoint）；拓扑激活+级联已由宿主 registry 保证
 - [!] crawler browser 已全面 Electron 化并经真实渠道验证（weibo:user:search 走 Electron Chromium 返回真数据）；小红书/抖音仍有指纹风险待真机登录验证；bun 依赖仍是临时方案（spawn，未做 runtime 打包）
 - [ ] 后续：RSS 页面组件（inject rss.client 消费数据）、强反爬平台真机验收、升级链路（tauri-rss service:build → bun run pages:prepare）
+- [ ] rss-service 已去外部依赖（源码移植 + 本仓库构建 service.js）；下一步：进程内迁移（node:sqlite/去 HTTP 层，改动面 runtime + host/node 存储适配）与 RSS 页面组件
+- [!] 升级 tauri-rss 上游时需重新复制 packages/amoeba/* 与 rss-service/runtime/*（vendor，保留 @amoeba/* 包名）；bun 运行时仍是唯一外部依赖
 <!-- cc-todo:end -->

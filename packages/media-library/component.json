@@ -2,7 +2,7 @@
   "id": "media-library",
   "kind": "service",
   "name": "媒体库服务",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "main": "main.js",
   "provides": [
     {
@@ -22,6 +22,10 @@
         "organizeApply",
         "cacheClear"
       ]
+    },
+    {
+      "name": "media.providers",
+      "expose": ["register", "listSources"]
     }
   ]
 }

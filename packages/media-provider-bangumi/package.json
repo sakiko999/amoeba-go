@@ -1,0 +1,19 @@
+{
+  "name": "@tabs/media-provider-bangumi",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bangumi 元数据渠道扩展插件（media-provider 扩展点，经 media.providers 注册）。",
+  "exports": {
+    ".": "./src/main.ts",
+    "./provider": "./src/provider.ts",
+    "./probe": "./src/probe.ts"
+  },
+  "scripts": {
+    "pack": "bun run scripts/pack.ts",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@host/sdk": "workspace:*",
+    "@tabs/media-library": "workspace:*"
+  }
+}

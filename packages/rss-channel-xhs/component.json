@@ -1,0 +1,8 @@
+{
+  "id": "rss-channel-xhs",
+  "kind": "service",
+  "name": "小红书渠道",
+  "version": "0.1.0",
+  "main": "main.js",
+  "inject": ["rss.extend"]
+}

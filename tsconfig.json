@@ -23,5 +23,9 @@
     "packages/*/src/**/*.ts",
     "packages/*/src/**/*.tsx",
     "packages/*/electron.vite.config.ts"
+  ],
+  "exclude": [
+    "packages/amoeba",
+    "packages/rss-channel-*/src/channels.ts"
   ]
 }

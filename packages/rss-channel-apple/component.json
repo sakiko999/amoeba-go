@@ -1,0 +1,8 @@
+{
+  "id": "rss-channel-apple",
+  "kind": "service",
+  "name": "Apple 播客渠道",
+  "version": "0.1.0",
+  "main": "main.js",
+  "inject": ["rss.extend"]
+}

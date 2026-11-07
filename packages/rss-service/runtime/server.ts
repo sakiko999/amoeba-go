@@ -13,9 +13,10 @@
  */
 
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto"
-import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join, resolve } from "node:path"
+import { pathToFileURL } from "node:url"
 
 import {
   type AppSettings,
@@ -34,6 +35,7 @@ import {
   type SubscriptionPatch,
 } from "@amoeba/core"
 import { getChannel as sourceGetChannel } from "@amoeba/core/source"
+import { type RssChannel, registerChannel } from "@amoeba/crawler"
 // RSSHub 是运行时注册的外部 source（import 副作用）。DataLayer 现在跑在本服务进程里，
 // desktop 入口那句 import 够不到这里 —— 漏掉它，`rsshub:feed` 订阅刷新会 NoChannelError
 // （桌面「发现 → RSSHub」添加的订阅全部静默失败）。见 docs/audit/refactor-candidates.md。
@@ -281,13 +283,17 @@ function errorResponse(req: Request, status: number, kind: string, message: stri
   return json(req, { ok: false, error: { kind, message } } satisfies RpcResponse, status)
 }
 
-/** 只允许 owner token 的 RPC：清库、清/重置凭证、重置设置。 */
+/** 只允许 owner token 的 RPC：清库、清/重置凭证、重置设置、加载扩展渠道代码。 */
 const OWNER_ONLY: ReadonlySet<RpcMethod> = new Set<RpcMethod>([
   "diagnostics.clearAll",
   "diagnostics.resetBrowserProfile",
   "diagnostics.clearCookies",
   "settings.reset",
+  "channels.registerPlugin",
 ])
+
+/** 已加载的渠道扩展：路径 → 文件 mtime（同版本幂等；更新后按新 query 重新 import）。 */
+const loadedChannelPlugins = new Map<string, number>()
 
 class ServiceError extends Error {
   constructor(
@@ -962,6 +968,31 @@ export async function runService(opts: ServiceOptions): Promise<number> {
         const xml = passive ? ((await source.fetchPassive?.()) ?? null) : await source.fetch()
         if (!xml) throw new ServiceError("no-data", 502, "无可用数据")
         return { xml, tookMs: Date.now() - started }
+      }
+      // ── 渠道扩展插件（基础能力之外的平台渠道由扩展组件运行时登记）────
+      case "channels.registerPlugin": {
+        const file = asString(p.path, "path")
+        if (!file.endsWith(".js")) {
+          throw new ServiceError("bad-request", 400, "渠道插件必须是 .js 文件")
+        }
+        const mtime = statSync(file).mtimeMs
+        if (loadedChannelPlugins.get(file) === mtime) {
+          return { registered: false, path: file, reason: "already-loaded" }
+        }
+        // 插件导出的是渠道**实例数组**；注册必须用本进程的 registerChannel
+        // （插件 bundle 内也有同名函数，但那是它自己模块图的孤立注册表）。
+        const mod = (await import(`${pathToFileURL(file).href}?v=${mtime}`)) as {
+          channels?: unknown
+        }
+        const channels = mod.channels
+        if (!Array.isArray(channels) || channels.length === 0) {
+          throw new ServiceError("bad-request", 400, "渠道插件未导出非空 channels 数组")
+        }
+        for (const channel of channels) {
+          registerChannel(channel as RssChannel)
+        }
+        loadedChannelPlugins.set(file, mtime)
+        return { registered: true, path: file, channels: channels.length }
       }
       case "probe.resolve": {
         const url = asString(p.url, "url")

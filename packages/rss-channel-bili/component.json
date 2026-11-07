@@ -1,0 +1,8 @@
+{
+  "id": "rss-channel-bili",
+  "kind": "service",
+  "name": "B站渠道",
+  "version": "0.1.0",
+  "main": "main.js",
+  "inject": ["rss.extend"]
+}

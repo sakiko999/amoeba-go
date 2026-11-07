@@ -1,0 +1,19 @@
+{
+  "name": "@tabs/rss-channel-twitch",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Twitch渠道扩展插件（crawler channels 的运行时注册，基础服务之外的可插拔能力）。",
+  "exports": {
+    ".": "./src/main.ts"
+  },
+  "scripts": {
+    "pack": "bun run scripts/pack.ts"
+  },
+  "dependencies": {
+    "@amoeba/crawler": "workspace:*"
+  },
+  "devDependencies": {
+    "@host/sdk": "workspace:*",
+    "@tabs/rss-channel-kit": "workspace:*"
+  }
+}

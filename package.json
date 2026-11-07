@@ -12,7 +12,7 @@
     "preview": "bun run build && bun run --cwd apps/desktop start",
     "desktop:dist": "bun run --cwd apps/desktop dist",
     "smoke": "bun run build && bun run --cwd apps/desktop smoke",
-    "pages:prepare": "bun run --cwd packages/media-manager pack:page && bun run --cwd packages/media-library pack && bun run --cwd packages/rss-browser pack && bun run --cwd packages/rss-service pack && bun run --cwd packages/rss-client pack",
+    "pages:prepare": "bun run scripts/pack-components.ts",
     "media": "bun run --cwd packages/media-manager dev",
     "media:debug": "bun run --cwd packages/media-manager dev:debug",
     "media:build": "bun run --cwd packages/media-manager build",

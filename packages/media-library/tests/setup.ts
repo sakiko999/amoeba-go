@@ -13,4 +13,9 @@ mock.module("electron", () => ({
       throw new Error("network is disabled in unit tests");
     },
   },
+  // provider 测试会经公共入口（index）间接加载 service.ts，这里补齐它用到的面
+  dialog: {
+    showOpenDialog: async () => ({ canceled: true, filePaths: [] }),
+  },
+  shell: { showItemInFolder: () => {} },
 }));

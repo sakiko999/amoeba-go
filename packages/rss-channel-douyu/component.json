@@ -1,0 +1,8 @@
+{
+  "id": "rss-channel-douyu",
+  "kind": "service",
+  "name": "斗鱼渠道",
+  "version": "0.1.0",
+  "main": "main.js",
+  "inject": ["rss.extend"]
+}

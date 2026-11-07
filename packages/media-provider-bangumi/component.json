@@ -1,0 +1,8 @@
+{
+  "id": "media-provider-bangumi",
+  "kind": "service",
+  "name": "Bangumi 元数据渠道",
+  "version": "0.1.0",
+  "main": "main.js",
+  "inject": ["media.providers"]
+}

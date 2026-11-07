@@ -12,13 +12,15 @@
  * 公共契约只有「渠道 → 参数 → XML」:XML 就是天然类型,下游(core / 任意
  * RSS 阅读器)自己解析 XML,不依赖 crawler 的任何数据模型类型。
  *
- * 注册:内置 channel 由 `ensureRegistered()` 惰性注册(见 register.ts),
+ * 注册:基础 channel 由 `ensureRegistered()` 惰性注册(见 register-base.ts),
  * `getChannel/listChannels/registerAllChannels` 都会先确保已注册。
+ * 平台渠道是扩展插件：`channels/<platform>/register.ts` 由扩展组件在运行时
+ * 经 `registerChannel` 登记（跨进程场景见 electron-tabs-demo 的 rss-service）。
  */
 
 import type { Item, Kind } from "@amoeba/xml"
 
-import { registerBuiltinChannels } from "./register.ts"
+import { registerBaseChannels } from "./register-base.ts"
 
 /** channel 产出的 item 种类。 */
 export type { Kind } from "@amoeba/xml"
@@ -212,7 +214,8 @@ let builtinRegistered = false
 function ensureBuiltinRegistered(): void {
   if (builtinRegistered) return
   builtinRegistered = true
-  registerBuiltinChannels()
+  // 只注册基础渠道；平台渠道由扩展组件运行时登记（见 register-base.ts 头注释）
+  registerBaseChannels()
 }
 
 /** 注册一个渠道。重复 key 覆盖。 */

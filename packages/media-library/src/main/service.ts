@@ -29,12 +29,18 @@ import {
   writeMetadataNfoFile,
 } from "./nfoFile";
 import { applyOrganize, planOrganize } from "./organize";
+import { ProviderRegistry } from "./providers";
 import { scrapeApply, scrapePreview, searchMetadata } from "./scrape";
 
 export interface MediaServiceOptions {
   getWindow(): BrowserWindow | undefined;
   /** 元数据缓存目录（默认 userData） */
   dataDir?: string;
+  /**
+   * 元数据渠道注册表（扩展点）。宿主形态由 media-library 组件 provide
+   * `media.providers` 时传入同一实例；独立形态由 backend.ts 注册内置 provider。
+   */
+  providers?: ProviderRegistry;
 }
 
 export interface MediaService {
@@ -131,6 +137,7 @@ const IMAGE_MIME: Record<string, string> = {
 
 export function createMediaService(opts: MediaServiceOptions): MediaService {
   configureCache(opts.dataDir);
+  const providers = opts.providers ?? new ProviderRegistry();
 
   return {
     async pickLibrary() {
@@ -181,6 +188,7 @@ export function createMediaService(opts: MediaServiceOptions): MediaService {
 
     async searchMetadata(source, keyword, mediaType) {
       return searchMetadata(
+        providers,
         requireSource(source),
         requireString(keyword, "keyword"),
         requireMediaType(mediaType),
@@ -189,6 +197,7 @@ export function createMediaService(opts: MediaServiceOptions): MediaService {
 
     async scrapePreview(source, id, mediaType) {
       return scrapePreview(
+        providers,
         requireSource(source),
         requireString(id, "id"),
         requireMediaType(mediaType),
@@ -197,6 +206,7 @@ export function createMediaService(opts: MediaServiceOptions): MediaService {
 
     async scrapeApply(dir, source, id, mediaType) {
       return scrapeApply(
+        providers,
         requireString(dir, "dir"),
         requireSource(source),
         requireString(id, "id"),

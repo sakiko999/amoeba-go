@@ -46,6 +46,8 @@ export interface RssService {
 export interface RssServiceHandle {
   proc: ChildProcess;
   service: RssService;
+  /** owner RPC（组件内部使用，token 不出组件边界） */
+  call<T = unknown>(method: string, params?: Record<string, unknown>): Promise<T>;
 }
 
 /** rss-browser 组件提供的端点形状（只取用得到的字段，避免跨包类型依赖） */
@@ -185,6 +187,29 @@ export async function startRssService(opts: {
       headers: { authorization: `Bearer ${token}`, ...init?.headers },
     });
 
+  const call = async <T>(
+    method: string,
+    params?: Record<string, unknown>,
+  ): Promise<T> => {
+    const res = await authed("/v1/rpc", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ method, params: params ?? {} }),
+      signal: AbortSignal.timeout(60_000),
+    });
+    const body = (await res.json()) as {
+      ok: boolean;
+      result?: T;
+      error?: { kind?: string; message?: string };
+    };
+    if (!body.ok) {
+      throw new Error(
+        `[${body.error?.kind ?? `http-${res.status}`}] ${body.error?.message ?? "rpc failed"}`,
+      );
+    }
+    return body.result as T;
+  };
+
   let stopped = false;
   const service: RssService = {
     endpoint: () => ({ ...info }),
@@ -209,7 +234,7 @@ export async function startRssService(opts: {
       await waitExit(proc, SHUTDOWN_TIMEOUT_MS);
     },
   };
-  return { proc, service };
+  return { proc, service, call };
 }
 
 /* ---------- 组件入口 ---------- */
@@ -240,6 +265,22 @@ export async function activate(ctx: PageMainContext): Promise<void> {
   ctx.provide(SERVICE_NAME, handle.service, {
     expose: ["endpoint", "health", "stop"],
   });
+  // 扩展点：rss-channel-* 组件经此把渠道模块（channels.js）登记进数据服务。
+  // 加载在执行插件代码，走 owner RPC（token 不出本组件）。
+  const h = handle;
+  ctx.provide(
+    "rss.extend",
+    {
+      registerChannelModule: async (absPath: string) =>
+        h.call<{
+          registered: boolean;
+          path: string;
+          reason?: string;
+          channels?: number;
+        }>("channels.registerPlugin", { path: absPath }),
+    },
+    { expose: ["registerChannelModule"] },
+  );
   ctx.log(
     `rss endpoint ready: ${handle.service.endpoint().baseUrl} (${serviceJs}); ` +
       `browser cdp proxy :${browserPort}`,

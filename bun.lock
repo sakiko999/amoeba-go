@@ -133,6 +133,9 @@
         "@electron/packager": "^20.3.0",
         "@host/sdk": "workspace:*",
         "@tabs/media-library": "workspace:*",
+        "@tabs/media-provider-bangumi": "workspace:*",
+        "@tabs/media-provider-douban": "workspace:*",
+        "@tabs/media-provider-tmdb": "workspace:*",
         "@tailwindcss/vite": "^4.3.3",
         "@types/react": "^19",
         "@types/react-dom": "^19",
@@ -146,6 +149,30 @@
         "vite": "^8.3.6",
       },
     },
+    "packages/media-provider-bangumi": {
+      "name": "@tabs/media-provider-bangumi",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/media-library": "workspace:*",
+      },
+    },
+    "packages/media-provider-douban": {
+      "name": "@tabs/media-provider-douban",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/media-library": "workspace:*",
+      },
+    },
+    "packages/media-provider-tmdb": {
+      "name": "@tabs/media-provider-tmdb",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/media-library": "workspace:*",
+      },
+    },
     "packages/rss-browser": {
       "name": "@tabs/rss-browser",
       "version": "0.1.0",
@@ -153,6 +180,112 @@
         "@host/sdk": "workspace:*",
         "@types/ws": "^8.18.0",
         "ws": "^8.18.0",
+      },
+    },
+    "packages/rss-channel-apple": {
+      "name": "@tabs/rss-channel-apple",
+      "version": "0.1.0",
+      "dependencies": {
+        "@amoeba/crawler": "workspace:*",
+      },
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/rss-channel-kit": "workspace:*",
+      },
+    },
+    "packages/rss-channel-bili": {
+      "name": "@tabs/rss-channel-bili",
+      "version": "0.1.0",
+      "dependencies": {
+        "@amoeba/crawler": "workspace:*",
+      },
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/rss-channel-kit": "workspace:*",
+      },
+    },
+    "packages/rss-channel-douyin": {
+      "name": "@tabs/rss-channel-douyin",
+      "version": "0.1.0",
+      "dependencies": {
+        "@amoeba/crawler": "workspace:*",
+      },
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/rss-channel-kit": "workspace:*",
+      },
+    },
+    "packages/rss-channel-douyu": {
+      "name": "@tabs/rss-channel-douyu",
+      "version": "0.1.0",
+      "dependencies": {
+        "@amoeba/crawler": "workspace:*",
+      },
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/rss-channel-kit": "workspace:*",
+      },
+    },
+    "packages/rss-channel-huya": {
+      "name": "@tabs/rss-channel-huya",
+      "version": "0.1.0",
+      "dependencies": {
+        "@amoeba/crawler": "workspace:*",
+      },
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/rss-channel-kit": "workspace:*",
+      },
+    },
+    "packages/rss-channel-kit": {
+      "name": "@tabs/rss-channel-kit",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+      },
+    },
+    "packages/rss-channel-twitch": {
+      "name": "@tabs/rss-channel-twitch",
+      "version": "0.1.0",
+      "dependencies": {
+        "@amoeba/crawler": "workspace:*",
+      },
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/rss-channel-kit": "workspace:*",
+      },
+    },
+    "packages/rss-channel-weibo": {
+      "name": "@tabs/rss-channel-weibo",
+      "version": "0.1.0",
+      "dependencies": {
+        "@amoeba/crawler": "workspace:*",
+      },
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/rss-channel-kit": "workspace:*",
+      },
+    },
+    "packages/rss-channel-xhs": {
+      "name": "@tabs/rss-channel-xhs",
+      "version": "0.1.0",
+      "dependencies": {
+        "@amoeba/crawler": "workspace:*",
+      },
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/rss-channel-kit": "workspace:*",
+      },
+    },
+    "packages/rss-channel-youtube": {
+      "name": "@tabs/rss-channel-youtube",
+      "version": "0.1.0",
+      "dependencies": {
+        "@amoeba/crawler": "workspace:*",
+      },
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/rss-channel-kit": "workspace:*",
       },
     },
     "packages/rss-client": {
@@ -167,6 +300,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@amoeba/core": "workspace:*",
+        "@amoeba/crawler": "workspace:*",
         "@amoeba/host": "workspace:*",
         "@amoeba/log": "workspace:*",
         "@amoeba/resolve": "workspace:*",
@@ -538,9 +672,35 @@
 
     "@tabs/media-library": ["@tabs/media-library@workspace:packages/media-library"],
 
+    "@tabs/media-provider-bangumi": ["@tabs/media-provider-bangumi@workspace:packages/media-provider-bangumi"],
+
+    "@tabs/media-provider-douban": ["@tabs/media-provider-douban@workspace:packages/media-provider-douban"],
+
+    "@tabs/media-provider-tmdb": ["@tabs/media-provider-tmdb@workspace:packages/media-provider-tmdb"],
+
     "@tabs/notes": ["@tabs/notes@workspace:packages/tab-notes"],
 
     "@tabs/rss-browser": ["@tabs/rss-browser@workspace:packages/rss-browser"],
+
+    "@tabs/rss-channel-apple": ["@tabs/rss-channel-apple@workspace:packages/rss-channel-apple"],
+
+    "@tabs/rss-channel-bili": ["@tabs/rss-channel-bili@workspace:packages/rss-channel-bili"],
+
+    "@tabs/rss-channel-douyin": ["@tabs/rss-channel-douyin@workspace:packages/rss-channel-douyin"],
+
+    "@tabs/rss-channel-douyu": ["@tabs/rss-channel-douyu@workspace:packages/rss-channel-douyu"],
+
+    "@tabs/rss-channel-huya": ["@tabs/rss-channel-huya@workspace:packages/rss-channel-huya"],
+
+    "@tabs/rss-channel-kit": ["@tabs/rss-channel-kit@workspace:packages/rss-channel-kit"],
+
+    "@tabs/rss-channel-twitch": ["@tabs/rss-channel-twitch@workspace:packages/rss-channel-twitch"],
+
+    "@tabs/rss-channel-weibo": ["@tabs/rss-channel-weibo@workspace:packages/rss-channel-weibo"],
+
+    "@tabs/rss-channel-xhs": ["@tabs/rss-channel-xhs@workspace:packages/rss-channel-xhs"],
+
+    "@tabs/rss-channel-youtube": ["@tabs/rss-channel-youtube@workspace:packages/rss-channel-youtube"],
 
     "@tabs/rss-client": ["@tabs/rss-client@workspace:packages/rss-client"],
 

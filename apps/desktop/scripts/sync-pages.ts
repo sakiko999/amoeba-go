@@ -32,6 +32,8 @@ async function readManifestId(dir: string): Promise<string | undefined> {
 }
 
 let synced = 0;
+/** 组件 id → 首个来源目录：out/ 里的旧产物若残留同名 id，不能静默覆盖新组件 */
+const seen = new Map<string, string>();
 for (const pkg of await readdir(packagesDir, { withFileTypes: true })) {
   if (!pkg.isDirectory()) continue;
   const outDir = join(packagesDir, pkg.name, "out");
@@ -44,6 +46,12 @@ for (const pkg of await readdir(packagesDir, { withFileTypes: true })) {
     const source = join(outDir, entry.name);
     const id = await readManifestId(source);
     if (id === undefined) continue;
+    const existing = seen.get(id);
+    if (existing !== undefined) {
+      console.warn(`pages: id 冲突，跳过 ${source}（已用 ${existing}）`);
+      continue;
+    }
+    seen.set(id, source);
     const dest = join(appRoot, "out", "pages", id);
     await rm(dest, { recursive: true, force: true });
     await mkdir(join(appRoot, "out", "pages"), { recursive: true });

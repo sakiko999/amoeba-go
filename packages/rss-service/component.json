@@ -2,13 +2,17 @@
   "id": "rss-service",
   "kind": "service",
   "name": "RSS 数据服务",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "main": "main.js",
   "inject": ["rss.browser"],
   "provides": [
     {
       "name": "rss.endpoint",
       "expose": ["endpoint", "health", "stop"]
+    },
+    {
+      "name": "rss.extend",
+      "expose": ["registerChannelModule"]
     }
   ]
 }

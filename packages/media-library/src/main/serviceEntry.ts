@@ -8,6 +8,7 @@
 
 import type { BrowserWindow } from "electron";
 import type { PageMainContext } from "@host/sdk";
+import { ProviderRegistry } from "./providers";
 import { createMediaService } from "./service";
 import type { MediaService } from "./service";
 
@@ -17,9 +18,12 @@ export const SERVICE_NAME = "media.library";
 let service: MediaService | undefined;
 
 export function activate(ctx: PageMainContext): void {
+  // 元数据渠道扩展点：media-provider-* 组件把 provider 注册进同一实例
+  const providers = new ProviderRegistry();
   service = createMediaService({
     getWindow: () => ctx.getWindow() as BrowserWindow | undefined,
     dataDir: ctx.dataDir,
+    providers,
   });
   ctx.provide(SERVICE_NAME, service, {
     expose: [
@@ -38,7 +42,15 @@ export function activate(ctx: PageMainContext): void {
       "cacheClear",
     ],
   });
-  ctx.log("media.library service registered");
+  ctx.provide(
+    "media.providers",
+    {
+      register: (provider: unknown) => providers.register(provider as never),
+      listSources: () => providers.listSources(),
+    },
+    { expose: ["register", "listSources"] },
+  );
+  ctx.log("media.library service registered (media.providers open)");
 }
 
 export function deactivate(): void {
