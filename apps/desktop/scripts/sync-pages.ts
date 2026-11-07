@@ -4,10 +4,16 @@
  * 约定：packages/<pkg>/out/<name>/ 下含 component.json 或 page.json 即视为组件包
  * （如 media-manager 的 out/page 与 out/service）。缺失时只提示并跳过 —— 宿主仍可运行。
  * 生成组件包：bun run pages:prepare（monorepo 根）。
+ *
+ * npm 依赖去重：组件产物各自带 node_modules（自包含、可单独分发）；投影到宿主时
+ * 把全部组件的 npm 依赖合并（同名同版本去重）装进 out/pages/node_modules 共享层。
+ * Node 的模块解析逐级向上（out/pages/<id>/main.js 的 createRequire 与数据服务进程
+ * import <id>/channels.js 都一样），共享层天然被命中——除非组件目录里还有同名包。
+ * 版本冲突（同名不同版本）的组件保留自己的完整 node_modules（隔离优先，不共享）。
  */
 
-import { cp, mkdir, readdir, rm } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { cp, mkdir, readdir, rm, writeFile } from "node:fs/promises";
+import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const appRoot = resolve(import.meta.dir, "..");
@@ -31,9 +37,28 @@ async function readManifestId(dir: string): Promise<string | undefined> {
   return undefined;
 }
 
+/** 组件产物自带的 npm 依赖清单（pack 写的 package.json；无则空）。 */
+function readComponentDeps(dir: string): Record<string, string> {
+  const path = join(dir, "package.json");
+  if (!existsSync(path)) return {};
+  try {
+    const raw = JSON.parse(readFileSync(path, "utf8")) as {
+      dependencies?: Record<string, string>;
+    };
+    return raw.dependencies ?? {};
+  } catch {
+    return {};
+  }
+}
+
 let synced = 0;
 /** 组件 id → 首个来源目录：out/ 里的旧产物若残留同名 id，不能静默覆盖新组件 */
 const seen = new Map<string, string>();
+/** 共享层依赖：name → version（同名同版本去重） */
+const sharedDeps = new Map<string, string>();
+/** 版本冲突的组件（保留各自完整 node_modules，不进共享层） */
+const conflicted: string[] = [];
+
 // out/pages 是 workspace 组件包的纯投影：先整体清空，避免已删除/改名的旧组件
 // （如 rss-channel-* → platform-*）继续被宿主加载
 const pagesRoot = join(appRoot, "out", "pages");
@@ -56,14 +81,66 @@ for (const pkg of await readdir(packagesDir, { withFileTypes: true })) {
       continue;
     }
     seen.set(id, source);
+
+    const deps = readComponentDeps(source);
+    let hasConflict = false;
+    for (const [name, version] of Object.entries(deps)) {
+      const known = sharedDeps.get(name);
+      if (known === undefined) sharedDeps.set(name, version);
+      else if (known !== version) hasConflict = true;
+    }
+
     const dest = join(pagesRoot, id);
     await rm(dest, { recursive: true, force: true });
     await mkdir(pagesRoot, { recursive: true });
-    await cp(source, dest, { recursive: true });
-    console.log(`pages: synced ${id} (${pkg.name}/${entry.name}) → ${dest}`);
+    await cp(source, dest, {
+      recursive: true,
+      filter: (src) => {
+        // 冲突组件保留自己的 node_modules（隔离）；干净组件剔除（含目录本身），
+        // 改用共享层。依赖清单 package.json 也不投影（它只对 pack 产物有意义）。
+        if (src === source) return true;
+        const rel = src.slice(source.length + 1).replaceAll("\\", "/");
+        if (rel === "package.json") return false;
+        if (rel === "node_modules" || rel.startsWith("node_modules/")) {
+          return hasConflict;
+        }
+        return true;
+      },
+    });
+    if (hasConflict) conflicted.push(id);
+    console.log(
+      `pages: synced ${id} (${pkg.name}/${entry.name}) → ${dest}${hasConflict ? "（依赖版本冲突，保留局部 node_modules）" : ""}`,
+    );
     synced += 1;
   }
 }
+
+// 共享依赖层：同版本只装一份，组件目录向上解析命中
+if (sharedDeps.size > 0) {
+  const manifest = {
+    name: "pages-shared-deps",
+    private: true,
+    dependencies: Object.fromEntries([...sharedDeps.entries()].sort()),
+  };
+  await writeFile(
+    join(pagesRoot, "package.json"),
+    JSON.stringify(manifest, null, 2) + "\n",
+  );
+  const proc = Bun.spawn({
+    cmd: ["bun", "install", "--production", "--cwd", pagesRoot],
+    stdout: "inherit",
+    stderr: "inherit",
+  });
+  const code = await proc.exited;
+  if (code !== 0) {
+    throw new Error(`install shared page dependencies failed (exit ${code})`);
+  }
+  console.log(
+    `pages: shared deps installed (${[...sharedDeps.keys()].sort().join(", ")})` +
+      (conflicted.length > 0 ? `；冲突保留局部：${conflicted.join(", ")}` : ""),
+  );
+}
+
 if (synced === 0) {
   console.log("pages: 没有可同步的组件包（先运行 bun run pages:prepare）");
 }

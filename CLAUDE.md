@@ -43,5 +43,5 @@
 - [!] 新基础组件 api-gateway（api.gateway）是平台 API 唯一注册中心：media.providers 扩展点已退役，宿主形态刮削经网关惰性解析；rss 平台在网关只注册元数据 API，执行体仍在 rss 数据服务进程
 - [ ] 宿主形态经网关的真实刮削链路（UI 点搜索/刮削 → media.library → api.gateway → platform-media）需真机验收一次，smoke 目前只覆盖注册与自检
 - [ ] 若要插件像 dsh 那样自带 node_modules：pack 时装 production deps 进组件包 + 宿主 createRequire 以组件目录为基准，放开后 api-gateway 的 GraphQL 决策记录里「零依赖」条自然失效
-- [!] 「组件零运行时依赖」不是原则，是历史打包约束：组件现已支持自带 npm 依赖（platform-kit pack 对非 workspace 依赖 external 并 production 安装进产物 node_modules；宿主 createRequire(main.js)/数据服务进程 import 都以组件目录解析）；workspace 依赖仍须内联（asar 内无 workspace 链接）
+- [!] 「组件零运行时依赖」不是原则，是历史打包约束：组件现已支持自带 npm 依赖（platform-kit pack 对非 workspace 依赖 external 并 production 安装进产物 node_modules；宿主 createRequire(main.js)/数据服务进程 import 都以组件目录解析）；workspace 依赖仍须内联（asar 内无 workspace 链接）；宿主投影时 sync-pages 把组件 npm 依赖合并成 out/pages/node_modules 共享层（同名同版本去重，冲突版本保留局部）
 <!-- cc-todo:end -->

@@ -8,7 +8,7 @@
  *   component.json
  *   package.json + node_modules —— 仅当组件声明了 npm 依赖（非 workspace）：
  *                     npm 依赖不内联（构建时 external），以 production 依赖形式
- *                     装进产物目录。宿主用 createRequire(main.js) 加载、数据服务
+ *                     装进产物目录（宿主投影时由 sync-pages 去重到共享层）。宿主用 createRequire(main.js) 加载、数据服务
  *                     进程 import 插件 bundle，两者的模块解析都从组件目录出发，
  *                     天然命中同目录 node_modules —— 组件可以像普通 npm 包一样
  *                     带依赖（workspace 依赖仍内联，宿主 asar 内没有 workspace 链接）。
