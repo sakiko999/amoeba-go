@@ -63,12 +63,14 @@ export function locateBun(): string {
   return "bun";
 }
 
-/** AMOEBA_SERVICE_JS → 组件包内 service.js（pack 复制）→ tauri-rss 构建产物（开发机兜底） */
+/**
+ * AMOEBA_SERVICE_JS（调试覆盖）→ 组件包内 service.js（pack 时由 runtime/ 本地构建）。
+ * 不再回退外部仓库产物：数据服务源码已移植进本包（runtime/ + packages/amoeba/*）。
+ */
 export function locateServiceJs(componentRoot: string): string | undefined {
   const candidates = [
     process.env.AMOEBA_SERVICE_JS,
     join(componentRoot, "service.js"),
-    "X:\\tauri-rss\\dist\\service\\service.js",
   ].filter((p): p is string => typeof p === "string" && p.length > 0);
   for (const p of candidates) {
     if (existsSync(p)) return p;

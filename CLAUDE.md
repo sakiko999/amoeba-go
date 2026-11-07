@@ -30,4 +30,7 @@
 - [ ] 待用户决定 feat/componentize-media-backend（主仓库）与 feat/componentize-backend（submodule）是否开 PR 合并；合并前 worktree X:\wtcmb 保留
 - [ ] rss-service 组件已落地（薄桥模式：spawn amoeba 数据服务 + provide rss.endpoint）；后续：RSS 页面组件消费该服务、Electron 抓取浏览器接入、升级链路（tauri-rss service:build → 重 pack）
 - [!] rss-service 组件运行前提：bun 在 PATH（或 AMOEBA_BUN）+ service.js（AMOEBA_SERVICE_JS/包内副本/tauri-rss dist）；宿主 smoke 会真实拉起该服务，构建机缺 bun 会 smoke 失败；owner token 绝不能注入 renderer
+- [!] rss 组件已按职责拆为三包：rss-browser（Electron CDP 代理，provides rss.browser）/ rss-service（数据进程宿主，inject rss.browser）/ rss-client（RPC 访问层，inject rss.endpoint）；拓扑激活+级联已由宿主 registry 保证
+- [!] crawler browser 已全面 Electron 化并经真实渠道验证（weibo:user:search 走 Electron Chromium 返回真数据）；小红书/抖音仍有指纹风险待真机登录验证；bun 依赖仍是临时方案（spawn，未做 runtime 打包）
+- [ ] 后续：RSS 页面组件（inject rss.client 消费数据）、强反爬平台真机验收、升级链路（tauri-rss service:build → bun run pages:prepare）
 <!-- cc-todo:end -->

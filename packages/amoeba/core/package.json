@@ -1,0 +1,26 @@
+{
+  "name": "@amoeba/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./media-store": "./src/store/media-store.ts",
+    "./pure": "./src/pure.ts",
+    "./reading": "./src/types/reading.ts",
+    "./source": "./src/source/index.ts",
+    "./source/rsshub": "./src/source/rsshub.ts"
+  },
+  "scripts": {},
+  "dependencies": {
+    "@amoeba/crawler": "workspace:*",
+    "@amoeba/log": "workspace:*",
+    "@amoeba/platform": "workspace:*",
+    "@amoeba/resolve": "workspace:*",
+    "@amoeba/xml": "workspace:*"
+  },
+  "devDependencies": {
+    "@amoeba/host": "workspace:*"
+  }
+}

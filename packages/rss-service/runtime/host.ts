@@ -1,0 +1,152 @@
+/**
+ * 数据服务宿主注入。
+ *
+ * 服务进程 = 数据层唯一写者：这里注入 node HTTP/JS/WS + bun:sqlite（desktop 的库）
+ * + WebView2 sidecar（profile 也由服务持有）。桌面端只保留 http/js/ws/媒体能力。
+ *
+ * stdout 契约：除 `READY <port>` 外不写任何东西；日志一律 stderr（宿主 console
+ * logger 默认写 stdout，必须替换）。
+ */
+
+import { Database } from "bun:sqlite"
+import { existsSync, mkdirSync, readdirSync, rmSync, statSync } from "node:fs"
+import { basename, dirname, join } from "node:path"
+
+import {
+  createCdpPortBrowser,
+  createSidecarBrowser,
+  locateSidecarBinary,
+  nodeBackend,
+  nodeJsBackend,
+  nodeWsBackend,
+} from "@amoeba/host/node"
+import { setHostCaps } from "@amoeba/host/runtime"
+import { setLogSink } from "@amoeba/log"
+
+import { sqliteStorage } from "./sqlite-storage.ts"
+
+export interface ServiceHostOptions {
+  dbFile: string
+  profileDir: string
+  /** 显式 sidecar 路径（Tauri 从 resourceDir 传入）；缺省按仓库/同目录探测。 */
+  browserSidecar?: string
+  /**
+   * Electron 宿主的 CDP 代理端口（127.0.0.1）。给了就不再探测/拉起 WebView2
+   * sidecar —— 浏览器进程归 Electron 主进程，profile 也在其 session 分区里。
+   */
+  browserCdp?: number
+  /** false = 不注入浏览器（`--no-browser` / 测试）。 */
+  browser?: boolean
+}
+
+export interface ServiceHost {
+  close(): Promise<void>
+}
+
+import { shimLocalStorageForLog } from "./log-shim.ts"
+
+const BACKUP_INTERVAL_MS = 24 * 60 * 60 * 1000
+const MAX_BACKUPS = 7
+
+/**
+ * 每天最多一次 `VACUUM INTO` 单文件备份（打开库之前调用）。
+ * 失败只记 stderr，不阻止服务启动；备份目录在 dataDir/backups。
+ */
+export function backupDbIfNeeded(dbFile: string, dataDir: string): void {
+  if (!existsSync(dbFile)) return
+  const dir = join(dataDir, "backups")
+  try {
+    mkdirSync(dir, { recursive: true })
+    const backups = readdirSync(dir)
+      .filter((name) => name.startsWith("rss-") && name.endsWith(".db"))
+      .map((name) => ({ name, mtime: statSync(join(dir, name)).mtimeMs }))
+      .sort((a, b) => b.mtime - a.mtime)
+    if (backups[0] && Date.now() - backups[0].mtime < BACKUP_INTERVAL_MS) return
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-")
+    const dest = join(dir, `rss-${stamp}.db`)
+    const db = new Database(dbFile, { readonly: true })
+    try {
+      db.exec(`VACUUM INTO '${dest.replace(/'/g, "''")}'`)
+      console.error(`[service] db backup: ${dest}`)
+    } finally {
+      db.close()
+    }
+    for (const old of backups.slice(MAX_BACKUPS - 1)) {
+      rmSync(join(dir, old.name), { force: true })
+    }
+  } catch (e) {
+    console.error(`[service] db backup skipped: ${e instanceof Error ? e.message : String(e)}`)
+  }
+}
+
+/**
+ * 清凭证/完全重置时删掉历史备份（2026-11-01）：备份是整库 `VACUUM INTO`，包含明文
+ * cookie。不删的话「已退出登录」只对当前库成立，旧备份里仍可恢复出凭证。
+ * 同时清 `rss restore` 留在库旁边的 `<db>.pre-restore-*` 整库副本（同样是含凭证的全量库）。
+ */
+export function purgeBackups(dataDir: string, dbFile?: string): number {
+  let n = 0
+  const dir = join(dataDir, "backups")
+  if (existsSync(dir)) {
+    for (const name of readdirSync(dir)) {
+      if (!name.startsWith("rss-") || !name.endsWith(".db")) continue
+      rmSync(join(dir, name), { force: true })
+      n += 1
+    }
+  }
+  if (dbFile) {
+    const dbDir = dirname(dbFile)
+    const prefix = `${basename(dbFile)}.pre-restore-`
+    if (existsSync(dbDir)) {
+      for (const name of readdirSync(dbDir)) {
+        if (!name.startsWith(prefix)) continue
+        rmSync(join(dbDir, name), { force: true })
+        n += 1
+      }
+    }
+  }
+  return n
+}
+
+export function setupServiceHost(opts: ServiceHostOptions): ServiceHost {
+  shimLocalStorageForLog()
+  // stdout 契约（只允许 `READY <port>`）：@amoeba/log 的所有级别（含 info/debug）
+  // 改走 stderr。此前只有 core 的宿主 Logger 做了这件事，其它包的 console.info 会漏到 stdout。
+  setLogSink((level, text) => console.error(`[${level}] ${text}`))
+  const storage = sqliteStorage(opts.dbFile)
+  // Electron 载具优先：端口由宿主 CDP 代理给，浏览器（隐藏 BrowserWindow）与 profile
+  // 都归 Electron 主进程管理，本进程不拉起任何浏览器。其余形态保持 sidecar 探测。
+  const browser =
+    opts.browser === false
+      ? undefined
+      : opts.browserCdp !== undefined
+        ? createCdpPortBrowser({ port: opts.browserCdp })
+        : (() => {
+            const binary = opts.browserSidecar ?? locateSidecarBinary()
+            // ⚠️ images:false 必传:抓取只要 SSR DOM/接口状态,瀑布流图片是纯内存负担;
+            // 登录不受影响——四个平台的二维码都不依赖图片渲染(bili/douyin 主路径纯 HTTP,
+            // xhs/weibo/douyin 回退读 img.src 属性或 canvas.toDataURL,见 resolve 各 login.ts)。
+            return binary ? createSidecarBrowser({ binary, profileDir: opts.profileDir, images: false }) : undefined
+          })()
+  if (!browser) {
+    console.error("[service] no browser carrier (electron cdp / sidecar); browser channels will fail")
+  } else if (opts.browserCdp !== undefined) {
+    console.error(`[service] browser carrier: electron cdp proxy port=${opts.browserCdp}`)
+  }
+
+  setHostCaps({
+    http: nodeBackend(),
+    js: nodeJsBackend(),
+    storage,
+    ws: nodeWsBackend(),
+    ...(browser ? { browser } : {}),
+    now: Date.now,
+  })
+
+  return {
+    async close() {
+      await browser?.close().catch(() => {})
+      storage.close?.()
+    },
+  }
+}

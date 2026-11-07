@@ -10,6 +10,13 @@
     "test": "bun test",
     "pack": "bun run scripts/pack.ts"
   },
+  "dependencies": {
+    "@amoeba/core": "workspace:*",
+    "@amoeba/host": "workspace:*",
+    "@amoeba/log": "workspace:*",
+    "@amoeba/resolve": "workspace:*",
+    "@amoeba/service-protocol": "workspace:*"
+  },
   "devDependencies": {
     "@host/sdk": "workspace:*"
   }

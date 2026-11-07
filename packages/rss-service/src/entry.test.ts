@@ -13,9 +13,9 @@ import {
   type RssServiceHandle,
 } from "./entry";
 
+// 优先 AMOEBA_SERVICE_JS / 已构建的组件包（bun run --cwd packages/rss-service pack）
 const serviceJs =
-  locateServiceJs(join(import.meta.dir, "..")) ??
-  (process.env.AMOEBA_SERVICE_JS ?? "");
+  locateServiceJs(join(import.meta.dir, "..", "out", "component")) ?? "";
 const run = serviceJs.length > 0;
 
 const tmpRoot = await mkdtemp(join(tmpdir(), "rss-service-test-"));

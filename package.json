@@ -3,7 +3,8 @@
   "private": true,
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "packages/amoeba/*"
   ],
   "scripts": {
     "build": "bun run pages:prepare && bun run --cwd apps/desktop build",
