@@ -1,0 +1,11 @@
+{
+  "id": "platform-bili",
+  "kind": "service",
+  "name": "B站",
+  "version": "0.1.0",
+  "main": "main.js",
+  "inject": [
+    "rss.extend",
+    "api.gateway"
+  ]
+}

@@ -5,9 +5,9 @@
  * - rss 平台（defineRssPlatformExtension）：组件 main 在宿主主进程，
  *   ① 经 rss.extend 把本包 channels.js（Bun 服务进程侧 bundle）交给数据服务
  *     （渠道与 playback 的执行体在那里）；② 读 pack 生成的 api.json，把平台
- *   渠道的静态描述（key/name/kind/参数表）注册成 `rss.<平台>` API。
+ *   渠道的静态描述（key/name/kind/参数表）注册成 `<平台>` API。
  * - 媒体元数据平台（defineMediaPlatformExtension）：provider 对象直接包成
- *   `media.<source>` API（search / fetchMetadata / fetchEpisodes）。
+ *   `<source>` API（search / fetchMetadata / fetchEpisodes，tags: media.metadata）。
  *
  * 卸载语义（v1）：注册活在消费方（网关/数据服务）内，组件停用/卸载后不撤销，
  * 直到基础能力组件 reload。
@@ -32,6 +32,7 @@ interface ApiGateway {
   register(reg: {
     namespace: string;
     label: string;
+    tags?: string[];
     ops: Record<string, { description?: string; invoke: (params: unknown) => Promise<unknown> | unknown }>;
   }): void;
 }
@@ -50,7 +51,7 @@ export interface PlatformExtensionModule {
   deactivate(): void;
 }
 
-/** rss 平台插件：登记 channels.js（执行体）+ 渠道元数据 API（rss.<平台>）。 */
+/** rss 平台插件：登记 channels.js（执行体）+ 渠道元数据 API（<平台>）。 */
 export function defineRssPlatformExtension(): PlatformExtensionModule {
   return {
     async activate(ctx) {
@@ -82,8 +83,7 @@ export function defineRssPlatformExtension(): PlatformExtensionModule {
             },
           },
         });
-      }
-    },
+      }    },
     deactivate() {
       // 渠道注册在数据服务进程内；停用不撤销（v1），服务 reload 后生效
     },
@@ -98,7 +98,7 @@ interface MetadataProviderLike {
 }
 
 export interface MediaPlatformSpec {
-  /** 渠道身份（ScrapeSource，如 "tmdb"）；API 命名空间 = media.<source> */
+  /** 渠道身份（ScrapeSource，如 "tmdb"）；API 命名空间 = 平台 id 本身 */
   readonly source: string;
   /** 人读标签（如 "TMDB"） */
   readonly label: string;
@@ -106,15 +106,16 @@ export interface MediaPlatformSpec {
   readonly createProvider: () => MetadataProviderLike;
 }
 
-/** 媒体元数据平台插件：provider 包成 media.<source> API 注册进网关。 */
+/** 媒体元数据平台插件：provider 包成 <source> API 注册进网关（平台即命名空间）。 */
 export function defineMediaPlatformExtension(spec: MediaPlatformSpec): PlatformExtensionModule {
   return {
     async activate(ctx) {
       const gw = ctx.require<ApiGateway>("api.gateway");
       const provider = spec.createProvider();
       gw.register({
-        namespace: `media.${spec.source}`,
-        label: `媒体元数据 · ${spec.label}`,
+        namespace: spec.source,
+        label: spec.label,
+        tags: ["media.metadata"],
         ops: {
           search: {
             description: "按关键词搜索条目",
@@ -139,7 +140,7 @@ export function defineMediaPlatformExtension(spec: MediaPlatformSpec): PlatformE
           },
         },
       });
-      ctx.log(`media api registered: media.${spec.source}`);
+      ctx.log(`media api registered: ${spec.source}`);
     },
     deactivate() {
       // 注册表在网关内；停用不撤销（v1），随网关 reload 重建

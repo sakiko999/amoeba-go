@@ -35,7 +35,7 @@ let synced = 0;
 /** 组件 id → 首个来源目录：out/ 里的旧产物若残留同名 id，不能静默覆盖新组件 */
 const seen = new Map<string, string>();
 // out/pages 是 workspace 组件包的纯投影：先整体清空，避免已删除/改名的旧组件
-// （如 rss-channel-* → platform-rss-*）继续被宿主加载
+// （如 rss-channel-* → platform-*）继续被宿主加载
 const pagesRoot = join(appRoot, "out", "pages");
 await rm(pagesRoot, { recursive: true, force: true });
 for (const pkg of await readdir(packagesDir, { withFileTypes: true })) {

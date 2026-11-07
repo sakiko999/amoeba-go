@@ -141,9 +141,9 @@
         "@electron/packager": "^20.3.0",
         "@host/sdk": "workspace:*",
         "@tabs/media-library": "workspace:*",
-        "@tabs/platform-media-bangumi": "workspace:*",
-        "@tabs/platform-media-douban": "workspace:*",
-        "@tabs/platform-media-tmdb": "workspace:*",
+        "@tabs/platform-bangumi": "workspace:*",
+        "@tabs/platform-douban": "workspace:*",
+        "@tabs/platform-tmdb": "workspace:*",
         "@tailwindcss/vite": "^4.3.3",
         "@types/react": "^19",
         "@types/react-dom": "^19",
@@ -157,6 +157,96 @@
         "vite": "^8.3.6",
       },
     },
+    "packages/platform-apple": {
+      "name": "@tabs/platform-apple",
+      "version": "0.1.0",
+      "dependencies": {
+        "@amoeba/crawler": "workspace:*",
+        "@amoeba/log": "workspace:*",
+        "@amoeba/resolve": "workspace:*",
+        "@amoeba/xml": "workspace:*",
+      },
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/platform-kit": "workspace:*",
+      },
+    },
+    "packages/platform-bangumi": {
+      "name": "@tabs/platform-bangumi",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/media-library": "workspace:*",
+        "@tabs/platform-kit": "workspace:*",
+      },
+    },
+    "packages/platform-bili": {
+      "name": "@tabs/platform-bili",
+      "version": "0.1.0",
+      "dependencies": {
+        "@amoeba/crawler": "workspace:*",
+        "@amoeba/log": "workspace:*",
+        "@amoeba/resolve": "workspace:*",
+        "@amoeba/xml": "workspace:*",
+        "ramda": "^0.32.0",
+      },
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/platform-kit": "workspace:*",
+      },
+    },
+    "packages/platform-douban": {
+      "name": "@tabs/platform-douban",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/media-library": "workspace:*",
+        "@tabs/platform-kit": "workspace:*",
+      },
+    },
+    "packages/platform-douyin": {
+      "name": "@tabs/platform-douyin",
+      "version": "0.1.0",
+      "dependencies": {
+        "@amoeba/crawler": "workspace:*",
+        "@amoeba/log": "workspace:*",
+        "@amoeba/resolve": "workspace:*",
+        "@amoeba/xml": "workspace:*",
+        "ramda": "^0.32.0",
+      },
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/platform-kit": "workspace:*",
+      },
+    },
+    "packages/platform-douyu": {
+      "name": "@tabs/platform-douyu",
+      "version": "0.1.0",
+      "dependencies": {
+        "@amoeba/crawler": "workspace:*",
+        "@amoeba/log": "workspace:*",
+        "@amoeba/resolve": "workspace:*",
+        "@amoeba/xml": "workspace:*",
+      },
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/platform-kit": "workspace:*",
+      },
+    },
+    "packages/platform-huya": {
+      "name": "@tabs/platform-huya",
+      "version": "0.1.0",
+      "dependencies": {
+        "@amoeba/crawler": "workspace:*",
+        "@amoeba/log": "workspace:*",
+        "@amoeba/resolve": "workspace:*",
+        "@amoeba/xml": "workspace:*",
+      },
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/platform-kit": "workspace:*",
+      },
+    },
     "packages/platform-kit": {
       "name": "@tabs/platform-kit",
       "version": "0.1.0",
@@ -164,8 +254,8 @@
         "@host/sdk": "workspace:*",
       },
     },
-    "packages/platform-media-bangumi": {
-      "name": "@tabs/platform-media-bangumi",
+    "packages/platform-tmdb": {
+      "name": "@tabs/platform-tmdb",
       "version": "0.1.0",
       "devDependencies": {
         "@host/sdk": "workspace:*",
@@ -173,26 +263,8 @@
         "@tabs/platform-kit": "workspace:*",
       },
     },
-    "packages/platform-media-douban": {
-      "name": "@tabs/platform-media-douban",
-      "version": "0.1.0",
-      "devDependencies": {
-        "@host/sdk": "workspace:*",
-        "@tabs/media-library": "workspace:*",
-        "@tabs/platform-kit": "workspace:*",
-      },
-    },
-    "packages/platform-media-tmdb": {
-      "name": "@tabs/platform-media-tmdb",
-      "version": "0.1.0",
-      "devDependencies": {
-        "@host/sdk": "workspace:*",
-        "@tabs/media-library": "workspace:*",
-        "@tabs/platform-kit": "workspace:*",
-      },
-    },
-    "packages/platform-rss-apple": {
-      "name": "@tabs/platform-rss-apple",
+    "packages/platform-twitch": {
+      "name": "@tabs/platform-twitch",
       "version": "0.1.0",
       "dependencies": {
         "@amoeba/crawler": "workspace:*",
@@ -205,38 +277,8 @@
         "@tabs/platform-kit": "workspace:*",
       },
     },
-    "packages/platform-rss-bili": {
-      "name": "@tabs/platform-rss-bili",
-      "version": "0.1.0",
-      "dependencies": {
-        "@amoeba/crawler": "workspace:*",
-        "@amoeba/log": "workspace:*",
-        "@amoeba/resolve": "workspace:*",
-        "@amoeba/xml": "workspace:*",
-        "ramda": "^0.32.0",
-      },
-      "devDependencies": {
-        "@host/sdk": "workspace:*",
-        "@tabs/platform-kit": "workspace:*",
-      },
-    },
-    "packages/platform-rss-douyin": {
-      "name": "@tabs/platform-rss-douyin",
-      "version": "0.1.0",
-      "dependencies": {
-        "@amoeba/crawler": "workspace:*",
-        "@amoeba/log": "workspace:*",
-        "@amoeba/resolve": "workspace:*",
-        "@amoeba/xml": "workspace:*",
-        "ramda": "^0.32.0",
-      },
-      "devDependencies": {
-        "@host/sdk": "workspace:*",
-        "@tabs/platform-kit": "workspace:*",
-      },
-    },
-    "packages/platform-rss-douyu": {
-      "name": "@tabs/platform-rss-douyu",
+    "packages/platform-weibo": {
+      "name": "@tabs/platform-weibo",
       "version": "0.1.0",
       "dependencies": {
         "@amoeba/crawler": "workspace:*",
@@ -249,8 +291,8 @@
         "@tabs/platform-kit": "workspace:*",
       },
     },
-    "packages/platform-rss-huya": {
-      "name": "@tabs/platform-rss-huya",
+    "packages/platform-xhs": {
+      "name": "@tabs/platform-xhs",
       "version": "0.1.0",
       "dependencies": {
         "@amoeba/crawler": "workspace:*",
@@ -263,50 +305,8 @@
         "@tabs/platform-kit": "workspace:*",
       },
     },
-    "packages/platform-rss-twitch": {
-      "name": "@tabs/platform-rss-twitch",
-      "version": "0.1.0",
-      "dependencies": {
-        "@amoeba/crawler": "workspace:*",
-        "@amoeba/log": "workspace:*",
-        "@amoeba/resolve": "workspace:*",
-        "@amoeba/xml": "workspace:*",
-      },
-      "devDependencies": {
-        "@host/sdk": "workspace:*",
-        "@tabs/platform-kit": "workspace:*",
-      },
-    },
-    "packages/platform-rss-weibo": {
-      "name": "@tabs/platform-rss-weibo",
-      "version": "0.1.0",
-      "dependencies": {
-        "@amoeba/crawler": "workspace:*",
-        "@amoeba/log": "workspace:*",
-        "@amoeba/resolve": "workspace:*",
-        "@amoeba/xml": "workspace:*",
-      },
-      "devDependencies": {
-        "@host/sdk": "workspace:*",
-        "@tabs/platform-kit": "workspace:*",
-      },
-    },
-    "packages/platform-rss-xhs": {
-      "name": "@tabs/platform-rss-xhs",
-      "version": "0.1.0",
-      "dependencies": {
-        "@amoeba/crawler": "workspace:*",
-        "@amoeba/log": "workspace:*",
-        "@amoeba/resolve": "workspace:*",
-        "@amoeba/xml": "workspace:*",
-      },
-      "devDependencies": {
-        "@host/sdk": "workspace:*",
-        "@tabs/platform-kit": "workspace:*",
-      },
-    },
-    "packages/platform-rss-youtube": {
-      "name": "@tabs/platform-rss-youtube",
+    "packages/platform-youtube": {
+      "name": "@tabs/platform-youtube",
       "version": "0.1.0",
       "dependencies": {
         "@amoeba/crawler": "workspace:*",
@@ -734,31 +734,31 @@
 
     "@tabs/notes": ["@tabs/notes@workspace:packages/tab-notes"],
 
+    "@tabs/platform-apple": ["@tabs/platform-apple@workspace:packages/platform-apple"],
+
+    "@tabs/platform-bangumi": ["@tabs/platform-bangumi@workspace:packages/platform-bangumi"],
+
+    "@tabs/platform-bili": ["@tabs/platform-bili@workspace:packages/platform-bili"],
+
+    "@tabs/platform-douban": ["@tabs/platform-douban@workspace:packages/platform-douban"],
+
+    "@tabs/platform-douyin": ["@tabs/platform-douyin@workspace:packages/platform-douyin"],
+
+    "@tabs/platform-douyu": ["@tabs/platform-douyu@workspace:packages/platform-douyu"],
+
+    "@tabs/platform-huya": ["@tabs/platform-huya@workspace:packages/platform-huya"],
+
     "@tabs/platform-kit": ["@tabs/platform-kit@workspace:packages/platform-kit"],
 
-    "@tabs/platform-media-bangumi": ["@tabs/platform-media-bangumi@workspace:packages/platform-media-bangumi"],
+    "@tabs/platform-tmdb": ["@tabs/platform-tmdb@workspace:packages/platform-tmdb"],
 
-    "@tabs/platform-media-douban": ["@tabs/platform-media-douban@workspace:packages/platform-media-douban"],
+    "@tabs/platform-twitch": ["@tabs/platform-twitch@workspace:packages/platform-twitch"],
 
-    "@tabs/platform-media-tmdb": ["@tabs/platform-media-tmdb@workspace:packages/platform-media-tmdb"],
+    "@tabs/platform-weibo": ["@tabs/platform-weibo@workspace:packages/platform-weibo"],
 
-    "@tabs/platform-rss-apple": ["@tabs/platform-rss-apple@workspace:packages/platform-rss-apple"],
+    "@tabs/platform-xhs": ["@tabs/platform-xhs@workspace:packages/platform-xhs"],
 
-    "@tabs/platform-rss-bili": ["@tabs/platform-rss-bili@workspace:packages/platform-rss-bili"],
-
-    "@tabs/platform-rss-douyin": ["@tabs/platform-rss-douyin@workspace:packages/platform-rss-douyin"],
-
-    "@tabs/platform-rss-douyu": ["@tabs/platform-rss-douyu@workspace:packages/platform-rss-douyu"],
-
-    "@tabs/platform-rss-huya": ["@tabs/platform-rss-huya@workspace:packages/platform-rss-huya"],
-
-    "@tabs/platform-rss-twitch": ["@tabs/platform-rss-twitch@workspace:packages/platform-rss-twitch"],
-
-    "@tabs/platform-rss-weibo": ["@tabs/platform-rss-weibo@workspace:packages/platform-rss-weibo"],
-
-    "@tabs/platform-rss-xhs": ["@tabs/platform-rss-xhs@workspace:packages/platform-rss-xhs"],
-
-    "@tabs/platform-rss-youtube": ["@tabs/platform-rss-youtube@workspace:packages/platform-rss-youtube"],
+    "@tabs/platform-youtube": ["@tabs/platform-youtube@workspace:packages/platform-youtube"],
 
     "@tabs/rss-browser": ["@tabs/rss-browser@workspace:packages/rss-browser"],
 

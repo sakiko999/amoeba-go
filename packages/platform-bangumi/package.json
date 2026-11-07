@@ -1,0 +1,20 @@
+{
+  "name": "@tabs/platform-bangumi",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bangumi 元数据平台插件（实现自包含；经 media.providers 注册进媒体库服务）。",
+  "exports": {
+    ".": "./src/main.ts",
+    "./provider": "./src/provider.ts",
+    "./probe": "./src/probe.ts"
+  },
+  "scripts": {
+    "pack": "bun run scripts/pack.ts",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@host/sdk": "workspace:*",
+    "@tabs/media-library": "workspace:*",
+    "@tabs/platform-kit": "workspace:*"
+  }
+}

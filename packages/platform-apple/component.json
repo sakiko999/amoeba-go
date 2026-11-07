@@ -1,0 +1,11 @@
+{
+  "id": "platform-apple",
+  "kind": "service",
+  "name": "Apple Podcasts",
+  "version": "0.1.0",
+  "main": "main.js",
+  "inject": [
+    "rss.extend",
+    "api.gateway"
+  ]
+}

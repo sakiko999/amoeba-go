@@ -1,7 +1,7 @@
 /**
  * resolver/danmaku —— 按 item.url 获取弹幕流（注册表分发）。
  *
- * 与 play.ts 对称：路由 → 平台 → 注册表里 platform-rss-* 插件登记的弹幕能力。
+ * 与 play.ts 对称：路由 → 平台 → 注册表里 platform-* 插件登记的弹幕能力。
  * kind（vod 视频弹幕 / live 直播聊天）从路由推断。
  */
 

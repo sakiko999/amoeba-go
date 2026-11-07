@@ -3,7 +3,7 @@
  *
  * 能力抽离：crawler/rsshub 的输出都只是基础信息（item.url 指向平台详情页）。
  * 这里把「URL → 可播流」统一收敛：resolveRoute 路由到平台，实际解析由注册表里
- * platform-rss-* 插件登记的 PlatformPlayback 承担（基座不再 import 平台代码）。
+ * platform-* 插件登记的 PlatformPlayback 承担（基座不再 import 平台代码）。
  *
  * info 透传 cookie（登录态档位）：core 层经 sourceInfoFor 注入（info.cookie）；
  * 未显式传的平台由各平台 client 经 credentials provider 回落 settings 登录态。

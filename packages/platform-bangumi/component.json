@@ -1,0 +1,10 @@
+{
+  "id": "platform-bangumi",
+  "kind": "service",
+  "name": "Bangumi",
+  "version": "0.1.0",
+  "main": "main.js",
+  "inject": [
+    "api.gateway"
+  ]
+}

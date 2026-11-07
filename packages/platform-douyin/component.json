@@ -1,0 +1,11 @@
+{
+  "id": "platform-douyin",
+  "kind": "service",
+  "name": "抖音",
+  "version": "0.1.0",
+  "main": "main.js",
+  "inject": [
+    "rss.extend",
+    "api.gateway"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "platform-tmdb",
+  "kind": "service",
+  "name": "TMDB",
+  "version": "0.1.0",
+  "main": "main.js",
+  "inject": [
+    "api.gateway"
+  ]
+}

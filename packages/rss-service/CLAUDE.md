@@ -13,16 +13,16 @@ RSS 数据服务组件（`@tabs/rss-service`，主仓库普通子包）：承载
 - `packages/amoeba/{core,resolve,crawler,host,xml,platform,log,service-protocol}`：
   数据服务依赖栈。resolve 与 crawler 已瘦身为**平台无关基座**（HTTP/浏览器/工具/
   契约/注册表）；平台实现（client/签名/登录/播放解析/弹幕协议）在
-  `packages/platform-rss-*/src/lib`。
+  `packages/platform-*/src/lib`。
 - **构建**：`scripts/pack.ts` 在本仓库把 `runtime/main.ts` 打成 `out/component/service.js`
   （bun target 单文件，与 tauri-rss 的 service:build 同构），把 `src/entry.ts` 打成
   组件入口 `main.js`。**没有** `X:\tauri-rss` 路径兜底。
-- **升级（已分叉，不能整目录覆盖）**：平台渠道实现已搬到 `packages/platform-rss-*`，
+- **升级（已分叉，不能整目录覆盖）**：平台渠道实现已搬到 `packages/platform-*`，
   订阅管理已拆到 `packages/rss-subscriptions`。上游 tauri-rss 更新时按边界合并：
   - `packages/amoeba/crawler/src/`：只合并契约/注册表（index）、factory、passive
     与 `channels/rss`（基础渠道）
-  - 平台渠道：合并到对应 `platform-rss-<p>/src/impl`（不要再放回 crawler）
-  - 平台 client/签名/登录/播放/弹幕：合并到 `platform-rss-<p>/src/lib`
+  - 平台渠道：合并到对应 `platform-<p>/src/impl`（不要再放回 crawler）
+  - 平台 client/签名/登录/播放/弹幕：合并到 `platform-<p>/src/lib`
     （resolve/src/platform/<p> 已不存在）
   - `packages/amoeba/core/`：只合并 `processing/deserialize`、`source`、`errors`、
     `log`、媒体类型
@@ -74,7 +74,7 @@ HTTP/WS 服务层、事件直连）是后续工作，届时 `runtime/` 与 `pack
   不依赖任何平台插件。crawler 只保留渠道契约与注册表（`src/index.ts`）、
   公共装配（`factory.ts`）与被动采集（`passive/*`）。
 - **平台扩展**：9 个平台（apple/bili/douyin/douyu/huya/twitch/weibo/xhs/youtube）
-  各是一个 `kind=service` 组件包 `packages/platform-rss-<platform>`，**平台实现完全
+  各是一个 `kind=service` 组件包 `packages/platform-<platform>`，**平台实现完全
   自包含**：`src/impl/`（渠道实现，原 crawler channels）+ `src/lib/`（平台 client/
   签名/登录/播放解析/弹幕协议，原 resolve/platform/<p>）。inject `rss.extend`
   （rss-service provide），activate 时调 `registerChannelModule(<pageRoot>/channels.js)`。
@@ -85,7 +85,7 @@ HTTP/WS 服务层、事件直连）是后续工作，届时 `runtime/` 与 `pack
 - 播放/弹幕：`@amoeba/resolve` 基座只有路由表（resolver/router）与能力注册表
   （resolver/registry）；`resolvePlayByUrl`/`getDanmakuByUrl` 按路由分发到注册的
   平台能力，未注册抛「需安装对应 platform-rss 插件」。
-- 新平台：`packages/platform-rss-<p>/`（component.json + `defineRssPlatformExtension()`
+- 新平台：`packages/platform-<p>/`（component.json + `defineRssPlatformExtension()`
   的 main.ts + `src/impl/` 实现 + `src/channels.ts` 入口 + pack.ts）→ 根
   `bun run pages:prepare` 自动发现（`scripts/pack-components.ts` 扫 `platform-*`，
   排除 `platform-kit`）并打包进宿主。平台代码 import 基座用子路径
@@ -93,7 +93,7 @@ HTTP/WS 服务层、事件直连）是后续工作，届时 `runtime/` 与 `pack
   `@amoeba/resolve/{host,utils/*,browser/*}`（不要用 resolve 根 barrel，会把整个
   基座拖进 bundle）；平台自有符号走本包 `../lib`。
 - **api.gateway**：平台插件同时向统一注册中心（packages/api-gateway）注册
-  `rss.<平台>.channels` 元数据 API（pack 从 channels bundle 提取静态描述生成
+  `<平台>.channels` 元数据 API（pack 从 channels bundle 提取静态描述生成
   api.json）；本数据服务仍是渠道/playback 的执行宿主，与网关互不依赖。
 
 ## 验证

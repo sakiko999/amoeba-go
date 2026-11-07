@@ -34,10 +34,12 @@
 - [!] crawler browser 已全面 Electron 化并经真实渠道验证（weibo:user:search 走 Electron Chromium 返回真数据）；小红书/抖音仍有指纹风险待真机登录验证；bun 依赖仍是临时方案（spawn，未做 runtime 打包）
 - [ ] 后续：RSS 页面组件（inject rss.client 消费数据）、强反爬平台真机验收、升级链路（tauri-rss service:build → bun run pages:prepare）
 - [ ] rss-service 已去外部依赖（源码移植 + 本仓库构建 service.js）；下一步：进程内迁移（node:sqlite/去 HTTP 层，改动面 runtime + host/node 存储适配）与 RSS 页面组件
-- [!] amoeba 已与 tauri-rss 上游分叉：平台渠道实现在 platform-rss-*/src/impl、订阅管理在 @tabs/rss-subscriptions；升级上游时按文件边界合并，禁止整目录覆盖 packages/amoeba/*
-- [!] tsconfig 有意排除 packages/amoeba 与 platform-rss-*/src/{impl,example,channels.ts}：vendor 与平台实现走 Bun.build 校验（含 allowImportingTsExtensions），不参与根 tsc；若把它们加回 include 会出现数百条 vendor 风格错误
+- [!] amoeba 已与 tauri-rss 上游分叉：平台渠道实现在 platform-*/src/impl、订阅管理在 @tabs/rss-subscriptions；升级上游时按文件边界合并，禁止整目录覆盖 packages/amoeba/*
+- [!] tsconfig 有意排除 packages/amoeba 与 platform-*/src/{impl,example,channels.ts}：vendor 与平台实现走 Bun.build 校验（含 allowImportingTsExtensions），不参与根 tsc；若把它们加回 include 会出现数百条 vendor 风格错误
 - [ ] 手动起宿主点一次 media-manager 的搜索/刮削，确认经 media.providers 注册的 TMDB/豆瓣/番组在 UI 链路（而非仅探针）可用
 - [!] `package.json` 当前的 `"./channels/*": "./src/channels/*/register.ts"` 会让 `@amoeba/crawler/channels/factory` 解析到 `src/channels/factory/register.ts`（不存在）。所以不能靠现有模式暴露 factory，必须新增精确 key 或根导出。
-- [!] amoeba 已与 tauri-rss 上游分叉：平台渠道实现在 platform-rss-*/src/impl、订阅管理在 @tabs/rss-subscriptions，升级上游只能按文件边界合并，禁止整目录覆盖 packages/amoeba/*
+- [!] amoeba 已与 tauri-rss 上游分叉：平台渠道实现在 platform-*/src/impl、订阅管理在 @tabs/rss-subscriptions，升级上游只能按文件边界合并，禁止整目录覆盖 packages/amoeba/*
 - [ ] bili 播放解析真机返回的流 URL 为空（可能需要登录 cookie / wbi 签名），播放链路要在真机宿主里完整验收一次
+- [!] 新基础组件 api-gateway（api.gateway）是平台 API 唯一注册中心：media.providers 扩展点已退役，宿主形态刮削经网关惰性解析；rss 平台在网关只注册元数据 API，执行体仍在 rss 数据服务进程
+- [ ] 宿主形态经网关的真实刮削链路（UI 点搜索/刮削 → media.library → api.gateway → platform-media）需真机验收一次，smoke 目前只覆盖注册与自检
 <!-- cc-todo:end -->

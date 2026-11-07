@@ -1,0 +1,11 @@
+{
+  "id": "platform-twitch",
+  "kind": "service",
+  "name": "Twitch",
+  "version": "0.1.0",
+  "main": "main.js",
+  "inject": [
+    "rss.extend",
+    "api.gateway"
+  ]
+}

@@ -4,7 +4,7 @@
  * 定位（platform 插件化之后）：本包只保留与具体平台无关的能力——HTTP 基座、
  * 浏览器调度（CDP）、通用工具、弹幕流通用件、播放/弹幕的路由与注册表、
  * cookie 凭证收口。平台实现（client/签名/登录/播放解析/弹幕协议）全部在
- * platform-rss-* 插件包的 src/lib，经注册表在数据服务进程登记。
+ * platform-* 插件包的 src/lib，经注册表在数据服务进程登记。
  *
  * 对外契约：按 item.url 的懒解析（resolvePlayByUrl/getDanmakuByUrl，注册表分发）
  * + 平台无关的抓取工具（插件 lib 与 crawler channel 共用）。
@@ -29,7 +29,7 @@ export * from "./danmaku/index.ts"
 export * from "./errors.ts"
 export * from "./resolver/index.ts"
 
-// ── 平台无关的凭证收口与平台客户端契约（平台实现在 platform-rss-* 插件） ──
+// ── 平台无关的凭证收口与平台客户端契约（平台实现在 platform-* 插件） ──
 export * from "./platform/credentials.ts"
 export type * from "./platform/types.ts"
 

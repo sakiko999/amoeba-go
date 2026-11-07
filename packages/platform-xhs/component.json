@@ -1,0 +1,11 @@
+{
+  "id": "platform-xhs",
+  "kind": "service",
+  "name": "小红书",
+  "version": "0.1.0",
+  "main": "main.js",
+  "inject": [
+    "rss.extend",
+    "api.gateway"
+  ]
+}

@@ -2,9 +2,9 @@
  * 元数据渠道扩展点：接口 + 注册表。
  *
  * 基础服务（media.library）不内置任何平台渠道；TMDB / 豆瓣 / Bangumi 等由
- * platform-media-* 扩展组件提供：
+ * platform-* 扩展组件提供：
  *   - 宿主形态：平台组件把 API 注册进 api.gateway（统一平台注册中心），
- *     media-library 组件 inject api.gateway 并按命名空间 `media.<source>` 惰性解析
+ *     media-library 组件 inject api.gateway 并按 media.metadata 标签惰性解析
  *   - 独立形态（media-manager app）：backend.ts 直接注册同一批 provider 包
  *
  * 写盘/安全闸门（组织整理、NFO 写回）仍留在 media-library，provider 只取数。
@@ -51,7 +51,7 @@ export class ProviderRegistry implements MetadataProviderSource {
     const provider = this.providers.get(source);
     if (provider === undefined) {
       throw new Error(
-        `未安装 ${source} 元数据渠道组件（platform-media-${source}）`,
+        `未安装 ${source} 元数据渠道组件（platform-${source}）`,
       );
     }
     return provider;

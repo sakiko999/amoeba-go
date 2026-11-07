@@ -77,7 +77,7 @@ export async function buildPlatformComponent(
     const manifest = JSON.parse(
       readFileSync(join(pkgRoot, "component.json"), "utf8"),
     ) as { id: string; name: string };
-    const namespace = manifest.id.replace(/^platform-/, "").replace("-", ".");
+    const namespace = manifest.id.replace(/^platform-/, "");
     const mod = (await import(
       pathToFileURL(join(dist, opts.pluginNaming ?? "channels.js")).href
     )) as { channels?: Array<Record<string, unknown>> };
