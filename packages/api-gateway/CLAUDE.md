@@ -20,10 +20,8 @@
 1. 查询形态过程式（搜索 / 按 id 取详情 / 分页），无图遍历与字段裁剪需求；
 2. 消费端是宿主 IPC 而非 HTTP，GraphQL 生态（持久化查询/缓存/devtools）用不上。
 
-现状加分项（非原则）：当前组件产物是自包含单文件（asar 内没有 node_modules，
-依赖须由 Bun.build 内联，详见根 CLAUDE.md 的打包记录），引 graphql-js 会放大产物。
-这不是「插件不许带依赖」的教条——若未来组件支持自带 node_modules（宿主
-createRequire 以组件目录为基准即可），该条自然失效，仍由前两条决定。
+加分项：组件可以自带 npm 依赖（platform-kit pack 会 external 并装进产物
+node_modules），引 graphql-js 已无分发障碍，只是没必要——仍由前两条决定。
 
 演进路径：注册表 handler `(params) => Promise<result>` 与 GraphQL resolver
 同构，未来需要字段裁剪时加「注册表 → SDL」层即可，插件不用改。

@@ -92,6 +92,8 @@ HTTP/WS 服务层、事件直连）是后续工作，届时 `runtime/` 与 `pack
   `@amoeba/crawler/factory`、`@amoeba/crawler/passive/*`、
   `@amoeba/resolve/{host,utils/*,browser/*}`（不要用 resolve 根 barrel，会把整个
   基座拖进 bundle）；平台自有符号走本包 `../lib`。
+- 组件可自带 npm 依赖（platform-kit pack 对非 workspace 依赖 external 并装进产物
+  node_modules，宿主/数据服务进程都按组件目录解析）；workspace 依赖仍内联。
 - **api.gateway**：平台插件同时向统一注册中心（packages/api-gateway）注册
   `<平台>.channels` 元数据 API（pack 从 channels bundle 提取静态描述生成
   api.json）；本数据服务仍是渠道/playback 的执行宿主，与网关互不依赖。

@@ -4,8 +4,14 @@
  *   <pluginName>   —— 服务进程侧插件 bundle（仅 rss 渠道需要；ESM 单文件，
  *                     bun 服务进程动态 import，平台实现全部 bundle 进来）
  *   api.json       —— rss 平台渠道的静态描述（构建时 import 插件 bundle 提取，
- *                     组件 main 据此向 api.gateway 注册 `rss.<平台>` 元数据 API）
+ *                     组件 main 据此向 api.gateway 注册 `<平台>` 元数据 API）
  *   component.json
+ *   package.json + node_modules —— 仅当组件声明了 npm 依赖（非 workspace）：
+ *                     npm 依赖不内联（构建时 external），以 production 依赖形式
+ *                     装进产物目录。宿主用 createRequire(main.js) 加载、数据服务
+ *                     进程 import 插件 bundle，两者的模块解析都从组件目录出发，
+ *                     天然命中同目录 node_modules —— 组件可以像普通 npm 包一样
+ *                     带依赖（workspace 依赖仍内联，宿主 asar 内没有 workspace 链接）。
  */
 
 import { cp, mkdir, rm } from "node:fs/promises";
@@ -20,6 +26,18 @@ export interface PlatformComponentBuildOptions {
   pluginNaming?: string;
 }
 
+/** npm 依赖（非 workspace:*）→ external + 产物内安装；workspace 依赖 → 内联。 */
+function npmDependencies(pkgRoot: string): Record<string, string> {
+  const pkg = JSON.parse(readFileSync(join(pkgRoot, "package.json"), "utf8")) as {
+    dependencies?: Record<string, string>;
+  };
+  const out: Record<string, string> = {};
+  for (const [name, spec] of Object.entries(pkg.dependencies ?? {})) {
+    if (!spec.startsWith("workspace:")) out[name] = spec;
+  }
+  return out;
+}
+
 async function buildEntry(opts: {
   entry: string;
   outdir: string;
@@ -27,6 +45,7 @@ async function buildEntry(opts: {
   target: "node" | "bun";
   format: "cjs" | "esm";
   label: string;
+  external: string[];
 }): Promise<void> {
   const result = await Bun.build({
     entrypoints: [opts.entry],
@@ -34,7 +53,7 @@ async function buildEntry(opts: {
     naming: opts.naming,
     target: opts.target,
     format: opts.format,
-    external: ["electron"],
+    external: opts.external,
   });
   if (!result.success) {
     for (const log of result.logs) console.error(log);
@@ -48,6 +67,8 @@ export async function buildPlatformComponent(
 ): Promise<void> {
   const pkgRoot = resolve(root);
   const dist = join(pkgRoot, "out", "component");
+  const npmDeps = npmDependencies(pkgRoot);
+  const external = ["electron", ...Object.keys(npmDeps)];
 
   await rm(dist, { recursive: true, force: true });
   await mkdir(dist, { recursive: true });
@@ -60,6 +81,7 @@ export async function buildPlatformComponent(
     target: "node",
     format: "cjs",
     label: "component main",
+    external,
   });
 
   if (opts.pluginEntry !== undefined) {
@@ -70,6 +92,7 @@ export async function buildPlatformComponent(
       target: "bun",
       format: "esm",
       label: "platform plugin",
+      external,
     });
 
     // 渠道实例是纯描述对象（构造无网络副作用）：直接 import 产物提取静态描述，
@@ -97,6 +120,24 @@ export async function buildPlatformComponent(
       join(dist, "api.json"),
       JSON.stringify({ namespace, label: manifest.name, channels }, null, 2),
     );
+  }
+
+  // npm 依赖：以 production 形式装进产物目录（宿主/数据服务进程按组件目录解析）。
+  if (Object.keys(npmDeps).length > 0) {
+    writeFileSync(
+      join(dist, "package.json"),
+      JSON.stringify({ name: "component-deps", private: true, dependencies: npmDeps }, null, 2) + "\n",
+    );
+    const proc = Bun.spawn({
+      cmd: ["bun", "install", "--production", "--cwd", dist],
+      stdout: "inherit",
+      stderr: "inherit",
+    });
+    const code = await proc.exited;
+    if (code !== 0) {
+      throw new Error(`install component dependencies failed (exit ${code}): ${dist}`);
+    }
+    console.log(`component deps installed: ${Object.keys(npmDeps).join(", ")}`);
   }
 
   console.log(`platform component ready: ${dist}`);
