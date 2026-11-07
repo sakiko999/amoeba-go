@@ -10,7 +10,7 @@
 
 export { bindMediaIpc } from "./main/ipcBinding";
 export { ProviderRegistry } from "./main/providers";
-export type { MetadataProvider } from "./main/providers";
+export type { MetadataProvider, MetadataProviderSource } from "./main/providers";
 export {
   NotFoundError,
   getJsonCached,

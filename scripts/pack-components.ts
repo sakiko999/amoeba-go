@@ -11,6 +11,7 @@ import { join, resolve } from "node:path";
 const root = resolve(import.meta.dir, "..");
 /** 包名 → pack script 名（media-manager 的页面组件沿用 pack:page） */
 const baseComponents: [string, string][] = [
+  ["api-gateway", "pack"],
   ["media-manager", "pack:page"],
   ["media-library", "pack"],
   ["rss-browser", "pack"],

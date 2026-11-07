@@ -115,6 +115,14 @@
         "fast-xml-parser": "^5.10.1",
       },
     },
+    "packages/api-gateway": {
+      "name": "@tabs/api-gateway",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@tabs/platform-kit": "workspace:*",
+      },
+    },
     "packages/host-sdk": {
       "name": "@host/sdk",
     },
@@ -715,6 +723,8 @@
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "https://r.cnpmjs.org/@standard-schema/spec/-/spec-1.1.0.tgz", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
 
     "@standard-schema/utils": ["@standard-schema/utils@0.3.0", "https://r.cnpmjs.org/@standard-schema/utils/-/utils-0.3.0.tgz", {}, "sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g=="],
+
+    "@tabs/api-gateway": ["@tabs/api-gateway@workspace:packages/api-gateway"],
 
     "@tabs/clock": ["@tabs/clock@workspace:packages/tab-clock"],
 

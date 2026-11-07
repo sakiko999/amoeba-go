@@ -1,0 +1,13 @@
+{
+  "id": "api-gateway",
+  "kind": "service",
+  "name": "平台 API 网关",
+  "version": "0.1.0",
+  "main": "main.js",
+  "provides": [
+    {
+      "name": "api.gateway",
+      "expose": ["register", "call", "list"]
+    }
+  ]
+}

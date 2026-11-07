@@ -1,0 +1,16 @@
+{
+  "name": "@tabs/api-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "description": "统一平台 API 注册中心（api.gateway）：platform-* 插件在此注册命名空间操作，宿主内可 call/list。不含订阅/抓取/存储/事件等域逻辑。",
+  "exports": {
+    ".": "./src/main.ts"
+  },
+  "scripts": {
+    "pack": "bun run scripts/pack.ts"
+  },
+  "devDependencies": {
+    "@host/sdk": "workspace:*",
+    "@tabs/platform-kit": "workspace:*"
+  }
+}

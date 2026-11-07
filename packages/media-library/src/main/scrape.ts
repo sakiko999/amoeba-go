@@ -18,7 +18,7 @@ import type {
 } from "../shared/types";
 import { writeEpisodeNfo, writeMetadataNfo } from "./nfoWriter";
 import { fetchBinary } from "./provider/http";
-import type { ProviderRegistry } from "./providers";
+import type { MetadataProviderSource } from "./providers";
 
 export type {
   ScrapePreview,
@@ -28,7 +28,7 @@ export type {
 
 /** 预览：拉取但不写盘 */
 export async function scrapePreview(
-  providers: ProviderRegistry,
+  providers: MetadataProviderSource,
   source: ScrapeSource,
   id: string,
   mediaType: MediaType,
@@ -41,7 +41,7 @@ export async function scrapePreview(
 
 /** 应用：写 NFO（含每集）+ 下载海报。海报失败只警告不中断（视频/NFO 已就位） */
 export async function scrapeApply(
-  providers: ProviderRegistry,
+  providers: MetadataProviderSource,
   dir: string,
   source: ScrapeSource,
   id: string,
@@ -82,7 +82,7 @@ export async function scrapeApply(
 }
 
 export async function searchMetadata(
-  providers: ProviderRegistry,
+  providers: MetadataProviderSource,
   source: ScrapeSource,
   keyword: string,
   mediaType: MediaType,

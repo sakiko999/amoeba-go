@@ -2,8 +2,9 @@
   "id": "media-library",
   "kind": "service",
   "name": "媒体库服务",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "main": "main.js",
+  "inject": ["api.gateway"],
   "provides": [
     {
       "name": "media.library",
@@ -22,10 +23,6 @@
         "organizeApply",
         "cacheClear"
       ]
-    },
-    {
-      "name": "media.providers",
-      "expose": ["register", "listSources"]
     }
   ]
 }

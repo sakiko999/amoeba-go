@@ -39,4 +39,5 @@
 - [ ] 手动起宿主点一次 media-manager 的搜索/刮削，确认经 media.providers 注册的 TMDB/豆瓣/番组在 UI 链路（而非仅探针）可用
 - [!] `package.json` 当前的 `"./channels/*": "./src/channels/*/register.ts"` 会让 `@amoeba/crawler/channels/factory` 解析到 `src/channels/factory/register.ts`（不存在）。所以不能靠现有模式暴露 factory，必须新增精确 key 或根导出。
 - [!] amoeba 已与 tauri-rss 上游分叉：平台渠道实现在 platform-rss-*/src/impl、订阅管理在 @tabs/rss-subscriptions，升级上游只能按文件边界合并，禁止整目录覆盖 packages/amoeba/*
+- [ ] bili 播放解析真机返回的流 URL 为空（可能需要登录 cookie / wbi 签名），播放链路要在真机宿主里完整验收一次
 <!-- cc-todo:end -->

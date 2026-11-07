@@ -30,6 +30,7 @@ import {
 } from "./nfoFile";
 import { applyOrganize, planOrganize } from "./organize";
 import { ProviderRegistry } from "./providers";
+import type { MetadataProviderSource } from "./providers";
 import { scrapeApply, scrapePreview, searchMetadata } from "./scrape";
 
 export interface MediaServiceOptions {
@@ -40,7 +41,7 @@ export interface MediaServiceOptions {
    * 元数据渠道注册表（扩展点）。宿主形态由 media-library 组件 provide
    * `media.providers` 时传入同一实例；独立形态由 backend.ts 注册内置 provider。
    */
-  providers?: ProviderRegistry;
+  providers?: MetadataProviderSource;
 }
 
 export interface MediaService {

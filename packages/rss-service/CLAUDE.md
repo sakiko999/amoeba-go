@@ -92,6 +92,9 @@ HTTP/WS 服务层、事件直连）是后续工作，届时 `runtime/` 与 `pack
   `@amoeba/crawler/factory`、`@amoeba/crawler/passive/*`、
   `@amoeba/resolve/{host,utils/*,browser/*}`（不要用 resolve 根 barrel，会把整个
   基座拖进 bundle）；平台自有符号走本包 `../lib`。
+- **api.gateway**：平台插件同时向统一注册中心（packages/api-gateway）注册
+  `rss.<平台>.channels` 元数据 API（pack 从 channels bundle 提取静态描述生成
+  api.json）；本数据服务仍是渠道/playback 的执行宿主，与网关互不依赖。
 
 ## 验证
 
