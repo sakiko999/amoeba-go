@@ -15,8 +15,11 @@
     "@amoeba/crawler": "workspace:*",
     "@amoeba/host": "workspace:*",
     "@amoeba/log": "workspace:*",
+    "@amoeba/platform": "workspace:*",
     "@amoeba/resolve": "workspace:*",
-    "@amoeba/service-protocol": "workspace:*"
+    "@amoeba/service-protocol": "workspace:*",
+    "@amoeba/xml": "workspace:*",
+    "@tabs/rss-subscriptions": "workspace:*"
   },
   "devDependencies": {
     "@host/sdk": "workspace:*"

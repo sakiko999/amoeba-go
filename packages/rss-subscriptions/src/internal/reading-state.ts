@@ -9,7 +9,7 @@
  */
 
 import type { ReadingRepository } from "../repo/reading-repo.ts"
-import type { MediaItem } from "../types/media-item.ts"
+import type { MediaItem } from "@amoeba/core"
 import { findRecord } from "../types/reading.ts"
 
 export async function applyReadingState(items: MediaItem[], reading: ReadingRepository): Promise<MediaItem[]> {

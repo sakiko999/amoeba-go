@@ -6,9 +6,6 @@
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./media-store": "./src/store/media-store.ts",
-    "./pure": "./src/pure.ts",
-    "./reading": "./src/types/reading.ts",
     "./source": "./src/source/index.ts",
     "./source/rsshub": "./src/source/rsshub.ts"
   },
@@ -22,5 +19,6 @@
   },
   "devDependencies": {
     "@amoeba/host": "workspace:*"
-  }
+  },
+  "description": "纯后端抓取基座：RSS XML 解析 + source provider 注册表 + media 类型（订阅管理在 @tabs/rss-subscriptions）"
 }

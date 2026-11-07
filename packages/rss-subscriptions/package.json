@@ -1,0 +1,23 @@
+{
+  "name": "@tabs/rss-subscriptions",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "RSS 订阅管理（前端向服务层）：订阅 CRUD / 分组 / 刷新编排 / 阅读状态 / 设置 / 持久化。纯抓取基座在 @amoeba/core。",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./pure": "./src/pure.ts"
+  },
+  "scripts": {},
+  "dependencies": {
+    "@amoeba/core": "workspace:*",
+    "@amoeba/crawler": "workspace:*",
+    "@amoeba/platform": "workspace:*",
+    "@amoeba/resolve": "workspace:*",
+    "@amoeba/xml": "workspace:*"
+  },
+  "devDependencies": {
+    "@amoeba/host": "workspace:*"
+  }
+}

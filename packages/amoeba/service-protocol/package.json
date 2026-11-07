@@ -8,6 +8,6 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@amoeba/core": "workspace:*"
+    "@tabs/rss-subscriptions": "workspace:*"
   }
 }

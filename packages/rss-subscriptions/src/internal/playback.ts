@@ -14,14 +14,14 @@ import { isHotWordSource, isItemDetailSource, isPageable } from "@amoeba/crawler
 import { getDanmakuByUrl, resolveLivePlayByUrl, resolvePlayByUrl } from "@amoeba/resolve"
 import { serializeFeed } from "@amoeba/xml"
 
-import { NoChannelError } from "../errors.ts"
-import { coreLog, formatError } from "../log.ts"
-import { deserializeFeed } from "../processing/deserialize.ts"
+import { NoChannelError } from "@amoeba/core"
+import { coreLog, formatError } from "@amoeba/core"
+import { deserializeFeed } from "@amoeba/core"
 import type { BodyCacheRepo } from "../repo/body-cache-repo.ts"
 import type { SubscriptionRepository } from "../repo/subscription-repo.ts"
-import { getChannel } from "../source/index.ts"
+import { getChannel } from "@amoeba/core/source"
 import type { MediaStore } from "../store/media-store.ts"
-import type { MediaItem } from "../types/media-item.ts"
+import type { MediaItem } from "@amoeba/core"
 import type { DanmakuStream, ResolvePlayback } from "../types/playback.ts"
 
 /** 单条正文缓存上限（字符；约 4MB UTF-16）。超过不入缓存，每次现取。 */
@@ -99,7 +99,7 @@ export function createPlaybackApi(deps: PlaybackDeps): PlaybackApi {
     const info = await infoFor(subscriptionId)
     if (!info) return null
     const { streams, chapters } = await resolvePlayByUrl(url, info)
-    let danmaku
+    let danmaku: ReturnType<typeof getDanmakuByUrl> | undefined
     try {
       danmaku = getDanmakuByUrl(url, { cookie: info.cookie })
     } catch {
@@ -118,7 +118,7 @@ export function createPlaybackApi(deps: PlaybackDeps): PlaybackApi {
     const info = await infoFor(subscriptionId)
     if (!info) return null
     const { streams } = await resolveLivePlayByUrl(url, info)
-    let danmaku
+    let danmaku: ReturnType<typeof getDanmakuByUrl> | undefined
     try {
       danmaku = getDanmakuByUrl(url, { cookie: info.cookie })
     } catch {

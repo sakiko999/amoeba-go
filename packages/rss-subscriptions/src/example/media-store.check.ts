@@ -8,7 +8,7 @@
 import assert from "node:assert/strict"
 
 import { createMediaStore } from "../store/media-store.ts"
-import type { MediaItem } from "../types/media-item.ts"
+import type { MediaItem } from "@amoeba/core"
 
 const NOW = Date.parse("2026-10-11T12:00:00Z")
 

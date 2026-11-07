@@ -7,7 +7,7 @@
 
 import assert from "node:assert/strict"
 
-import { positionDecision } from "./reading-position.ts"
+import { positionDecision } from "../reading-position.ts"
 
 const dur = 100
 

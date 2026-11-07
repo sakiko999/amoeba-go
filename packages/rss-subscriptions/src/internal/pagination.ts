@@ -11,11 +11,11 @@
 
 import { isPageable } from "@amoeba/crawler"
 
-import { coreLog, formatError } from "../log.ts"
-import { deserializeFeedWithTotal } from "../processing/deserialize.ts"
+import { coreLog, formatError } from "@amoeba/core"
+import { deserializeFeedWithTotal } from "@amoeba/core"
 import type { ReadingRepository } from "../repo/reading-repo.ts"
 import type { SubscriptionRepository } from "../repo/subscription-repo.ts"
-import { getChannel } from "../source/index.ts"
+import { getChannel } from "@amoeba/core/source"
 import type { MediaStore } from "../store/media-store.ts"
 import { applyReadingState } from "./reading-state.ts"
 

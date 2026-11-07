@@ -19,6 +19,16 @@ RSS 数据服务组件（`@tabs/rss-service`，主仓库普通子包）：承载
   再 `bun run --cwd packages/rss-service pack`。vendor 目录不参与本项目
   typecheck / biome（见 tsconfig include 与 biome.json 排除项）。
 
+## 包边界：纯抓取基座 vs 订阅管理
+
+- `@amoeba/core`：**纯后端抓取基座**（轻量）——RSS XML → MediaItem 解析、
+  source provider 注册表（crawler / RSSHub）、错误/日志、媒体类型。
+- `@tabs/rss-subscriptions`：**订阅管理**（面向前端服务的应用层）——订阅 CRUD /
+  分组 / 刷新编排 / 阅读状态 / 设置 / SQLite 持久化 / 播放 API 装配。
+  从 core 剥离（`data-layer.ts` + repo/store/schema/settings/reading 等）。
+- 本组件的 `service.js` 组合二者；`@amoeba/service-protocol` 只 type-import
+  subscriptions 的模型类型。订阅包 import vendor 代码，故不在根 tsc（见其 CLAUDE.md）。
+
 ## 运行时形态（临时方案：仍 spawn bun）
 
 amoeba 数据服务是**独立 Bun 进程**：单写者独占 SQLite（`db-lock` 按库文件判锁）、

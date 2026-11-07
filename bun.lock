@@ -105,7 +105,7 @@
       "name": "@amoeba/service-protocol",
       "version": "0.1.0",
       "dependencies": {
-        "@amoeba/core": "workspace:*",
+        "@tabs/rss-subscriptions": "workspace:*",
       },
     },
     "packages/amoeba/xml": {
@@ -333,11 +333,28 @@
         "@amoeba/crawler": "workspace:*",
         "@amoeba/host": "workspace:*",
         "@amoeba/log": "workspace:*",
+        "@amoeba/platform": "workspace:*",
         "@amoeba/resolve": "workspace:*",
         "@amoeba/service-protocol": "workspace:*",
+        "@amoeba/xml": "workspace:*",
+        "@tabs/rss-subscriptions": "workspace:*",
       },
       "devDependencies": {
         "@host/sdk": "workspace:*",
+      },
+    },
+    "packages/rss-subscriptions": {
+      "name": "@tabs/rss-subscriptions",
+      "version": "0.1.0",
+      "dependencies": {
+        "@amoeba/core": "workspace:*",
+        "@amoeba/crawler": "workspace:*",
+        "@amoeba/platform": "workspace:*",
+        "@amoeba/resolve": "workspace:*",
+        "@amoeba/xml": "workspace:*",
+      },
+      "devDependencies": {
+        "@amoeba/host": "workspace:*",
       },
     },
     "packages/tab-clock": {
@@ -735,6 +752,8 @@
     "@tabs/rss-client": ["@tabs/rss-client@workspace:packages/rss-client"],
 
     "@tabs/rss-service": ["@tabs/rss-service@workspace:packages/rss-service"],
+
+    "@tabs/rss-subscriptions": ["@tabs/rss-subscriptions@workspace:packages/rss-subscriptions"],
 
     "@tabs/sysinfo": ["@tabs/sysinfo@workspace:packages/tab-sysinfo"],
 

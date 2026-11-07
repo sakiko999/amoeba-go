@@ -10,13 +10,13 @@
  * 本文件只许 re-export 零依赖模块、`@amoeba/platform`、`@amoeba/resolve/errors`。
  */
 
-import type { MediaItem, MediaKind } from "./types/media-item.ts"
+import type { MediaItem, MediaKind } from "@amoeba/core"
 
 export { contentTtlMs, cookieFieldFor, cookieFieldForPlatform } from "./settings-policy.ts"
 export { ERROR_KIND_LABEL, ResolveError, errorKindOf, type ErrorKind } from "@amoeba/resolve/errors"
 export { positionDecision, type PositionDecision } from "./reading-position.ts"
 export { findItem, findRecord, itemRefKey, readingKey } from "./types/reading.ts"
-export type { MediaItem, MediaKind } from "./types/media-item.ts"
+export type { MediaItem, MediaKind } from "@amoeba/core"
 
 /**
  * 可播判定（单一权威）：kind 门控 video/audio/live，且 audio 无 stream = 播客 feed。

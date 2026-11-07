@@ -10,7 +10,7 @@ import { Database } from "bun:sqlite"
 import { mkdirSync } from "node:fs"
 import { dirname, join } from "node:path"
 
-import { STORAGE_SCHEMA } from "@amoeba/core"
+import { STORAGE_SCHEMA } from "@tabs/rss-subscriptions"
 
 import { assertDbNotServed } from "./db-lock.ts"
 

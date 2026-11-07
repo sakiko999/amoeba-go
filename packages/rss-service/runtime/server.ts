@@ -33,7 +33,7 @@ import {
   type Subscription,
   type SubscriptionGroup,
   type SubscriptionPatch,
-} from "@amoeba/core"
+} from "@tabs/rss-subscriptions"
 import { getChannel as sourceGetChannel } from "@amoeba/core/source"
 import { type RssChannel, registerChannel } from "@amoeba/crawler"
 // RSSHub 是运行时注册的外部 source（import 副作用）。DataLayer 现在跑在本服务进程里，

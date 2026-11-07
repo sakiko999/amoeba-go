@@ -5,7 +5,7 @@
  * 是对全部条目的查询,而非特殊节点——订阅与条目分离即因此。
  */
 
-import type { MediaItem } from "../types/media-item.ts"
+import type { MediaItem } from "@amoeba/core"
 import type { MediaQuery } from "../types/query.ts"
 
 /**

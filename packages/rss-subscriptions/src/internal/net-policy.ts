@@ -8,7 +8,7 @@
 
 import { platformOfChannelKey } from "@amoeba/platform"
 
-import { getChannel } from "../source/index.ts"
+import { getChannel } from "@amoeba/core/source"
 import type { AppSettings, NetLevel } from "../types/settings.ts"
 
 /**

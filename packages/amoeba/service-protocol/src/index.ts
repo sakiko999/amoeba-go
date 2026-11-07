@@ -20,7 +20,7 @@ import type {
   Subscription,
   SubscriptionGroup,
   SubscriptionPatch,
-} from "@amoeba/core"
+} from "@tabs/rss-subscriptions"
 
 /** 协议整数：不兼容变更才 +1；同版本内只做加法。 */
 export const SERVICE_PROTOCOL = 1
