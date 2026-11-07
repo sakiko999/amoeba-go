@@ -128,3 +128,34 @@ IPC 鉴权与安装/升级队列。
 - 诊断增强：smoke 输出 `[startup]` 与每个 tab 的加载耗时；`library:scan` 超过 100ms 时打印
   条目数与耗时；`scanLibrary` 改为 8 路有界并发（大库首屏扫描）。
 - 仍待办：P0-2（IPC 命名空间/来源鉴权）、P0-4（安装/卸载/升级语义）。
+
+## 决策记录：热插拔组件化 v1（2026-11-07，supersede 部分「明确不做」）
+
+用户提出组件化需求（前端子页面 / 后端服务两类，参照 deepseek-harness 基于 cordis 的插件
+系统）。经多方案评审（直接引入 @cordisjs/core / 自研轻量内核 / 最小增量扩展，两轮对抗校验），
+结论：**不引入 cordis**（v4 RC 纯 ESM、asar 内无 node_modules、仅用到其少数语义），
+**自研零依赖组件内核吸收 cordis 五个语义**：生命周期状态机、effect 逆序栈（待做）、具名
+服务 + inject 依赖、级联启停、串行化（待做）。本文「明确不做」第 3 条中「不引入插件框架 /
+DI / 不重写 PageRegistry」自本记录起 **supersede**；「不做不可信第三方生态 / capability
+proxy」仍然有效（main = 完整主进程权限，进程隔离是 utilityProcess 级别的后续投入）。
+
+已落地（v1 薄内核）：
+
+- **manifest v2**：`component.json`（回退 `page.json`），`kind=page|service`，`provides
+  [{name, expose}]` / `inject`（服务名 `<domain>.<name>`，`host.*` 保留）。
+- **服务表与激活拓扑**（`pages/services.ts`，无 electron 依赖，15 个单测）：同名服务全局
+  唯一；activateAll 按 provides/inject 拓扑排序（service 优先、环检测）。
+- **ctx 扩展**：`provide(name, impl, {expose})`（必须与 manifest 声明逐项一致，activate
+  返回后校验齐全）/ `get` / `require`（只允许 inject 声明的名字；未就绪抛错→组件 error）。
+  服务在 deactivate/激活失败时自动注销。
+- **级联**：reload/uninstall 服务组件先关依赖方 tab 并停用，完成后重激活（服务缺失则
+  error，可诊断）。
+- **首例拆分**：media-manager 后端 → `media-library` 服务组件（provide `media.library`），
+  页面组件 inject 消费，renderer/preload 与独立形态零改动。
+- **P0-2 部分**：`tabs:*` 七个管理通道已加 isHost 校验；无自有 preload 页面不再回退
+  HOST_PRELOAD（修复双重 `window.tab` expose）。
+
+v1 有意不做（升级到完整内核时补）：pending 状态与 tab 保活降级、alive 令牌、effect 栈
+（deactivate 仍靠组件自觉 + tracker 兜底）、渲染侧 `window.component` 服务桥（跨组件渲染
+调用暂经页面 main 中转）、staging/升级事务、disabled 持久化、卸载删目录。已知坑仍在：
+`bridgedPartitions` 只增不删、`page://` 按 session 注册服务所有页面 id、单实例锁缺失。
