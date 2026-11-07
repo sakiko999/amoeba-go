@@ -9,9 +9,8 @@
  *              → 解析 stdout 的 `READY <port>` → provide("rss.endpoint")
  *   deactivate → POST /v1/shutdown（owner token）→ 等退出 → kill 兜底
  *
- * 消费方（未来的 RSS 页面组件）manifest inject rss.endpoint 后拿 { baseUrl, port,
- * token }，用 @amoeba/service-client 的 RemoteDataLayer 直连 —— RPC/事件/鉴权全部
- * 复用服务自身协议，凭证不过组件边界。
+ * 抓取浏览器拆在独立组件 rss-browser（Electron CDP 代理）：本组件 manifest inject
+ * `rss.browser`，activate 里 ctx.require 拿端口并以 `--browser-cdp` 传给服务进程。
  *
  * 运行前提：bun 在 PATH（或 AMOEBA_BUN 指定）；service.js 来自 AMOEBA_SERVICE_JS、
  * 组件包内（pack 时复制）或 tauri-rss 仓库的构建产物。探测失败 = 组件 error（可诊断）。
@@ -47,6 +46,12 @@ export interface RssService {
 export interface RssServiceHandle {
   proc: ChildProcess;
   service: RssService;
+}
+
+/** rss-browser 组件提供的端点形状（只取用得到的字段，避免跨包类型依赖） */
+interface BrowserEndpoint {
+  endpoint(): { port: number };
+  targetCount?(): number;
 }
 
 /* ---------- 运行时与产物定位 ---------- */
@@ -128,6 +133,8 @@ export async function startRssService(opts: {
   dataDir: string;
   /** 宿主进程 pid：宿主崩溃时服务自杀（服务支持 --parent-pid 轮询） */
   parentPid: number;
+  /** Electron CDP 代理端口：抓取浏览器（隐藏 BrowserWindow）由 rss-browser 组件提供；缺省 = 无浏览器 */
+  browserCdpPort?: number;
   log(...args: unknown[]): void;
 }): Promise<RssServiceHandle> {
   const tokenFile = join(opts.dataDir, "service.token");
@@ -141,8 +148,10 @@ export async function startRssService(opts: {
       tokenFile,
       "--port",
       "0",
-      // v1 不注入抓取浏览器：浏览器渠道（xhs/douyin 等）不可用，RSS/API 渠道不受影响
-      "--no-browser",
+      // 抓取浏览器 = Electron CDP 代理（替代 WebView2 sidecar）；未提供则关闭浏览器渠道
+      ...(opts.browserCdpPort !== undefined
+        ? ["--browser-cdp", String(opts.browserCdpPort)]
+        : ["--no-browser"]),
       "--no-cookie-sync",
       "--parent-pid",
       String(opts.parentPid),
@@ -213,19 +222,25 @@ export async function activate(ctx: PageMainContext): Promise<void> {
       "找不到数据服务产物 service.js（设置 AMOEBA_SERVICE_JS，或 pack 时从 tauri-rss 复制）",
     );
   }
+  // 抓取浏览器由 rss-browser 组件提供（manifest.inject 声明；拓扑保证先于本组件激活）
+  const browser = ctx.require<BrowserEndpoint>("rss.browser");
+  const browserPort = browser.endpoint().port;
+
   handle = await startRssService({
     bun,
     serviceJs,
     // 服务数据与组件 dataDir 分层：宿主分配 userData/page-data/rss-service/data
     dataDir: join(ctx.dataDir, "data"),
     parentPid: process.pid,
+    browserCdpPort: browserPort,
     log: (...args) => ctx.log(...args),
   });
   ctx.provide(SERVICE_NAME, handle.service, {
     expose: ["endpoint", "health", "stop"],
   });
   ctx.log(
-    `rss endpoint ready: ${handle.service.endpoint().baseUrl} (${serviceJs})`,
+    `rss endpoint ready: ${handle.service.endpoint().baseUrl} (${serviceJs}); ` +
+      `browser cdp proxy :${browserPort}`,
   );
 }
 

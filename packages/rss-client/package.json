@@ -1,0 +1,15 @@
+{
+  "name": "@tabs/rss-client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "RSS 数据客户端组件：把 rss.endpoint 包装成方法化 RPC（rss.client），供页面/其他组件的 main 消费；owner token 不出组件边界。",
+  "exports": {
+    ".": "./src/entry.ts"
+  },
+  "scripts": {
+    "pack": "bun run scripts/pack.ts"
+  },
+  "devDependencies": {
+    "@host/sdk": "workspace:*"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "@tabs/rss-browser",
+  "version": "0.1.0",
+  "private": true,
+  "description": "抓取浏览器组件：Electron 自带 Chromium（隐藏 BrowserWindow）+ CDP 代理，向 rss 数据服务提供 rss.browser 端点（替代 WebView2 sidecar）。",
+  "exports": {
+    ".": "./src/entry.ts"
+  },
+  "scripts": {
+    "pack": "bun run scripts/pack.ts"
+  },
+  "devDependencies": {
+    "@host/sdk": "workspace:*",
+    "@types/ws": "^8.18.0",
+    "ws": "^8.18.0"
+  }
+}

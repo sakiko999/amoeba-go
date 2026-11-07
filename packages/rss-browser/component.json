@@ -1,0 +1,13 @@
+{
+  "id": "rss-browser",
+  "kind": "service",
+  "name": "RSS 抓取浏览器",
+  "version": "0.1.0",
+  "main": "main.js",
+  "provides": [
+    {
+      "name": "rss.browser",
+      "expose": ["endpoint", "targetCount"]
+    }
+  ]
+}

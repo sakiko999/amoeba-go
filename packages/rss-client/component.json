@@ -1,0 +1,14 @@
+{
+  "id": "rss-client",
+  "kind": "service",
+  "name": "RSS 数据客户端",
+  "version": "0.1.0",
+  "main": "main.js",
+  "inject": ["rss.endpoint"],
+  "provides": [
+    {
+      "name": "rss.client",
+      "expose": ["endpoint", "call", "health"]
+    }
+  ]
+}

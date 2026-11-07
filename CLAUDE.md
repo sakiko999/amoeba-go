@@ -28,4 +28,6 @@
 - [!] media-manager 组件化后：宿主组件包 = out/page（页面）+ out/service（服务）双产物；cache 移到 page-data/media-library；pack:page 已是 pack:components 别名
 - [!] 修正早前记录：media-manager 的后端已整体迁到主仓库普通子包 packages/media-library（@tabs/media-library，非 submodule）；submodule 只剩 UI/页面侧；组件产物分别为 media-manager 的 out/page 与 media-library 的 out/component；后端测试命令改为 bun run --cwd packages/media-library test
 - [ ] 待用户决定 feat/componentize-media-backend（主仓库）与 feat/componentize-backend（submodule）是否开 PR 合并；合并前 worktree X:\wtcmb 保留
+- [ ] rss-service 组件已落地（薄桥模式：spawn amoeba 数据服务 + provide rss.endpoint）；后续：RSS 页面组件消费该服务、Electron 抓取浏览器接入、升级链路（tauri-rss service:build → 重 pack）
+- [!] rss-service 组件运行前提：bun 在 PATH（或 AMOEBA_BUN）+ service.js（AMOEBA_SERVICE_JS/包内副本/tauri-rss dist）；宿主 smoke 会真实拉起该服务，构建机缺 bun 会 smoke 失败；owner token 绝不能注入 renderer
 <!-- cc-todo:end -->

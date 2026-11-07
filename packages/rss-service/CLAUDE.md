@@ -12,25 +12,32 @@ amoeba 数据服务是**独立 Bun 进程**：单写者独占 SQLite（`store/db
 - `activate`：定位 bun（`AMOEBA_BUN` → PATH）与 service.js（`AMOEBA_SERVICE_JS` →
   组件包内 `service.js`（pack 时从 tauri-rss 复制）→ `X:\tauri-rss\dist\service\service.js`
   开发兜底）→ spawn（`--port 0`，独立 dataDir = `userData/page-data/rss-service/data`，
-  `--no-browser --no-cookie-sync`，`--parent-pid` 让服务随宿主退出自杀）→ 解析 stdout
-  `READY <port>` → `ctx.provide("rss.endpoint", {endpoint, health, stop})`。
+  `--parent-pid` 让服务随宿主退出自杀）→ 解析 stdout `READY <port>` →
+  `ctx.provide("rss.endpoint", {endpoint, health, stop})`。
 - `deactivate`：`POST /v1/shutdown`（owner token）→ 等退出 → kill 兜底（幂等）。
 
-**v1 限制**：`--no-browser` = 浏览器渠道（xhs/douyin 登录类反爬）不可用，RSS 与 API
-渠道不受影响；接入 Electron 侧抓取浏览器是后续工作。升级 tauri-rss 的服务 =
-重新 `service:build` 后重跑本包 `pack`。
+## 组件拆分（rss 域三个 kind=service 子包，按职责分）
 
-消费方（未来的 RSS 页面组件）：manifest `inject: ["rss.endpoint"]`，activate 里
-`ctx.require` 拿 `{baseUrl, port, token}`，renderer 用 `@amoeba/service-client` 的
-RemoteDataLayer 直连 —— RPC/事件/鉴权复用服务协议，**owner token 不注入 renderer**
-（泄漏即全权 RPC，含清库）。
+| 组件包 | provides | inject | 职责 |
+| --- | --- | --- | --- |
+| `rss-browser` | `rss.browser`（port/targetCount） | — | Electron 隐藏浏览器 + CDP 代理（替代 WebView2 sidecar） |
+| `rss-service`（本包） | `rss.endpoint`（baseUrl/port/token） | `rss.browser` | 数据服务进程生命周期（spawn/READY/shutdown） |
+| `rss-client` | `rss.client`（call/health/endpoint） | `rss.endpoint` | 方法化 RPC 访问层（token 不出组件边界） |
 
-## 命令（monorepo 根）
+宿主按 provides/inject 拓扑激活（browser → service → client）；任一服务 reload 时
+依赖它的组件会被级联停用并在恢复后重激活（宿主 registry 的 cascade 语义）。
+
+**v1 限制**：`--no-cookie-sync`；浏览器渠道的登录态存 Electron session 分区
+（`persist:rss-crawler`，见 rss-browser/CLAUDE.md）。升级 tauri-rss 的服务 =
+重新 `service:build` 后重跑 `bun run pages:prepare`。
+
+## 验证
 
 ```bash
-bun run --cwd packages/rss-service test   # 真实进程生命周期集成测试（需 bun + service.js，缺失自动 skip）
+bun run --cwd packages/rss-service test   # 真实进程生命周期集成（需 bun + service.js，缺失自动 skip）
 bun run --cwd packages/rss-service pack   # 产出 out/component/（含 service.js，自包含）
 ```
 
-宿主 smoke 会真实拉起本服务（builtin 组件 activate 必须成功），因此构建机需要 bun
-在 PATH 且能定位 service.js。
+宿主 `bun run smoke` 会真实拉起 browser 代理（含 CDP 自检）与数据服务（three services
+必须 active）。真实渠道抓取（如 `weibo:user`）需在 dev 宿主里经 rss-client 的
+`call("probe.fetch", {channelKey, info})` 验证 —— 强反爬平台（xhs/douyin）还需真机登录验证。
