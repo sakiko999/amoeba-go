@@ -6,7 +6,7 @@
  */
 
 import { now } from "@amoeba/resolve/host";
-import { searchApplePodcasts } from "@amoeba/resolve/platform/apple/catalog";
+import { searchApplePodcasts } from "../lib/catalog.ts";
 import type { Audio } from "@amoeba/xml"
 
 import { makeApiChannel } from "@amoeba/crawler/factory"

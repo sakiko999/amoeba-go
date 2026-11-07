@@ -13,7 +13,7 @@
 
 import { withBrowserOp } from "@amoeba/resolve/browser/cdp";
 import { now } from "@amoeba/resolve/host";
-import { XHS_BASE, noteCardToSocial } from "@amoeba/resolve/platform/xhs";
+import { XHS_BASE, noteCardToSocial } from "../lib/index.ts";
 import type { Item, Social } from "@amoeba/xml"
 import { serializeFeed, type SerializeOptions } from "@amoeba/xml"
 

@@ -13,7 +13,7 @@
  */
 
 import { now } from "@amoeba/resolve/host";
-import { fetchDouyinTrends } from "@amoeba/resolve/platform/douyin";
+import { fetchDouyinTrends } from "../lib/index.ts";
 import type { Item } from "@amoeba/xml"
 
 import { makeApiChannel } from "@amoeba/crawler/factory"

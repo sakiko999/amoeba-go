@@ -12,7 +12,7 @@
 import { formatError } from "@amoeba/log"
 import { now } from "@amoeba/resolve/host";
 import { log } from "@amoeba/resolve/log";
-import { biliClient } from "@amoeba/resolve/platform/bili";
+import { biliClient } from "../lib/index.ts";
 import { parseRoomIds } from "@amoeba/resolve/utils/room-ids";
 import type { Item, Live } from "@amoeba/xml"
 import { type SerializeOptions } from "@amoeba/xml"

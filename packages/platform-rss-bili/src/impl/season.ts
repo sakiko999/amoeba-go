@@ -12,7 +12,7 @@
  */
 
 import { now } from "@amoeba/resolve/host";
-import { biliClient } from "@amoeba/resolve/platform/bili";
+import { biliClient } from "../lib/index.ts";
 import type { Item } from "@amoeba/xml"
 import { type SerializeOptions } from "@amoeba/xml"
 

@@ -11,7 +11,7 @@
 import { formatError } from "@amoeba/log"
 import { now } from "@amoeba/resolve/host";
 import { log } from "@amoeba/resolve/log";
-import { TwitchStreamPage } from "@amoeba/resolve/platform/twitch";
+import { TwitchStreamPage } from "../lib/index.ts";
 import { type Live, serializeFeed, type SerializeOptions } from "@amoeba/xml"
 
 import type { Pageable, RssSource } from "@amoeba/crawler"

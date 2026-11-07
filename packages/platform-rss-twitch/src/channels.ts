@@ -5,3 +5,6 @@
  */
 
 export { twitchChannels as channels } from "./impl/register.ts";
+
+/** 平台播放/弹幕能力（数据服务进程一并登记，见 resolver/registry）。 */
+export { playback } from "./playback.ts"

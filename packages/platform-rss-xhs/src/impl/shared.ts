@@ -20,7 +20,7 @@
 import { cdpEvaluate, cdpNavigate, waitUntil, withBrowserOp } from "@amoeba/resolve/browser/cdp";
 import { now } from "@amoeba/resolve/host";
 import { resolveCookie } from "@amoeba/resolve/platform/credentials";
-import { XHS_BASE, extractInitialState, extractNoteDetail, isXhsLoggedIn, isXhsOrigin, noteDetailStateExpr, noteDetailToSocial, rawOf, reportXhsRisk, xhsClient } from "@amoeba/resolve/platform/xhs";
+import { XHS_BASE, extractInitialState, extractNoteDetail, isXhsLoggedIn, isXhsOrigin, noteDetailStateExpr, noteDetailToSocial, rawOf, reportXhsRisk, xhsClient } from "../lib/index.ts";
 import type { Item } from "@amoeba/xml"
 
 import { passiveBuffer } from "@amoeba/crawler/passive/buffer"

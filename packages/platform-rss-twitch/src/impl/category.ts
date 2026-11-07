@@ -7,7 +7,7 @@
  * 分类目录另见 `categories.ts`(`twitch:categories`,产 kind:"category" 条目)。
  */
 
-import { fetchTwitchCategoryStreams } from "@amoeba/resolve/platform/twitch";
+import { fetchTwitchCategoryStreams } from "../lib/index.ts";
 import { normalizeTwitchCategory } from "@amoeba/resolve/utils/twitch";
 import { type SerializeOptions } from "@amoeba/xml"
 

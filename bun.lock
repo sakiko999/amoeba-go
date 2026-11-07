@@ -205,6 +205,7 @@
         "@amoeba/log": "workspace:*",
         "@amoeba/resolve": "workspace:*",
         "@amoeba/xml": "workspace:*",
+        "ramda": "^0.32.0",
       },
       "devDependencies": {
         "@host/sdk": "workspace:*",
@@ -219,6 +220,7 @@
         "@amoeba/log": "workspace:*",
         "@amoeba/resolve": "workspace:*",
         "@amoeba/xml": "workspace:*",
+        "ramda": "^0.32.0",
       },
       "devDependencies": {
         "@host/sdk": "workspace:*",
@@ -303,6 +305,7 @@
         "@amoeba/log": "workspace:*",
         "@amoeba/resolve": "workspace:*",
         "@amoeba/xml": "workspace:*",
+        "ramda": "^0.32.0",
       },
       "devDependencies": {
         "@host/sdk": "workspace:*",

@@ -21,7 +21,7 @@
 import { withBrowserOp } from "@amoeba/resolve/browser/cdp";
 import { now } from "@amoeba/resolve/host";
 import { log } from "@amoeba/resolve/log";
-import { XHS_BASE, extractInitialState, noteCardToSocial, xhsClient } from "@amoeba/resolve/platform/xhs";
+import { XHS_BASE, extractInitialState, noteCardToSocial, xhsClient } from "../lib/index.ts";
 import type { Item, Social } from "@amoeba/xml"
 import { serializeFeed, type SerializeOptions } from "@amoeba/xml"
 

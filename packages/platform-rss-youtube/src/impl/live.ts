@@ -16,7 +16,7 @@
  */
 
 import { now } from "@amoeba/resolve/host";
-import { fetchYoutubeChannelLive, getYoutubeLiveMeta } from "@amoeba/resolve/platform/youtube";
+import { fetchYoutubeChannelLive, getYoutubeLiveMeta } from "../lib/index.ts";
 import type { Live } from "@amoeba/xml"
 
 import { makeApiChannel } from "@amoeba/crawler/factory"

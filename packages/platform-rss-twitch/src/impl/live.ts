@@ -12,7 +12,7 @@
 
 import { now } from "@amoeba/resolve/host";
 import { log } from "@amoeba/resolve/log";
-import { TwitchStreamNode, TwitchUser, fetchTwitchUsers } from "@amoeba/resolve/platform/twitch";
+import { TwitchStreamNode, TwitchUser, fetchTwitchUsers } from "../lib/index.ts";
 import { parseRoomIds } from "@amoeba/resolve/utils/room-ids";
 import { normalizeTwitchLogin } from "@amoeba/resolve/utils/twitch";
 import type { Item, Live } from "@amoeba/xml"

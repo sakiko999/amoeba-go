@@ -34,7 +34,9 @@
   "exclude": [
     "packages/amoeba",
     "packages/platform-rss-*/src/impl",
+    "packages/platform-rss-*/src/lib",
     "packages/platform-rss-*/src/example",
+    "packages/platform-rss-*/src/playback.ts",
     "packages/platform-rss-*/src/channels.ts",
     "packages/rss-subscriptions/src"
   ]

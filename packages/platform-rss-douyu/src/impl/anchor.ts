@@ -5,7 +5,7 @@
  * 分页:页码制(page 从 1 起,pageSize 真消费)。
  */
 
-import { searchDouyuAnchors } from "@amoeba/resolve/platform/douyu";
+import { searchDouyuAnchors } from "../lib/index.ts";
 
 import { makeApiChannel } from "@amoeba/crawler/factory"
 

@@ -7,7 +7,7 @@
  * 分页:页码制(page 在 path 里,从 1 起);服务端每页固定条数。
  */
 
-import { fetchDouyuCategoryRooms } from "@amoeba/resolve/platform/douyu";
+import { fetchDouyuCategoryRooms } from "../lib/index.ts";
 
 import { makeApiChannel } from "@amoeba/crawler/factory"
 

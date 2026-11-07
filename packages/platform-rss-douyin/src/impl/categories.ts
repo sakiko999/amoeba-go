@@ -9,7 +9,7 @@
  */
 
 import { now } from "@amoeba/resolve/host";
-import { DouyinCategory, fetchDouyinCategories } from "@amoeba/resolve/platform/douyin";
+import { DouyinCategory, fetchDouyinCategories } from "../lib/index.ts";
 import type { Category, Item } from "@amoeba/xml"
 
 import { makeApiChannel } from "@amoeba/crawler/factory"

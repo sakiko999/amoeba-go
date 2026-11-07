@@ -30,7 +30,7 @@
 
 import { cdpEvaluate, cdpNavigate, withBrowserOp } from "@amoeba/resolve/browser/cdp";
 import { now } from "@amoeba/resolve/host";
-import { awemeListToSocial, douyinUserUrl, readAwemeList, readDouyinLoginCookie, resolveDouyinSecUid } from "@amoeba/resolve/platform/douyin";
+import { awemeListToSocial, douyinUserUrl, readAwemeList, readDouyinLoginCookie, resolveDouyinSecUid } from "../lib/index.ts";
 import type { Item, Social } from "@amoeba/xml"
 import { serializeFeed, type SerializeOptions } from "@amoeba/xml"
 

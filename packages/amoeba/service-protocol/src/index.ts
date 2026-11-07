@@ -245,12 +245,12 @@ export interface RpcMethodMap {
     result: { route: JsonValue; streams: JsonValue[]; tookMs: number }
   }
   /**
-   * 加载渠道扩展插件（owner only：会执行插件代码）。
-   * path 指向扩展组件包内的 channels.js（导出 register()）；同 mtime 幂等。
+   * 加载平台扩展插件（owner only：会执行插件代码）。
+   * path 指向扩展组件包内的 channels.js（导出 channels 数组与可选 playback）；同 mtime 幂等。
    */
   "channels.registerPlugin": {
     params: { path: string }
-    result: { registered: boolean; path: string; reason?: string; channels?: number }
+    result: { registered: boolean; path: string; reason?: string; channels?: number; playback?: boolean }
   }
   "probe.danmaku": {
     params: { url: string; seconds?: number; n?: number }

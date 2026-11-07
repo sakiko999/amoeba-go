@@ -10,7 +10,7 @@
  */
 
 import { now } from "@amoeba/resolve/host";
-import { searchBiliUsers } from "@amoeba/resolve/platform/bili";
+import { searchBiliUsers } from "../lib/index.ts";
 import type { Item, Video } from "@amoeba/xml"
 import { type SerializeOptions } from "@amoeba/xml"
 

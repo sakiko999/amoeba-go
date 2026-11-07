@@ -6,7 +6,7 @@
  */
 
 import { now } from "@amoeba/resolve/host";
-import { DouyuCategory, fetchDouyuCategories } from "@amoeba/resolve/platform/douyu";
+import { DouyuCategory, fetchDouyuCategories } from "../lib/index.ts";
 import type { Category, Item } from "@amoeba/xml"
 
 import { makeApiChannel } from "@amoeba/crawler/factory"

@@ -11,6 +11,7 @@
       "!packages/amoeba",
       "!packages/rss-service/runtime",
       "!packages/platform-rss-*/src/impl",
+      "!packages/platform-rss-*/src/lib",
       "!packages/platform-rss-*/src/example",
       "!packages/rss-subscriptions/src/example"
     ]

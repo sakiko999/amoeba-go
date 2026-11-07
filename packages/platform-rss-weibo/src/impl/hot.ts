@@ -8,7 +8,7 @@
  */
 
 import { httpJson, now } from "@amoeba/resolve/host";
-import { PC_UA, WB_BASE, mblogCardsToItems, weiboClient } from "@amoeba/resolve/platform/weibo";
+import { PC_UA, WB_BASE, mblogCardsToItems, weiboClient } from "../lib/index.ts";
 import type { Item } from "@amoeba/xml"
 import { type SerializeOptions } from "@amoeba/xml"
 

@@ -10,11 +10,11 @@
     "./media-referrer": "./src/media-referrer.ts",
     "./host": "./src/host.ts",
     "./log": "./src/log.ts",
+    "./danmaku": "./src/danmaku/index.ts",
     "./browser/*": "./src/browser/*.ts",
     "./utils/*": "./src/utils/*.ts",
     "./platform/credentials": "./src/platform/credentials.ts",
-    "./platform/apple/catalog": "./src/platform/apple/catalog.ts",
-    "./platform/*": "./src/platform/*/index.ts"
+    "./platform/types": "./src/platform/types.ts"
   },
   "scripts": {},
   "dependencies": {

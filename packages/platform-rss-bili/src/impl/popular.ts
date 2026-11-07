@@ -9,7 +9,7 @@
  */
 
 import { now } from "@amoeba/resolve/host";
-import { biliClient, biliQrGenerate, biliScanLogin } from "@amoeba/resolve/platform/bili";
+import { biliClient, biliQrGenerate, biliScanLogin } from "../lib/index.ts";
 import type { Item } from "@amoeba/xml"
 
 import type { LoginResult } from "@amoeba/crawler"

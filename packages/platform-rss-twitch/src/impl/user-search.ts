@@ -9,7 +9,7 @@
  */
 
 import { now } from "@amoeba/resolve/host";
-import { searchTwitchChannels } from "@amoeba/resolve/platform/twitch";
+import { searchTwitchChannels } from "../lib/index.ts";
 import type { Video } from "@amoeba/xml"
 
 import { makeApiChannel } from "@amoeba/crawler/factory"

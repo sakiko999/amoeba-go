@@ -13,7 +13,7 @@
 
 import { cdpNavigate, withBrowserOp } from "@amoeba/resolve/browser/cdp";
 import { now } from "@amoeba/resolve/host";
-import { weiboUserHitsFromIndex } from "@amoeba/resolve/platform/weibo";
+import { weiboUserHitsFromIndex } from "../lib/index.ts";
 import type { Video } from "@amoeba/xml"
 
 import type { RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"

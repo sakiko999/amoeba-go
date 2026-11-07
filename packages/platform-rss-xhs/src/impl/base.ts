@@ -7,7 +7,7 @@
  * 拆出来后 user/explore 可以安全地先拿基类、再用 shared 的函数。
  */
 
-import { readXhsLoginCookie, xhsScanLogin } from "@amoeba/resolve/platform/xhs";
+import { readXhsLoginCookie, xhsScanLogin } from "../lib/index.ts";
 
 import type { Loginable, LoginCookieSnapshot, LoginResult } from "@amoeba/crawler"
 

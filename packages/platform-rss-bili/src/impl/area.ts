@@ -8,7 +8,7 @@
  */
 
 import { now } from "@amoeba/resolve/host";
-import { fetchBiliAreaRooms } from "@amoeba/resolve/platform/bili";
+import { fetchBiliAreaRooms } from "../lib/index.ts";
 import type { Live } from "@amoeba/xml"
 
 import { makeApiChannel } from "@amoeba/crawler/factory"

@@ -15,7 +15,7 @@
 
 import { cdpJson, cdpNavigate, withBrowserOp } from "@amoeba/resolve/browser/cdp";
 import { ResolveError } from "@amoeba/resolve/errors";
-import { WB_BASE, apiHeaders, mblogCardsToItems, readWeiboLoginCookie, weiboClient, weiboScanLogin } from "@amoeba/resolve/platform/weibo";
+import { WB_BASE, apiHeaders, mblogCardsToItems, readWeiboLoginCookie, weiboClient, weiboScanLogin } from "../lib/index.ts";
 import type { Item, SerializeOptions } from "@amoeba/xml"
 
 import type {

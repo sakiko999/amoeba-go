@@ -9,7 +9,7 @@
  * 2026-10-27 起取 rows=50(此前 rows=20 只见 20/50)。
  */
 
-import { searchHuyaAnchors } from "@amoeba/resolve/platform/huya";
+import { searchHuyaAnchors } from "../lib/index.ts";
 
 import { makeApiChannel } from "@amoeba/crawler/factory"
 

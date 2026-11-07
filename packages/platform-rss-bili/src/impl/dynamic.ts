@@ -18,7 +18,7 @@
  */
 
 import { now } from "@amoeba/resolve/host";
-import { biliClient } from "@amoeba/resolve/platform/bili";
+import { biliClient } from "../lib/index.ts";
 import { fillImageSizes } from "@amoeba/resolve/utils/img-size";
 import { toHttps } from "@amoeba/resolve/utils/url";
 import type { Item, Social, SocialImage } from "@amoeba/xml"

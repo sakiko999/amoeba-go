@@ -6,7 +6,7 @@
  * 服务端固定每页条数。
  */
 
-import { searchBiliAnchors } from "@amoeba/resolve/platform/bili";
+import { searchBiliAnchors } from "../lib/index.ts";
 
 import { makeApiChannel } from "@amoeba/crawler/factory"
 

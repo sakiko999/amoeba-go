@@ -10,7 +10,7 @@
  */
 
 import { now } from "@amoeba/resolve/host";
-import { fetchTwitchTopCategories } from "@amoeba/resolve/platform/twitch";
+import { fetchTwitchTopCategories } from "../lib/index.ts";
 import type { Category, Item } from "@amoeba/xml"
 
 import { makeApiChannel } from "@amoeba/crawler/factory"

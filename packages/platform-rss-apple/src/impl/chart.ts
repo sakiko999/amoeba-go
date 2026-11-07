@@ -12,7 +12,7 @@
  */
 
 import { now } from "@amoeba/resolve/host";
-import { APPLE_PODCAST_GENRES, fetchApplePodcastChart } from "@amoeba/resolve/platform/apple/catalog";
+import { APPLE_PODCAST_GENRES, fetchApplePodcastChart } from "../lib/catalog.ts";
 import type { Audio } from "@amoeba/xml"
 
 import { makeApiChannel } from "@amoeba/crawler/factory"

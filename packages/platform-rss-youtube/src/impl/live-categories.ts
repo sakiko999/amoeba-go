@@ -10,7 +10,7 @@
  */
 
 import { now } from "@amoeba/resolve/host";
-import { fetchYoutubeLiveShelves } from "@amoeba/resolve/platform/youtube";
+import { fetchYoutubeLiveShelves } from "../lib/index.ts";
 import type { Category, Item } from "@amoeba/xml"
 
 import { makeApiChannel } from "@amoeba/crawler/factory"

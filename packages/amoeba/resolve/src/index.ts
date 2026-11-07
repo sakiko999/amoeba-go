@@ -1,14 +1,15 @@
 /**
- * @amoeba/resolve —— 平台解析层(独立包,持有平台全部能力)。
+ * @amoeba/resolve —— 纯后端抓取基座的平台无关层。
  *
- * 定位(2026-08-26 架构重构):platform 与 crawler 解耦,平台能力(请求签名/取数/
- * 播放解析/弹幕)全集中在此。crawler 只输出订阅数据(依赖 resolve 的平台 client
- * 抓数据产 XML);core 依赖 crawler(渠道)+ resolve(播放)。
+ * 定位（platform 插件化之后）：本包只保留与具体平台无关的能力——HTTP 基座、
+ * 浏览器调度（CDP）、通用工具、弹幕流通用件、播放/弹幕的路由与注册表、
+ * cookie 凭证收口。平台实现（client/签名/登录/播放解析/弹幕协议）全部在
+ * platform-rss-* 插件包的 src/lib，经注册表在数据服务进程登记。
  *
- * 对外契约:按 item.url 的懒解析(播放/弹幕)+ 平台 client(供 crawler channel 抓数据)。
+ * 对外契约：按 item.url 的懒解析（resolvePlayByUrl/getDanmakuByUrl，注册表分发）
+ * + 平台无关的抓取工具（插件 lib 与 crawler channel 共用）。
  *
- * 类型边界:以下类型 resolve 自持(结构兼容),不依赖 crawler——resolve 是独立包,
- * 只能被 crawler 依赖,不能反向依赖 crawler。SourceInfo/LoginResult 在此镜像声明。
+ * 类型边界：SourceInfo/LoginResult 在此镜像声明（结构兼容 crawler，不依赖它）。
  */
 /** 平台解析 / 抓取参数与 crawler 结构一致(channel info / resolver info)。 */
 export type SourceInfo = Record<string, string>
@@ -28,17 +29,8 @@ export * from "./danmaku/index.ts"
 export * from "./errors.ts"
 export * from "./resolver/index.ts"
 
-// ── 平台能力(供 crawler channel 抓数据 + resolver 播放) ──
-export * from "./platform/apple/catalog.ts"
-export * from "./platform/bili/index.ts"
+// ── 平台无关的凭证收口与平台客户端契约（平台实现在 platform-rss-* 插件） ──
 export * from "./platform/credentials.ts"
-export * from "./platform/douyin/index.ts"
-export * from "./platform/douyu/index.ts"
-export * from "./platform/huya/index.ts"
-export * from "./platform/twitch/index.ts"
-export * from "./platform/weibo/index.ts"
-export * from "./platform/xhs/index.ts"
-export * from "./platform/youtube/index.ts"
 export type * from "./platform/types.ts"
 
 // ── 公共工具(crawler channel 也用:httpText/now/log/utils) ──

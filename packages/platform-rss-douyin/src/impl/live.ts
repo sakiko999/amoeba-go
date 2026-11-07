@@ -18,7 +18,7 @@
 import { formatError } from "@amoeba/log"
 import { now } from "@amoeba/resolve/host";
 import { log } from "@amoeba/resolve/log";
-import { douyinOnline, douyinScanLogin, fetchDouyinUserLive, fetchRoom, isDouyinProfileUrl, normalizeDouyinRoomId, readDouyinLoginCookie } from "@amoeba/resolve/platform/douyin";
+import { douyinOnline, douyinScanLogin, fetchDouyinUserLive, fetchRoom, isDouyinProfileUrl, normalizeDouyinRoomId, readDouyinLoginCookie } from "../lib/index.ts";
 import { toInt } from "@amoeba/resolve/utils/number";
 import { parseRoomIds } from "@amoeba/resolve/utils/room-ids";
 import { strOr } from "@amoeba/resolve/utils/str";

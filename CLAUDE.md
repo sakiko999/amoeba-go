@@ -38,4 +38,5 @@
 - [!] tsconfig 有意排除 packages/amoeba 与 platform-rss-*/src/{impl,example,channels.ts}：vendor 与平台实现走 Bun.build 校验（含 allowImportingTsExtensions），不参与根 tsc；若把它们加回 include 会出现数百条 vendor 风格错误
 - [ ] 手动起宿主点一次 media-manager 的搜索/刮削，确认经 media.providers 注册的 TMDB/豆瓣/番组在 UI 链路（而非仅探针）可用
 - [!] `package.json` 当前的 `"./channels/*": "./src/channels/*/register.ts"` 会让 `@amoeba/crawler/channels/factory` 解析到 `src/channels/factory/register.ts`（不存在）。所以不能靠现有模式暴露 factory，必须新增精确 key 或根导出。
+- [!] amoeba 已与 tauri-rss 上游分叉：平台渠道实现在 platform-rss-*/src/impl、订阅管理在 @tabs/rss-subscriptions，升级上游只能按文件边界合并，禁止整目录覆盖 packages/amoeba/*
 <!-- cc-todo:end -->

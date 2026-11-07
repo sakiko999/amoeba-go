@@ -7,7 +7,7 @@
  */
 
 import { httpText, now } from "@amoeba/resolve/host";
-import { YoutubeChannelVideo, fetchYoutubeChannelVideos, getYoutubeLiveMeta } from "@amoeba/resolve/platform/youtube";
+import { YoutubeChannelVideo, fetchYoutubeChannelVideos, getYoutubeLiveMeta } from "../lib/index.ts";
 import { DESKTOP_CHROME_UA } from "@amoeba/resolve/utils/ua";
 import type { Item, Video } from "@amoeba/xml"
 import { type ParsedItem, parseFeed, serializeFeed, type SerializeOptions } from "@amoeba/xml"

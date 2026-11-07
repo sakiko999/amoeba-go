@@ -9,7 +9,7 @@
  */
 
 import { now } from "@amoeba/resolve/host";
-import { BiliCategory, fetchBiliCategories } from "@amoeba/resolve/platform/bili";
+import { BiliCategory, fetchBiliCategories } from "../lib/index.ts";
 import type { Category, Item } from "@amoeba/xml"
 
 import { makeApiChannel } from "@amoeba/crawler/factory"

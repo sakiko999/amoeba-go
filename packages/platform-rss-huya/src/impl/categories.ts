@@ -7,7 +7,7 @@
  */
 
 import { now } from "@amoeba/resolve/host";
-import { HUYA_TOP_CATEGORIES, HuyaSubCategory, fetchHuyaSubCategories } from "@amoeba/resolve/platform/huya";
+import { HUYA_TOP_CATEGORIES, HuyaSubCategory, fetchHuyaSubCategories } from "../lib/index.ts";
 import type { Category, Item } from "@amoeba/xml"
 import { type SerializeOptions } from "@amoeba/xml"
 

@@ -9,7 +9,7 @@
  * `resolve/platform/douyin/discover.ts`(`fetchDouyinCategories`)。
  */
 
-import { fetchDouyinPartitionRooms } from "@amoeba/resolve/platform/douyin";
+import { fetchDouyinPartitionRooms } from "../lib/index.ts";
 
 import { makeApiChannel } from "@amoeba/crawler/factory"
 

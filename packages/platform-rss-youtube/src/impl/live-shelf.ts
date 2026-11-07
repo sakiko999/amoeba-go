@@ -11,9 +11,9 @@
  * ⚠️ 按观看数降序(契约:列表顺序由渠道负责,默认选流/展示不依赖上游顺序)。
  */
 
-import type { YoutubeLiveHit } from "@amoeba/resolve/platform/youtube";
+import type { YoutubeLiveHit } from "../lib/index.ts";
 import { now } from "@amoeba/resolve/host";
-import { fetchYoutubeLiveShelves, normalizeYoutubeLiveCategory } from "@amoeba/resolve/platform/youtube";
+import { fetchYoutubeLiveShelves, normalizeYoutubeLiveCategory } from "../lib/index.ts";
 import type { Item, Live } from "@amoeba/xml"
 
 import { makeApiChannel } from "@amoeba/crawler/factory"

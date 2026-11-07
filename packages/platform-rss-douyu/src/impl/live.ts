@@ -15,7 +15,7 @@
 import { formatError } from "@amoeba/log"
 import { now } from "@amoeba/resolve/host";
 import { log } from "@amoeba/resolve/log";
-import { douyuRoomInfo } from "@amoeba/resolve/platform/douyu";
+import { douyuRoomInfo } from "../lib/index.ts";
 import { toInt } from "@amoeba/resolve/utils/number";
 import { parseRoomIds } from "@amoeba/resolve/utils/room-ids";
 import { strOr } from "@amoeba/resolve/utils/str";

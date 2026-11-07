@@ -17,7 +17,7 @@
 
 import { cdpNavigate, withBrowserOp } from "@amoeba/resolve/browser/cdp";
 import { now } from "@amoeba/resolve/host";
-import { fetchDouyinUserByUniqueId, readDouyinLoginCookie } from "@amoeba/resolve/platform/douyin";
+import { fetchDouyinUserByUniqueId, readDouyinLoginCookie } from "../lib/index.ts";
 import type { Item, Video } from "@amoeba/xml"
 
 import type { RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"

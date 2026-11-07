@@ -43,6 +43,8 @@ import "@amoeba/core/source/rsshub"
 import { formatError } from "@amoeba/log"
 import {
   getDanmakuByUrl,
+  registerPlayback,
+  type PlatformPlayback,
   resolveLivePlayByUrl as resolveLiveByUrl,
   resolvePlayByUrl as resolveVideoByUrl,
   resolveRoute,
@@ -969,30 +971,37 @@ export async function runService(opts: ServiceOptions): Promise<number> {
         if (!xml) throw new ServiceError("no-data", 502, "无可用数据")
         return { xml, tookMs: Date.now() - started }
       }
-      // ── 渠道扩展插件（基础能力之外的平台渠道由扩展组件运行时登记）────
+      // ── 平台扩展插件（基础能力之外的平台由扩展组件运行时登记）──────────
       case "channels.registerPlugin": {
         const file = asString(p.path, "path")
         if (!file.endsWith(".js")) {
-          throw new ServiceError("bad-request", 400, "渠道插件必须是 .js 文件")
+          throw new ServiceError("bad-request", 400, "平台插件必须是 .js 文件")
         }
         const mtime = statSync(file).mtimeMs
         if (loadedChannelPlugins.get(file) === mtime) {
           return { registered: false, path: file, reason: "already-loaded" }
         }
-        // 插件导出的是渠道**实例数组**；注册必须用本进程的 registerChannel
-        // （插件 bundle 内也有同名函数，但那是它自己模块图的孤立注册表）。
+        // 插件导出渠道**实例数组**与可选的 playback（播放/弹幕能力）；注册必须用
+        // 本进程的 registerChannel/registerPlayback（插件 bundle 内同名函数写的是
+        // 它自己模块图的孤立注册表）。
         const mod = (await import(`${pathToFileURL(file).href}?v=${mtime}`)) as {
           channels?: unknown
+          playback?: unknown
         }
         const channels = mod.channels
         if (!Array.isArray(channels) || channels.length === 0) {
-          throw new ServiceError("bad-request", 400, "渠道插件未导出非空 channels 数组")
+          throw new ServiceError("bad-request", 400, "平台插件未导出非空 channels 数组")
         }
         for (const channel of channels) {
           registerChannel(channel as RssChannel)
         }
+        let playback = false
+        if (mod.playback !== undefined) {
+          registerPlayback(mod.playback as PlatformPlayback)
+          playback = true
+        }
         loadedChannelPlugins.set(file, mtime)
-        return { registered: true, path: file, channels: channels.length }
+        return { registered: true, path: file, channels: channels.length, playback }
       }
       case "probe.resolve": {
         const url = asString(p.url, "url")

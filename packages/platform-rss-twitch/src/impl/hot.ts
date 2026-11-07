@@ -5,7 +5,7 @@
  * 播放走 resolver by-url。不实现 fetchPassive / Loginable / passive。
  */
 
-import { fetchTwitchTopStreams } from "@amoeba/resolve/platform/twitch";
+import { fetchTwitchTopStreams } from "../lib/index.ts";
 import { type SerializeOptions } from "@amoeba/xml"
 
 import type { Pageable, RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"

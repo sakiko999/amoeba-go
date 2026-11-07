@@ -19,7 +19,7 @@
 
 import { cdpEvaluate, cdpNavigate, withBrowserOp } from "@amoeba/resolve/browser/cdp";
 import { now } from "@amoeba/resolve/host";
-import { XHS_BASE, extractInitialState, xhsClient } from "@amoeba/resolve/platform/xhs";
+import { XHS_BASE, extractInitialState, xhsClient } from "../lib/index.ts";
 import type { Item, Video } from "@amoeba/xml"
 
 import type { RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"

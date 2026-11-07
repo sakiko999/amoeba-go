@@ -11,7 +11,7 @@
 import { formatError } from "@amoeba/log"
 import { httpJson, now } from "@amoeba/resolve/host";
 import { log } from "@amoeba/resolve/log";
-import { HUYA_UA } from "@amoeba/resolve/platform/huya";
+import { HUYA_UA } from "../lib/index.ts";
 import { parseRoomIds } from "@amoeba/resolve/utils/room-ids";
 import type { Item, Live } from "@amoeba/xml"
 import { type SerializeOptions } from "@amoeba/xml"

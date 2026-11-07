@@ -10,7 +10,7 @@
  */
 
 import { now } from "@amoeba/resolve/host";
-import { biliClient } from "@amoeba/resolve/platform/bili";
+import { biliClient } from "../lib/index.ts";
 import type { Item, Social } from "@amoeba/xml"
 
 import { makeApiChannel } from "@amoeba/crawler/factory"

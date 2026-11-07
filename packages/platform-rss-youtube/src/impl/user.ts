@@ -10,7 +10,7 @@
  */
 
 import { now } from "@amoeba/resolve/host";
-import { searchYouTubeChannels } from "@amoeba/resolve/platform/youtube";
+import { searchYouTubeChannels } from "../lib/index.ts";
 import type { Video } from "@amoeba/xml"
 
 import { makeApiChannel } from "@amoeba/crawler/factory"
