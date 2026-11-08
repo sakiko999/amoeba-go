@@ -1,9 +1,9 @@
 /**
  * TabManager：tab 实例 = 一个 WebContentsView（独立 webContents / preload / 生命周期），
  * 挂在 BrowserWindow 的 contentView 上，叠在 host ui 之上：顶部 44px 留给 tab 条，其余归活动 tab。
- * 静态 tab（编译期子包）与 runtime 页面（page://）共用这套生命周期：
- * - 静态 tab：每次实例一个内存 partition
- * - 页面：persist:page-<id> 分区（localStorage 跨实例/重启保留），preload 来自页面包
+ * 所有 tab 都来自页面组件（page://）：
+ * - persist:page-<id> 分区（localStorage 跨实例/重启保留）
+ * - 页面自有 preload（可选）+ 宿主 pageBridge（session 级叠加，提供 window.tab）
  * 所有 tab 状态的唯一权威源在这里，host 页面只做投影（tabs:changed）。
  */
 
@@ -17,13 +17,10 @@ import { join } from "node:path";
 import type { TabManifest, TabSummary, Whoami } from "@host/sdk";
 import type { PageActions } from "./pages/actions";
 import type { PageRegistry, PageRuntime } from "./pages/registry";
-import { TAB_KINDS } from "./registry";
-import { tabUrl } from "./renderTarget";
 
 /** host 页面里 tab 条的高度；主进程、ui 样式与 titleBarOverlay 保持一致。 */
 export const TABBAR_HEIGHT = 44;
 
-const HOST_PRELOAD = join(app.getAppPath(), "out", "preload", "index.js");
 const PAGE_BRIDGE_PRELOAD = join(
   app.getAppPath(),
   "out",
@@ -82,37 +79,20 @@ export class TabManager {
     win.webContents.on("did-finish-load", () => this.broadcast());
   }
 
-  /** 静态 tab + 所有 active 的页面组件（service 组件无 UI，不进 kinds） */
+  /** 所有 active 的页面组件（service 组件无 UI，不进 kinds） */
   get kinds(): readonly TabManifest[] {
-    return [
-      ...TAB_KINDS,
-      ...this.pages
-        .list()
-        .filter((page) => page.kind === "page" && page.state === "active")
-        .map((page) => ({
-          id: page.id,
-          title: page.name,
-          color: page.color,
-        })),
-    ];
+    return this.pages
+      .list()
+      .filter((page) => page.kind === "page" && page.state === "active")
+      .map((page) => ({
+        id: page.id,
+        title: page.name,
+        color: page.color,
+      }));
   }
 
-  /** id 既可以是静态 tab kind，也可以是页面组件 id（service 组件不可开 tab） */
+  /** id 必须是已安装的页面组件（service 组件不可开 tab） */
   create(id: string): TabSummary | undefined {
-    const staticManifest = TAB_KINDS.find((m) => m.id === id);
-    if (staticManifest !== undefined) {
-      const instanceId = `${id}-${++this.seq}`;
-      return this.mount(
-        {
-          instanceId,
-          kind: id,
-          title: staticManifest.title,
-          view: this.createView(HOST_PRELOAD, instanceId),
-        },
-        tabUrl(id),
-      );
-    }
-
     const page = this.pages.get(id);
     // inactive 只在页面激活完成前出现；main 扩展失败（error）仍允许打开 renderer
     if (page === undefined || page.state === "inactive") return undefined;
@@ -131,7 +111,7 @@ export class TabManager {
         title: page.manifest.name,
         pageId: page.manifest.id,
         // 无自有 preload 的页面只靠 session 级 pageBridge 提供能力：
-        // 若再回退 HOST_PRELOAD 会与 pageBridge 重复 expose window.tab 而抛错
+        // 若回退宿主 preload 会与 pageBridge 重复 expose window.tab 而抛错
         view: this.createView(page.preloadPath, partition),
       },
       page.entryUrl ?? `page://${page.manifest.id}/`,
@@ -250,12 +230,6 @@ export class TabManager {
     const pages = this.pages.list();
     const openable = pages.filter((page) => page.kind === "page");
     const template: MenuItemConstructorOptions[] = [
-      ...TAB_KINDS.map((k) => ({
-        label: `新建 ${k.title}`,
-        click: () => {
-          this.create(k.id);
-        },
-      })),
       ...openable.map((page) => ({
         label: `新建 ${page.name}`,
         enabled: page.state !== "inactive",

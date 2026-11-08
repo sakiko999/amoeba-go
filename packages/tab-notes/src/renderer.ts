@@ -1,6 +1,7 @@
 /**
  * Notes tab：textarea 草稿 + 把字数同步进 tab 条标题（tab → main → host 联动）。
- * 草稿存在 tab 实例专属的内存 partition localStorage 里，随 tab 关闭即清（demo 不做持久化）。
+ * 草稿存在 tab 实例的 sessionStorage 里，随 tab 关闭即清（宿主分区是持久化的，
+ * 用 sessionStorage 才能保持“每个 tab 一份、关掉即没”的 demo 语义）。
  */
 import { dom, tabApi, type Theme } from "@host/sdk";
 
@@ -43,17 +44,17 @@ root.innerHTML = `
     footer { color: var(--dim); font-size: 12px; font-family: ui-monospace, Consolas, monospace; }
   </style>
   <div class="wrap">
-    <textarea id="editor" placeholder="写点什么——标题会实时显示字数，草稿按 instanceId 持久化"></textarea>
+    <textarea id="editor" placeholder="写点什么——标题会实时显示字数，草稿只存当前 tab"></textarea>
     <footer id="foot"></footer>
   </div>`;
 
 const editor = dom<HTMLTextAreaElement>("#editor");
 const foot = dom<HTMLElement>("#foot");
 
-editor.value = localStorage.getItem(storageKey) ?? "";
+editor.value = sessionStorage.getItem(storageKey) ?? "";
 
 function persist(): void {
-  localStorage.setItem(storageKey, editor.value);
+  sessionStorage.setItem(storageKey, editor.value);
   const count = editor.value.replace(/\s/g, "").length;
   api.setTitle(count > 0 ? `Notes · ${count} 字` : "Notes");
   foot.textContent = `saved · ${new Date().toLocaleTimeString("zh-CN", { hour12: false })} · ${api.instanceId}`;

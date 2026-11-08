@@ -1,9 +1,8 @@
 /**
  * electron-vite 配置：main / preload 打 Node CJS（electron 与内置模块自动 external），
- * renderer 为多页 MPA —— host（tab 条）+ 每个 tab 子包一个 html 入口。
- * renderer root 提到仓库根：packages/* 与 apps/* 都在 root 内，
- * 产物路径 = 源路径相对仓库根（如 packages/tab-clock/src/index.html），
- * 寻址约定见 src/main/renderTarget.ts。
+ * renderer 只有 host UI 一个 html 入口（页面组件各自打包，不进宿主构建）。
+ * renderer root 提到仓库根，产物路径 = 源路径相对仓库根
+ * （apps/desktop/src/ui/index.html），寻址约定见 src/main/renderTarget.ts。
  *
  * 共享层（vendor://）：build 时若 page-vendor 的 manifest 存在，宿主 UI 的
  * react/@demo/ui 走 external（import map 解析到 vendor://，全宿主单实例），
@@ -73,7 +72,7 @@ export default defineConfig(({ command }) => {
         outDir: "out/preload",
         rolldownOptions: {
           input: {
-            // 宿主页面与静态 tab 用 index；runtime 页面用 pageBridge 叠加
+            // host 页面用 index；页面组件由 session 级 pageBridge 叠加
             index: resolve(__dirname, "src/preload/index.ts"),
             pageBridge: resolve(__dirname, "src/preload/pageBridge.ts"),
           },
@@ -83,7 +82,7 @@ export default defineConfig(({ command }) => {
     renderer: {
       root: repoRoot,
       ...(command === "serve" ? { resolve: { alias: reactAlias } } : {}),
-      // react 只处理宿主 ui 的 tsx（html 入口与 tab 子包纯 ts 不进 babel）；tailwind 处理宿主 styles.css
+      // react 只处理宿主 ui 的 tsx；tailwind 处理宿主 styles.css
       plugins: [
         react({ include: /apps\/desktop\/src\/ui\/.*\.tsx?$/ }),
         tailwindcss(),
@@ -93,7 +92,7 @@ export default defineConfig(({ command }) => {
                 name: "vendor-import-map",
                 apply: "build" as const,
                 transformIndexHtml(html: string): string {
-                  // 同一构建里还有静态 tab 的 html（无共享层 CSP），跳过
+                  // 只处理带共享层 CSP 的入口（当前只有 host ui）
                   return html.includes(CSP_ANCHOR)
                     ? injectIntoHtmlText(html, vendorManifest)
                     : html;
@@ -116,18 +115,6 @@ export default defineConfig(({ command }) => {
         rolldownOptions: {
           input: {
             "ui/index": resolve(__dirname, "src/ui/index.html"),
-            "tabs/clock/index": resolve(
-              repoRoot,
-              "packages/tab-clock/src/index.html",
-            ),
-            "tabs/notes/index": resolve(
-              repoRoot,
-              "packages/tab-notes/src/index.html",
-            ),
-            "tabs/sysinfo/index": resolve(
-              repoRoot,
-              "packages/tab-sysinfo/src/index.html",
-            ),
           },
           ...(vendorManifest !== undefined
             ? { external: SHARED_EXTERNAL }

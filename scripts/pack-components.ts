@@ -21,6 +21,9 @@ const baseComponents: [string, string][] = [
   ["media-manager", "pack:page"],
   ["component-inspector", "pack"],
   ["home", "pack"],
+  ["tab-clock", "pack"],
+  ["tab-notes", "pack"],
+  ["tab-sysinfo", "pack"],
   ["media-library", "pack"],
   ["browser-proxy", "pack"],
 ];

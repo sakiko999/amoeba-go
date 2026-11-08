@@ -1,0 +1,8 @@
+{
+  "id": "sysinfo",
+  "kind": "page",
+  "name": "System",
+  "version": "0.1.0",
+  "color": "#bb9af7",
+  "entry": "renderer/index.html"
+}

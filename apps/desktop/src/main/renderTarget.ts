@@ -14,7 +14,3 @@ function pageUrl(relPath: string): string {
 export function hostUrl(): string {
   return pageUrl("apps/desktop/src/ui/index.html");
 }
-
-export function tabUrl(kind: string): string {
-  return pageUrl(`packages/tab-${kind}/src/index.html`);
-}

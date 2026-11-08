@@ -64,8 +64,6 @@ interface IpcTracker {
 export interface PageRegistryOptions {
   builtinDir: string;
   externalDir: string;
-  /** 静态 tab kind，组件 id 不能与之冲突 */
-  reservedIds: readonly string[];
   getWindow(): BrowserWindow | undefined;
   /** 级联停用依赖方前关闭其 tab（service reload/uninstall 时调用） */
   closeTabs?(pageId: string): void;
@@ -190,9 +188,6 @@ export class PageRegistry {
   async install(sourceDir: string): Promise<PageSummary> {
     const sourceRoot = await realpath(sourceDir);
     const manifest = await readPageManifest(sourceRoot);
-    if (this.opts.reservedIds.includes(manifest.id)) {
-      throw new Error(`组件 id 与静态 tab 冲突：${manifest.id}`);
-    }
     if (this.pages.has(manifest.id)) {
       throw new Error(`组件已安装：${manifest.id}`);
     }
@@ -326,10 +321,6 @@ export class PageRegistry {
       try {
         const root = await realpath(join(dir, entry.name));
         const manifest = await readPageManifest(root);
-        if (this.opts.reservedIds.includes(manifest.id)) {
-          this.log(`跳过 ${manifest.id}：与静态 tab id 冲突`);
-          continue;
-        }
         if (this.pages.has(manifest.id)) {
           this.log(
             `跳过 ${manifest.id}：id 已被 ${this.pages.get(manifest.id)?.source} 组件占用`,

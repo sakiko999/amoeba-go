@@ -44,19 +44,18 @@ export const COMPONENT_CHANNELS = {
 
 /** 首页导航的 IPC 渠道（子页面清单 + 打开；首页使用，任何 tab 页面可调用） */
 export const NAV_CHANNELS = {
-  /** invoke：当前可打开的子页面清单（静态 tab + 非 inactive 的页面组件） */
+  /** invoke：当前可打开的子页面清单（非 inactive 的页面组件） */
   list: "nav:list",
-  /** invoke：打开一个子页面（id 必须是已知 kind；sender 必须是 tab 角色） */
+  /** invoke：打开一个子页面（id 必须是已知页面组件；sender 必须是 tab 角色） */
   open: "nav:open",
 } as const;
 
-/** 首页导航项：静态 tab 或已安装页面组件（按 TabManager.create 语义可达） */
+/** 首页导航项：已安装页面组件（按 TabManager.create 语义可达） */
 export interface NavEntry {
   id: string;
   title: string;
   color: string;
-  origin: "static" | "page";
-  /** 仅 origin=page（inactive 的页面不可开 tab，不进清单） */
+  /** inactive 的页面不可开 tab，不进清单 */
   state?: "active" | "error";
   version?: string;
 }
@@ -194,9 +193,9 @@ export interface PageMainModule {
   deactivate?(): void | Promise<void>;
 }
 
-/* ---------- tab（编译期子包与 runtime 页面共用的实例契约） ---------- */
+/* ---------- tab（页面组件实例契约） ---------- */
 
-/** 一个 tab 种类的静态描述，由每个 tab 子包导出一份。 */
+/** tab 条需要的种类描述：由宿主从已激活页面组件的 manifest 派生。 */
 export interface TabManifest {
   /** 唯一 id，同时是构建产物目录名（目录名约定 packages/tab-<id>） */
   id: string;

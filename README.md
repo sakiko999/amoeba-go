@@ -1,14 +1,13 @@
 # Electron 多 tab 架构 demo
 
-bun workspaces monorepo；**每个 tab = 一个子包**，运行时每个 tab 实例 = 主进程管理的独立 `WebContentsView`（独立 webContents / preload / storage / 生命周期）。electron-vite 6 构建（dev 有 HMR + 主进程自动重启），TypeScript 7（原生编译器）typecheck，`bun fmt` + `biome lint`（bun 1.4 没有内置 lint 子命令，用 biome 补位）。
+bun workspaces monorepo；**每个 tab = 一个页面组件包**（`packages/tab-*`），运行时每个 tab 实例 = 主进程管理的独立 `WebContentsView`（独立 webContents / preload / storage / 生命周期）。electron-vite 6 构建（dev 有 HMR + 主进程自动重启），TypeScript 7（原生编译器）typecheck，`bun fmt` + `biome lint`（bun 1.4 没有内置 lint 子命令，用 biome 补位）。
 
 ## 架构
 
 ```
 apps/desktop ──────────────────────────────────────────────┐
 │  main (node)                                             │
-│   ├─ registry.ts      静态 tab 清单（编译期）              │
-│   ├─ tabs.ts          TabManager：静态 tab + runtime 页面  │
+│   ├─ tabs.ts          TabManager：页面组件 tab 实例        │
 │   │                   （WebContentsView 增删/布局/菜单）    │
 │   ├─ pages/           PageRegistry：扫描/安装/卸载/重载页面 │
 │   │                   page:// 协议 + main 扩展生命周期     │
@@ -16,14 +15,14 @@ apps/desktop ──────────────────────�
 │  preload (sandbox)    按角色注入 window.host / window.tab │
 │  ui (React)           tab 条 + 加载过渡页（Tailwind）      │
 └────────────┬────────────────────────────▲────────────────┘
-             │ workspace:*                │ IPC（tabs:changed 状态推送）
+             │ IPC（tabs:changed 状态推送）                │
              ▼                            │
 packages/tab-clock / tab-notes / tab-sysinfo
-   manifest（id/title/color）+ index.html + renderer.ts
-   经 electron-vite 多页构建到 out/renderer/（产物路径 = 源路径相对仓库根）
+   页面组件（component.json + index.html + renderer.ts）
+   各自 electron-vite 构建到 out/page/，由 pages:prepare 投影
 
-apps/desktop/out/pages/<id>/    runtime 页面包（构建产物，gitignored）
-   page.json + renderer/ + preload/ + 可选 main.js（CJS）
+apps/desktop/out/pages/<id>/    组件包投影（构建产物，gitignored）
+   component.json + renderer/ + 可选 preload/ + 可选 main.js（CJS）
    page://<id>/<entry>，每页面 persist:page-<id> 分区
 
 packages/host-sdk        @host/sdk：宿主契约（tab / runtime 页面 / HostState 渠道）
@@ -38,9 +37,9 @@ packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后�
 - tab 内唯一能力是 preload 暴露的 `window.tab`（setTitle / close / ping / systemInfo）。
 - `contextIsolation` + `sandbox` 全开，只加载本地文件；tab 侧 IPC 一律用 sender 定位调用者，不信任页面自报身份。
 - 安全默认：拦截一切导航与 `window.open`（主进程 `hardenWebContents`）、权限请求默认全拒、preload 未知角色不注入任何桥。
-- 每个 tab 实例独立 webContents + 独立内存 partition（storage 互不可见，关闭即清）；多开同一个 tab kind 互不串数据。
+- 每个 tab 实例独立 webContents；页面组件用 `persist:page-<id>` 分区（同一组件跨实例/重启保留，按 instanceId 区分的数据仍相互隔离）。
 - tab 条为 Chrome 风格 44px（视觉移植自 [cherry-studio](tmp/cherry-studio) 的 `AppShellTabBar`：状态色 color-mix 公式、标题渐隐、hover 展开的 X、关闭 collapse 动画、中键/双击关闭）；cherry-studio 本体是单 renderer 内 React tab（TabsProvider + 每 tab 独立 MemoryRouter + `<Activity>` KeepAlive），与本项目“每 tab 一个 WebContentsView”是两种架构，这里只抄了 UI 层。
-- 无系统标题栏：tab 条即标题栏（拖拽区），右侧窗口按钮为原生 `titleBarOverlay`（cherry Windows 同款，高 44 随主题变色）；tab 条尾部有亮/暗切换按钮，主题由主进程 `HostStateStore` 唯一持有，经 `host:state` 广播到 host、静态 tab 与 runtime 页面（`theme:changed` 保留给旧 tab）。
+- 无系统标题栏：tab 条即标题栏（拖拽区），右侧窗口按钮为原生 `titleBarOverlay`（cherry Windows 同款，高 44 随主题变色）；tab 条尾部有亮/暗切换按钮，主题由主进程 `HostStateStore` 唯一持有，经 `host:state` 广播到 host 与所有 tab（`theme:changed` 保留给旧页面）。
 - “+” 新建与 tab 右键菜单（关闭/关闭其他/关闭右侧）由主进程 `Menu.popup()` 弹出：host 页面 DOM 会被 tab 的原生子视图遮挡，DOM 菜单不可行。
 - renderer 加载：dev 走 electron-vite dev server（`ELECTRON_RENDERER_URL`），生产走 `app://` 自定义协议映射 `out/renderer`——ESM 模块脚本需要 http 型 origin，file:// 不行；协议须按 session 注册（每个 tab 的独立 partition 是另一个 session）。
 - 调试入口：tab 条的 bug 按钮弹出原生菜单——调试主进程（带 `--inspect=9229` 重启，`chrome://inspect` 连接）、调试启动器界面（host 页面 DevTools）、调试内容页面（当前 tab DevTools）；F12 仍可开关当前焦点 webContents 的 devtools。
@@ -50,13 +49,13 @@ packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后�
 - `apps/desktop/src/main/state.ts` 的 `HostStateStore` 是唯一状态源：`get / set / subscribe`，
   持久化到 `userData/host-state.json`（坏文件/非法值回退默认 dark）。新增全局状态只需扩展
   `HostState` 与 `set()` 校验，广播层自动覆盖。
-- 状态变更 → 更新 `titleBarOverlay`，并向 host、所有静态 tab、所有 runtime 页面广播
-  `host:state`；同时发 `theme:changed` 兼容旧 tab。
+- 状态变更 → 更新 `titleBarOverlay`，并向 host 与所有 tab 广播 `host:state`；
+  同时发 `theme:changed` 兼容旧页面。
 - 页面接入（preload）：`sendSync("host:state:sync")` 首帧同步取初始状态，`on("host:state")`
   订阅变更；渠道常量与类型来自 `packages/host-sdk`（`HOST_STATE_CHANNELS` / `HostState`）。
   media-manager 的 preload 已注入 `window.hostState`，renderer 在首帧前切换 `.dark` 类。
-- 静态 tab 用 `window.tab.state()/onStateChanged()` 订阅整份状态；`theme()/onThemeChanged`
-  保留兼容（内部仍是同一份状态）。
+- 页面 tab 用 `window.tab.state()/onStateChanged()` 订阅整份状态（pageBridge 注入）；
+  `theme()/onThemeChanged` 保留兼容（内部仍是同一份状态）。
 - smoke 会真实切换一次宿主主题并断言 media 页面跟随（`SMOKE: theme propagated`）。
 
 ### Runtime 页面（热插拔）
@@ -89,8 +88,8 @@ packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后�
 | `bun run build`                             | electron-vite build → `apps/desktop/out/`                |
 | `bun run preview`                           | build 后直接以生产模式启动（无 HMR，启动约 1s）          |
 | `bun run desktop:dist`                      | 宿主独立分发（@electron/packager asar → release/）       |
-| `bun run smoke`                             | 无头冒烟：静态 tab + 已注册页面全部加载完则退出码 0      |
-| `bun run pages:prepare`                     | 构建 media-manager 页面包并同步到 apps/desktop/out/pages |
+| `bun run smoke`                             | 无头冒烟：所有已注册页面组件加载完则退出码 0             |
+| `bun run pages:prepare`                     | 打包全部组件并同步到 apps/desktop/out/pages              |
 | `bun run media`                             | media-manager dev（独立 Electron 应用，HMR）             |
 | `bun run media:debug`                       | 同上，另开主进程 inspector 9230 + sourcemap              |
 | `bun run media:smoke`                       | media-manager 无头冒烟                                   |
@@ -98,6 +97,9 @@ packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后�
 | `bun run typecheck`                         | `tsc --noEmit`（TypeScript 7 原生）                      |
 | `bun run lint`                              | `biome lint .`                                           |
 | `bun run fmt`                               | `bun fmt .`                                              |
+
+> dev 只做组件投影、不自动打包：首次运行或改完页面组件（含 `tab-*`）源码后，先
+> `bun run pages:prepare`（`build` / `smoke` 已包含该步）。
 
 ### 生产产物
 
@@ -108,8 +110,9 @@ packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后�
 | media-manager 独立应用 | `bun run --cwd packages/media-manager dist` | `packages/media-manager/release/Media Manager-win32-x64/`      |
 | media-manager 页面包   | `bun run pages:prepare`                     | `packages/media-manager/out/page/` → `apps/desktop/out/pages/` |
 
-- 产物运行时零依赖：main 侧代码由 electron-vite 打进 `out/main`。因此 tab 子包与 SDK 必须放
-  `devDependencies`——`dependencies` 会被 electron-vite externalize，而 asar 内没有 node_modules。
+- 产物运行时零依赖：main 侧代码由 electron-vite 打进 `out/main`。因此宿主侧的 workspace 包
+  （如 `@host/sdk`）必须放 `devDependencies`——`dependencies` 会被 electron-vite externalize，
+  而 asar 内没有 node_modules。页面组件则在各自包内构建成自包含产物。
 - `app://` / `page://` 一律用 Node `fs.readFile` 读文件（`net.fetch(file://)` 读不到 asar）。
 - 验收：`"Tabs Demo.exe" --smoke` 退出码须为 0。GUI 应用没有 stdout，smoke 日志写在
   `%TEMP%/tabs-smoke-<pid>.log`（或由 `TABS_SMOKE_LOG` 指定）。
@@ -134,15 +137,16 @@ renderer 不配 VS Code 入口：宿主 dev 已默认带 `--inspect=9229 --remot
 
 生产构建不带 inspector；无 inspector 时 bug 菜单的「调试主进程」会带 `--inspect=9229` 重启。
 
-## 新增一个 tab（编译期）
+## 新增一个页面组件（含 tab 页面，无需改宿主）
 
-1. 复制 `packages/tab-clock` → `packages/tab-foo`：改 `package.json` 的 name，改 manifest 的 `id`（目录名必须是 `tab-<id>`，与 id 一致）。
-2. 在 `apps/desktop` 里 `bun add @tabs/foo`（workspace 链接）。
-3. `apps/desktop/src/main/registry.ts` 加一行 import + 数组项。
-4. `apps/desktop/electron.vite.config.ts` 的 renderer input 加 `"tabs/foo/index": resolve(repoRoot, "packages/tab-foo/src/index.html")`。
-
-第 4 步目前仍是手写（构建期 MPA 入口无法从 registry.ts 自动推导）；漏掉时 dev 正常、生产构建
-不会产出该 tab 的 HTML。
+1. 复制 `packages/tab-clock` → `packages/tab-foo`：改 `package.json` 的 name，改
+   `component.json` 的 `id` / `name` / `color`（id 必须是小写 DNS label，也是 `page://` host，
+   目录名建议 `tab-<id>`）。
+2. 入口仍是 `src/index.html` + `renderer.ts`，`scripts/pack.ts` 会构建到 `out/page/`。
+3. 在根 `scripts/pack-components.ts` 的 `baseComponents` 加一行 `["tab-foo", "pack"]`，
+   然后 `bun run pages:prepare`。
+4. 宿主启动/刷新后自动出现在 `+` 菜单与首页（`PageRegistry` 扫描 `out/pages`），
+   不需要改宿主代码。
 
 ## 新增一个 runtime 页面（无需改宿主）
 
@@ -170,7 +174,7 @@ exports.deactivate = () => {
 
 安装方式：把目录复制到 `apps/desktop/out/pages/<id>/`（内置）或运行宿主后从 `+` 菜单
 「安装页面…」选择目录（外部，会弹出主进程权限警告）。页面 main 只接受 CJS；页面 id 必须
-是小写 DNS label 且不能与静态 tab id 冲突。契约类型见 `packages/host-sdk`。
+是小写 DNS label。契约类型见 `packages/host-sdk`。
 
 ## 已知简化（升级路径）
 
@@ -179,4 +183,4 @@ exports.deactivate = () => {
 - `onTabsChanged` 无 unsubscribe、whoami 用一次 `sendSync`（页面级生命周期，demo 取舍；host 重载靠 did-finish-load 重广播补齐）。
 - 关闭全部 tab 后是空态，不自动重建首页。
 - tsconfig 是单一 program（main/renderer 共用 DOM + node 类型），类型层不区分运行环境 → 升级路径：拆 project references。
-- Notes 草稿存在实例的内存 partition 里，随 tab 关闭即清（跨会话持久化应改由主进程存）。
+- Notes 草稿存在 tab 实例的 sessionStorage 里，随 tab 关闭即清（跨会话持久化应改由主进程存）。

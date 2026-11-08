@@ -1,8 +1,8 @@
 /**
  * 主进程入口：页面注册表 → IPC → 窗口 → TabManager → host ui。
- * 静态 tab（packages/tab-*）走编译期 MPA；runtime 页面（page://）由 PageRegistry 扫描
- * 内置 `pages/` 与用户数据目录，支持安装/卸载/重载，无需重启宿主。
- * `--smoke`：无头冒烟，静态 tab 与已注册页面全部加载后 exit 0；did-fail-load 立即失败。
+ * 所有 tab 都是页面组件（page://）：PageRegistry 扫描内置 `pages/` 与用户数据目录，
+ * 支持安装/卸载/重载，无需重启宿主。
+ * `--smoke`：无头冒烟，全部已注册页面加载后 exit 0；did-fail-load 立即失败。
  */
 
 import { app, BrowserWindow, ipcMain, Menu, protocol, session } from "electron";
@@ -24,7 +24,6 @@ import type {
 import { createPageActions } from "./pages/actions";
 import { registerPageProtocol } from "./pages/protocol";
 import { PageRegistry } from "./pages/registry";
-import { TAB_KINDS } from "./registry";
 import { HostStateStore } from "./state";
 import {
   TABBAR_HEIGHT,
@@ -85,7 +84,7 @@ let manager: TabManager | undefined;
 let win: BrowserWindow | undefined;
 let pages: PageRegistry | undefined;
 
-/* ---------- 宿主状态（唯一状态源；广播给 host、静态 tab 与 runtime 页面） ---------- */
+/* ---------- 宿主状态（唯一状态源；广播给 host 与所有 tab） ---------- */
 const stateStore = new HostStateStore();
 /** titleBarOverlay 颜色随主题走；与 @demo/ui theme.css 的 --sidebar/--sidebar-foreground 对齐 */
 const OVERLAY_COLORS: Record<Theme, { color: string; symbolColor: string }> = {
@@ -143,7 +142,7 @@ ipcMain.on("theme:toggle", (e) => {
 /* ---------- host（tab 条）侧：管理通道一律校验调用者是 host（P0-2） ---------- */
 ipcMain.handle("tabs:list-kinds", (e) => {
   if (!isHost(e.sender.id)) throw new Error("tabs:list-kinds: host only");
-  return manager?.kinds ?? TAB_KINDS;
+  return manager?.kinds ?? [];
 });
 ipcMain.handle("tabs:create", (e, kind: string): TabSummary => {
   if (!isHost(e.sender.id)) throw new Error("tabs:create: host only");
@@ -171,14 +170,8 @@ ipcMain.on("tabs:move", (e, instanceId: string, overInstanceId: string) => {
 ipcMain.handle(COMPONENT_CHANNELS.list, () => pages?.inspect() ?? []);
 
 /* ---------- 首页导航（子页面清单 + 打开；任何 tab 页面可调用） ---------- */
-ipcMain.handle(NAV_CHANNELS.list, (): NavEntry[] => {
-  const staticEntries: NavEntry[] = TAB_KINDS.map((kind) => ({
-    id: kind.id,
-    title: kind.title,
-    color: kind.color,
-    origin: "static",
-  }));
-  const pageEntries: NavEntry[] = (pages?.list() ?? [])
+ipcMain.handle(NAV_CHANNELS.list, (): NavEntry[] =>
+  (pages?.list() ?? [])
     .filter((page) => page.kind === "page" && page.state !== "inactive")
     .map((page) => {
       const version = pages?.get(page.id)?.manifest.version;
@@ -186,14 +179,11 @@ ipcMain.handle(NAV_CHANNELS.list, (): NavEntry[] => {
         id: page.id,
         title: page.name,
         color: page.color,
-        origin: "page",
         state: page.state === "error" ? "error" : "active",
         ...(version !== undefined ? { version } : {}),
       };
-    });
-  // 页面组件在前（安装的应用能力），静态 tab 在后（内置演示）
-  return [...pageEntries, ...staticEntries];
-});
+    }),
+);
 ipcMain.handle(NAV_CHANNELS.open, (e, id: unknown): boolean => {
   // 打开子页面是页面级动作（等同宿主新建 tab 菜单）；host 与未知 sender 拒绝
   if (manager?.whoami(e.sender.id).role !== "tab") return false;
@@ -285,7 +275,7 @@ function denyAllPermissions(ses: Session): void {
   ses.setPermissionCheckHandler(() => false);
 }
 
-// app:// 静态 tab 与 page:// runtime 页面（须在 app ready 前注册 scheme）
+// app:// host UI 与 page:// 页面组件（须在 app ready 前注册 scheme）
 protocol.registerSchemesAsPrivileged([
   {
     scheme: "app",
@@ -342,7 +332,6 @@ async function main(): Promise<void> {
   pages = await PageRegistry.create({
     builtinDir: join(app.getAppPath(), "out", "pages"),
     externalDir: join(app.getPath("userData"), "pages"),
-    reservedIds: TAB_KINDS.map((kind) => kind.id),
     getWindow: () => win,
     // 级联停用依赖方前关其 tab；manager 晚于此创建，回调内晚绑定
     closeTabs: (pageId) => manager?.closeByPage(pageId),
@@ -395,7 +384,7 @@ async function main(): Promise<void> {
   });
   manager = new TabManager(win, pages, actions);
   hardenWebContents(win.webContents);
-  // 状态变更 → overlay + 所有 webContents（host / 静态 tab / runtime 页面）
+  // 状态变更 → overlay + 所有 webContents（host / 所有 tab）
   stateStore.subscribe(() => broadcastState());
 
   await win.loadURL(hostUrl());
@@ -416,7 +405,6 @@ async function main(): Promise<void> {
 
   if (SMOKE) {
     await activation;
-    const staticIds = TAB_KINDS.map((kind) => kind.id);
     if (pages.list().length === 0) {
       console.log(
         "smoke: no pages registered (run bun run pages:prepare to install media-manager)",
@@ -444,7 +432,8 @@ async function main(): Promise<void> {
     let mediaWc: WebContents | undefined;
     let inspectorWc: WebContents | undefined;
     let homeWc: WebContents | undefined;
-    for (const id of [...staticIds, ...pageIds]) {
+    let clockWc: WebContents | undefined;
+    for (const id of pageIds) {
       const tabStarted = Date.now();
       const summary = manager.create(id);
       const wc = summary
@@ -457,6 +446,7 @@ async function main(): Promise<void> {
       if (id === "media-manager") mediaWc = wc;
       if (id === "component-inspector") inspectorWc = wc;
       if (id === "home") homeWc = wc;
+      if (id === "clock") clockWc = wc;
       loads.push(
         new Promise<void>((resolve, reject) => {
           wc.once("did-finish-load", () => {
@@ -516,6 +506,24 @@ async function main(): Promise<void> {
       console.log("SMOKE: page bridge ok", bridge);
     }
 
+    // 无自有 preload 的页面组件：能力完全来自 pageBridge，且 renderer 已执行
+    if (clockWc !== undefined) {
+      const clock = (await clockWc.executeJavaScript(
+        "({ kind: window.tab?.kind, instanceId: window.tab?.instanceId, time: document.querySelector('#time')?.textContent })",
+      )) as { kind?: string; instanceId?: string; time?: string };
+      if (
+        clock.kind !== "clock" ||
+        typeof clock.instanceId !== "string" ||
+        clock.time === undefined ||
+        clock.time === "--:--:--"
+      ) {
+        throw new Error(
+          `smoke: tab page bridge incomplete: ${JSON.stringify(clock)}`,
+        );
+      }
+      console.log("SMOKE: tab page bridge ok", clock);
+    }
+
     // 状态透传冒烟：切换宿主主题，media 页面必须跟随（页面 preload 订阅 host:state）
     if (mediaWc !== undefined) {
       const readTheme = (): Promise<unknown> =>
@@ -553,14 +561,12 @@ async function main(): Promise<void> {
       console.log(`SMOKE: component inspector ok (${rendered} nodes)`);
     }
 
-    // 首页：子页面清单 + 打开链路（静态 tab + 非 inactive 页面都必须出现）
+    // 首页：子页面清单 + 打开链路（所有非 inactive 页面都必须出现）
     if (homeWc !== undefined) {
-      const expectedNav =
-        TAB_KINDS.length +
-        pages
-          .list()
-          .filter((page) => page.kind === "page" && page.state !== "inactive")
-          .length;
+      const expectedNav = pages
+        .list()
+        .filter((page) => page.kind === "page" && page.state !== "inactive")
+        .length;
       let navCount = 0;
       for (let i = 0; i < 20 && navCount !== expectedNav; i += 1) {
         navCount = (await homeWc.executeJavaScript(
@@ -606,22 +612,25 @@ async function main(): Promise<void> {
     }
 
     console.log(
-      `SMOKE OK: ${loads.length} tabs loaded (${staticIds.length} static + ${pageIds.length} pages)`,
+      `SMOKE OK: ${loads.length} tabs loaded (${pageIds.length} page components)`,
     );
     void pages.dispose();
     app.exit(0);
     return;
   }
 
-  // 默认打开首页组件（未安装/未激活时回退第一个静态 tab）。等激活完成再开，
+  // 默认打开首页组件（未安装/未激活时回退第一个可用页面组件）。等激活完成再开，
   // 否则页面可能仍处 inactive，create 会被拒；此刻 host 已 did-finish-load。
   activation
     .then(() => {
       const home = pages?.get("home");
+      const fallback = pages
+        ?.list()
+        .find((page) => page.kind === "page" && page.state !== "inactive");
       const id =
         home !== undefined && home.state !== "inactive"
           ? "home"
-          : TAB_KINDS[0]?.id;
+          : fallback?.id;
       if (id !== undefined) manager?.create(id);
     })
     .catch((err: unknown) =>

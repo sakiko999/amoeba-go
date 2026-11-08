@@ -1,0 +1,8 @@
+{
+  "id": "notes",
+  "kind": "page",
+  "name": "Notes",
+  "version": "0.1.0",
+  "color": "#9ece6a",
+  "entry": "renderer/index.html"
+}

@@ -26,9 +26,6 @@
         "@dnd-kit/utilities": "^3.2.2",
         "@electron/packager": "^20.3.0",
         "@host/sdk": "workspace:*",
-        "@tabs/clock": "workspace:*",
-        "@tabs/notes": "workspace:*",
-        "@tabs/sysinfo": "workspace:*",
         "@vitejs/plugin-react": "^6.2.1",
         "electron": "^45.2.3",
         "electron-vite": "^6.0.0",
@@ -384,20 +381,35 @@
     },
     "packages/tab-clock": {
       "name": "@tabs/clock",
+      "version": "0.1.0",
       "dependencies": {
         "@host/sdk": "workspace:*",
+      },
+      "devDependencies": {
+        "electron-vite": "^6.0.0",
+        "vite": "^8.3.6",
       },
     },
     "packages/tab-notes": {
       "name": "@tabs/notes",
+      "version": "0.1.0",
       "dependencies": {
         "@host/sdk": "workspace:*",
+      },
+      "devDependencies": {
+        "electron-vite": "^6.0.0",
+        "vite": "^8.3.6",
       },
     },
     "packages/tab-sysinfo": {
       "name": "@tabs/sysinfo",
+      "version": "0.1.0",
       "dependencies": {
         "@host/sdk": "workspace:*",
+      },
+      "devDependencies": {
+        "electron-vite": "^6.0.0",
+        "vite": "^8.3.6",
       },
     },
     "packages/ui": {

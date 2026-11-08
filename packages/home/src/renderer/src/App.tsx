@@ -1,7 +1,7 @@
 /**
  * 首页：可打开的子页面卡片 + 系统环境 + 组件概览。
  *
- * 子页面来自宿主 NAV_CHANNELS.list（静态 tab + 非 inactive 的页面组件），
+ * 子页面来自宿主 NAV_CHANNELS.list（所有非 inactive 的页面组件），
  * 点击经 NAV_CHANNELS.open 由主进程校验后创建 tab；组件概览复用
  * COMPONENT_CHANNELS.list，安装/卸载/重载后经 host:components-changed 自动刷新。
  */
@@ -139,9 +139,7 @@ export function App(): React.ReactElement {
                 </code>
               </div>
               <div className="flex flex-wrap gap-1.5">
-                <Badge variant="secondary">
-                  {entry.origin === "static" ? "静态 tab" : "页面组件"}
-                </Badge>
+                <Badge variant="secondary">页面组件</Badge>
                 {entry.version !== undefined && (
                   <Badge variant="outline">v{entry.version}</Badge>
                 )}
