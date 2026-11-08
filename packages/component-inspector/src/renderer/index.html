@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <!-- 共享层：react/@demo/ui 解析到 vendor://（pack 时按 page-vendor manifest 注入；
-         CSP 由注入器补 importmap 的 sha256 hash source） -->
+         CSP 由注入器补 importmap 的 sha256 hash source；空 map 的 hash 预置，dev 下不被拦截） -->
     <script type="importmap">{"imports":{}}</script>
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' vendor:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws:"
+      content="default-src 'self'; script-src 'self' vendor: 'sha256-URrTy+Il/Nz0lHojVUx275hWqAWhkSF0VsHbUM4/6Hw='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws:"
     />
     <title>组件依赖</title>
   </head>

@@ -10,7 +10,8 @@
  * 产物统一在各自 packages/<pkg>/out/component（或 out/page），由宿主 sync-pages 同步。
  */
 
-import { readdir } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { readdir, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
 const root = resolve(import.meta.dir, "..");
@@ -57,4 +58,30 @@ for (const [name, script] of components) {
     throw new Error(`pack failed: ${name} (exit ${code})`);
   }
 }
+// 共享层回归守卫：external 失效时 React 会被重新打进页面包（体积约 10 倍），
+// 而功能 smoke 仍然可能全绿；这里用宽松上限（当前最大约 58KB）兜底。
+const manifestPath = join(
+  packagesDir,
+  "page-vendor",
+  "out",
+  "dist",
+  "manifest.json",
+);
+if (existsSync(manifestPath)) {
+  const pagePacks = ["home", "component-inspector", "media-manager"];
+  for (const name of pagePacks) {
+    const assetsDir = join(packagesDir, name, "out", "page", "renderer", "assets");
+    const files = (await readdir(assetsDir)).filter((f) => f.endsWith(".js"));
+    let bytes = 0;
+    for (const file of files) bytes += (await stat(join(assetsDir, file))).size;
+    console.log(`page bundle: ${name.padEnd(20)} ${(bytes / 1024).toFixed(1)} KB`);
+    if (bytes > 120 * 1024) {
+      throw new Error(
+        `${name} 页面 JS 产物 ${(bytes / 1024).toFixed(1)}KB 超过 120KB：` +
+          "检查 electron.vite.config 的 external 是否失效",
+      );
+    }
+  }
+}
+
 console.log(`\npacked ${components.length} components`);
