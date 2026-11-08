@@ -16,6 +16,7 @@ import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join, resolve } from "node:path";
 import type {
+  ComponentInfo,
   PageIpc,
   PageIpcHandler,
   PageMainContext,
@@ -149,6 +150,18 @@ export class PageRegistry {
 
   list(): readonly PageSummary[] {
     return [...this.pages.values()].map((page) => this.summaryOf(page));
+  }
+
+  /** 组件依赖视图：状态 + manifest 的 provides/inject（只读，检查页 IPC 用）。 */
+  inspect(): ComponentInfo[] {
+    return [...this.pages.values()].map((page) => ({
+      ...this.summaryOf(page),
+      ...(page.manifest.version !== undefined
+        ? { version: page.manifest.version }
+        : {}),
+      provides: page.manifest.provides ?? [],
+      inject: page.manifest.inject ?? [],
+    }));
   }
 
   get(id: string): PageRuntime | undefined {

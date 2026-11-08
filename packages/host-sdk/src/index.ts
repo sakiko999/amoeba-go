@@ -28,6 +28,14 @@ export const HOST_STATE_CHANNELS = {
   changed: "host:state",
 } as const;
 
+/** 组件依赖视图的 IPC 渠道（只读；组件检查页使用） */
+export const COMPONENT_CHANNELS = {
+  /** invoke：当前安装的组件清单（manifest 声明 + 运行时状态） */
+  list: "components:list",
+  /** 主进程 → 所有 tab：组件安装/卸载/重载/状态变化 */
+  changed: "components:changed",
+} as const;
+
 /* ---------- runtime 组件包（component.json / page.json + 可选 main 扩展） ---------- */
 
 /** manifest.provides 的项：声明本组件向其他组件提供的服务 */
@@ -95,6 +103,13 @@ export interface PageSummary {
   state: "inactive" | "active" | "error";
   hasMain: boolean;
   error?: string;
+}
+
+/** 组件依赖视图：PageSummary + manifest 的服务声明（组件检查页用） */
+export interface ComponentInfo extends PageSummary {
+  version?: string;
+  provides: ServiceDeclaration[];
+  inject: string[];
 }
 
 /** 页面 main 扩展拿到的 IPC 事件（结构上是 Electron 事件的最小子集） */

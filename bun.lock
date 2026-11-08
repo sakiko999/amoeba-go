@@ -132,6 +132,14 @@
         "ws": "^8.18.0",
       },
     },
+    "packages/component-inspector": {
+      "name": "@tabs/component-inspector",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "electron": "^45.2.3",
+      },
+    },
     "packages/host-sdk": {
       "name": "@host/sdk",
     },
@@ -695,6 +703,8 @@
     "@tabs/browser-proxy": ["@tabs/browser-proxy@workspace:packages/browser-proxy"],
 
     "@tabs/clock": ["@tabs/clock@workspace:packages/tab-clock"],
+
+    "@tabs/component-inspector": ["@tabs/component-inspector@workspace:packages/component-inspector"],
 
     "@tabs/desktop": ["@tabs/desktop@workspace:apps/desktop"],
 

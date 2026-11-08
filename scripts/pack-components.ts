@@ -1,7 +1,8 @@
 /**
  * 打包全部宿主组件包（顺序执行，任一失败即中止）。
  * 基础能力组件：api-gateway（平台 API 注册中心）/ media-manager（页面）/
- *              media-library / browser-proxy（浏览器载具，给数据渠道用）
+ *              component-inspector（组件依赖页）/ media-library /
+ *              browser-proxy（浏览器载具，给数据渠道用）
  * platform 扩展组件：platform-*（平台数据渠道 + 媒体元数据渠道；
  *              两者都只依赖 @tabs/platform-kit / @tabs/platform-contracts，
  *              不依赖 media-library 的域实现）
@@ -17,6 +18,7 @@ const root = resolve(import.meta.dir, "..");
 const baseComponents: [string, string][] = [
   ["api-gateway", "pack"],
   ["media-manager", "pack:page"],
+  ["component-inspector", "pack"],
   ["media-library", "pack"],
   ["browser-proxy", "pack"],
 ];

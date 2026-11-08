@@ -10,7 +10,7 @@ import type { Session, WebContents } from "electron";
 import { appendFile } from "node:fs/promises";
 import { join } from "node:path";
 import os from "node:os";
-import { HOST_STATE_CHANNELS } from "@host/sdk";
+import { COMPONENT_CHANNELS, HOST_STATE_CHANNELS } from "@host/sdk";
 import type { SystemInfo, TabSummary, Theme } from "@host/sdk";
 import { createPageActions } from "./pages/actions";
 import { registerPageProtocol } from "./pages/protocol";
@@ -156,6 +156,9 @@ ipcMain.on("tabs:close", (e, instanceId: string) => {
 ipcMain.on("tabs:move", (e, instanceId: string, overInstanceId: string) => {
   if (isHost(e.sender.id)) manager?.move(instanceId, overInstanceId);
 });
+
+/* ---------- 组件依赖视图（只读；组件检查页使用） ---------- */
+ipcMain.handle(COMPONENT_CHANNELS.list, () => pages?.inspect() ?? []);
 
 /* ---------- 调试入口（host tab 条的 bug 按钮弹出） ---------- */
 ipcMain.on("debug:menu", (e) => {
@@ -330,7 +333,13 @@ async function main(): Promise<void> {
     openPage: (pageId) => {
       manager?.create(pageId);
     },
-    onChanged: () => manager?.notifyKindsChanged(),
+    onChanged: () => {
+      manager?.notifyKindsChanged();
+      // 安装/卸载/重载/级联后让已打开的检查页刷新（只读广播）
+      for (const wc of manager?.tabWebContents() ?? []) {
+        wc.send(COMPONENT_CHANNELS.changed);
+      }
+    },
   });
   manager = new TabManager(win, pages, actions);
   hardenWebContents(win.webContents);
@@ -381,6 +390,7 @@ async function main(): Promise<void> {
       .map((page) => page.id);
     const loads: Promise<void>[] = [];
     let mediaWc: WebContents | undefined;
+    let inspectorWc: WebContents | undefined;
     for (const id of [...staticIds, ...pageIds]) {
       const tabStarted = Date.now();
       const summary = manager.create(id);
@@ -392,6 +402,7 @@ async function main(): Promise<void> {
         throw new Error(`smoke: ${id} should start in loading state`);
       }
       if (id === "media-manager") mediaWc = wc;
+      if (id === "component-inspector") inspectorWc = wc;
       loads.push(
         new Promise<void>((resolve, reject) => {
           wc.once("did-finish-load", () => {
@@ -467,6 +478,25 @@ async function main(): Promise<void> {
       }
       stateStore.set({ theme: before === "dark" ? "dark" : "light" });
       console.log("SMOKE: theme propagated to media page");
+    }
+
+    // 组件检查页：IPC → 渲染链路（每个已安装组件都必须出现在依赖图里）
+    if (inspectorWc !== undefined) {
+      const expected = pages.list().length;
+      let rendered = 0;
+      for (let i = 0; i < 20 && rendered !== expected; i += 1) {
+        rendered = (await inspectorWc.executeJavaScript(
+          "document.querySelectorAll('[data-component-id]').length",
+        )) as number;
+        if (rendered === expected) break;
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+      if (rendered !== expected) {
+        throw new Error(
+          `smoke: component inspector rendered ${rendered}/${expected} nodes`,
+        );
+      }
+      console.log(`SMOKE: component inspector ok (${rendered} nodes)`);
     }
 
     console.log(

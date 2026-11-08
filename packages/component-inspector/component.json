@@ -1,0 +1,9 @@
+{
+  "id": "component-inspector",
+  "kind": "page",
+  "name": "组件依赖",
+  "version": "0.1.0",
+  "color": "#7aa2f7",
+  "entry": "index.html",
+  "preload": "preload.js"
+}

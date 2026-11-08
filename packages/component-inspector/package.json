@@ -1,0 +1,13 @@
+{
+  "name": "@tabs/component-inspector",
+  "version": "0.1.0",
+  "private": true,
+  "description": "宿主组件检查页：列出已安装组件的状态与 provides/inject 依赖图。",
+  "scripts": {
+    "pack": "bun run scripts/pack.ts"
+  },
+  "devDependencies": {
+    "@host/sdk": "workspace:*",
+    "electron": "^45.2.3"
+  }
+}
