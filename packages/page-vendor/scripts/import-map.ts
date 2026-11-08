@@ -2,10 +2,10 @@
  * import map 工具：由 vendor manifest 生成页面/宿主 import map 并注入 HTML。
  * 各页面与宿主的 electron-vite 插件（transformIndexHtml）都从这里 import。
  *
- * HTML 源里放一个**合法空 map** 作占位（`{"imports":{}}`）——dev 下未注入时
- * 浏览器不会因非法 JSON 报错；构建时整段替换为真实 map。
- * 内联 importmap 受 CSP script-src 管辖，注入时同步追加其 sha256 hash source
- * （锚点 `script-src 'self' vendor:`），无需 'unsafe-inline'。
+ * 源 HTML 不含任何 import map 占位：构建时把 `<script type="importmap">` 插在
+ * CSP meta 之后（必须早于所有 module script），并同步给 CSP 追加该内联 map 的
+ * sha256 hash source（锚点 `script-src 'self' vendor:`），无需 'unsafe-inline'。
+ * dev 不注入（Vite 自己解析裸导入），因此没有内联脚本，也没有 hash 需求。
  */
 
 import { createHash } from "node:crypto";
@@ -26,10 +26,10 @@ export const SHARED_SPECIFIERS = [
   "@demo/ui",
 ] as const;
 
-/** HTML 里 importmap 占位（合法空 map；构建时整段替换） */
-export const IMPORT_MAP_PLACEHOLDER =
-  '<script type="importmap">{"imports":{}}</script>';
-const CSP_ANCHOR = "script-src 'self' vendor:";
+/** CSP 里必须存在的锚点（注入 hash 的位置） */
+export const CSP_ANCHOR = "script-src 'self' vendor:";
+/** 注入点：CSP meta 之后（保证 map 早于 module script，且受该策略管辖） */
+const CSP_META = /<meta\s+http-equiv="Content-Security-Policy"[^>]*>/i;
 
 export function importMapOf(manifest: VendorManifest): Record<string, string> {
   const { baseUrl: base, entries: e } = manifest;
@@ -59,24 +59,23 @@ export function readVendorManifest(path: string): VendorManifest | undefined {
   }
 }
 
-/** 替换 HTML 中的 importmap 占位并给 CSP 追加该 script 块的 hash source。 */
+/** 在 CSP meta 之后插入 import map，并给 CSP 追加该 inline script 的 hash。 */
 export function injectIntoHtmlText(
   html: string,
   manifest: VendorManifest,
 ): string {
-  if (!html.includes(IMPORT_MAP_PLACEHOLDER)) {
-    throw new Error(`HTML 缺少 import map 占位 ${IMPORT_MAP_PLACEHOLDER}`);
-  }
   if (!html.includes(CSP_ANCHOR)) {
     throw new Error(`HTML 的 CSP 缺少锚点 ${CSP_ANCHOR}`);
+  }
+  if (!CSP_META.test(html)) {
+    throw new Error("HTML 缺少 CSP meta，无法确定 import map 的插入点");
   }
   const mapJson = JSON.stringify({ imports: importMapOf(manifest) });
   // CSP hash 覆盖 script 元素的文本内容（即注入后的 JSON 本身）
   const hash = createHash("sha256").update(mapJson).digest("base64");
-  return html
-    .replace(
-      IMPORT_MAP_PLACEHOLDER,
-      `<script type="importmap">${mapJson}</script>`,
-    )
-    .replace(CSP_ANCHOR, `${CSP_ANCHOR} 'sha256-${hash}'`);
+  const withHash = html.replace(CSP_ANCHOR, `${CSP_ANCHOR} 'sha256-${hash}'`);
+  return withHash.replace(
+    CSP_META,
+    (meta) => `${meta}\n    <script type="importmap">${mapJson}</script>`,
+  );
 }

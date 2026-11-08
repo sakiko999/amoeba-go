@@ -2,12 +2,11 @@
 <html lang="zh-CN" class="dark">
   <head>
     <meta charset="utf-8" />
-    <!-- 共享层：react/@demo/ui 解析到 vendor://（pack 时按 page-vendor manifest 注入；
-         script-src 放行 vendor: scheme；空 map 的 sha256 预置，dev 下内联占位不被 CSP 拦截） -->
-    <script type="importmap">{"imports":{}}</script>
+    <!-- 共享层：react/@demo/ui 解析到 vendor://（pack 时插件在 CSP meta 之后注入 import map；
+         script-src 放行 vendor: scheme；dev 不注入，裸导入由 Vite 解析） -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' vendor: 'sha256-URrTy+Il/Nz0lHojVUx275hWqAWhkSF0VsHbUM4/6Hw='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws:"
+      content="default-src 'self'; script-src 'self' vendor:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws:"
     />
     <title>首页</title>
   </head>

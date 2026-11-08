@@ -29,8 +29,8 @@ bun run --cwd packages/page-vendor build   # out/dist + manifest.json
 - 宿主 UI（apps/desktop）：electron-vite build 时读 manifest，同样 external +
   `transformIndexHtml` 注入（见 `apps/desktop/electron.vite.config.ts`）。
 - **dev / 独立应用不 external**：仍走 node_modules 全内联，manifest 缺失时 pack
-  自动回退内联。HTML 源里放的是合法空 map `{"imports":{}}`，其 sha256 已预置在
-  源 HTML 的 CSP 中，dev 下内联占位不会被拦截（模块仍走 alias 解析）。
+  自动回退内联。源 HTML 不含 import map：构建插件把它插在 CSP meta 之后（早于
+  所有 module script）并追加 sha256；dev 没有内联脚本，也就没有 hash 需求。
 - `pages:prepare` 会打印各页 JS 体积；超过 120KB 直接失败，防止 external 静默失效
   （React 被重新打进页面包时功能 smoke 仍可能通过）。
 - 宿主侧：`vendor://` scheme 注册（standard/secure/supportFetchAPI/corsEnabled），

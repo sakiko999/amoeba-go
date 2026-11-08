@@ -16,7 +16,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { resolve } from "node:path";
 import {
-  IMPORT_MAP_PLACEHOLDER,
+  CSP_ANCHOR,
   injectIntoHtmlText,
   readVendorManifest,
 } from "../../packages/page-vendor/scripts/import-map";
@@ -93,7 +93,8 @@ export default defineConfig(({ command }) => {
                 name: "vendor-import-map",
                 apply: "build" as const,
                 transformIndexHtml(html: string): string {
-                  return html.includes(IMPORT_MAP_PLACEHOLDER)
+                  // 同一构建里还有静态 tab 的 html（无共享层 CSP），跳过
+                  return html.includes(CSP_ANCHOR)
                     ? injectIntoHtmlText(html, vendorManifest)
                     : html;
                 },
