@@ -1,6 +1,6 @@
 /**
  * import map 工具：由 vendor manifest 生成页面/宿主 import map 并注入 HTML。
- * 页面 pack 脚本（bun）与宿主 electron-vite 插件都从这里 import。
+ * 各页面与宿主的 electron-vite 插件（transformIndexHtml）都从这里 import。
  *
  * HTML 源里放一个**合法空 map** 作占位（`{"imports":{}}`）——dev 下未注入时
  * 浏览器不会因非法 JSON 报错；构建时整段替换为真实 map。
@@ -9,7 +9,7 @@
  */
 
 import { createHash } from "node:crypto";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 
 export interface VendorManifest {
   baseUrl: string;
@@ -79,9 +79,4 @@ export function injectIntoHtmlText(
       `<script type="importmap">${mapJson}</script>`,
     )
     .replace(CSP_ANCHOR, `${CSP_ANCHOR} 'sha256-${hash}'`);
-}
-
-export function injectIntoHtml(htmlPath: string, manifest: VendorManifest): void {
-  const html = readFileSync(htmlPath, "utf8");
-  writeFileSync(htmlPath, injectIntoHtmlText(html, manifest));
 }

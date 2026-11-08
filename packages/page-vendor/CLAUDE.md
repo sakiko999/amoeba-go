@@ -22,9 +22,10 @@ bun run --cwd packages/page-vendor build   # out/dist + manifest.json
 ## 消费方式
 
 - 页面 pack（home / component-inspector / media-manager）：manifest 存在时以
-  `PAGE_VENDOR_EXTERNAL=1` 构建（vite `rollupOptions.external` = `SHARED_SPECIFIERS`），
-  打包后用 `injectIntoHtml` 把 import map 写进 `renderer/index.html`，并给 CSP 追加
-  该内联 map 的 `'sha256-…'` hash source（无需 `'unsafe-inline'`）。
+  `PAGE_VENDOR_EXTERNAL=1` 触发 external 构建（vite `rollupOptions.external` =
+  `SHARED_SPECIFIERS`），各页 electron-vite 插件在 `transformIndexHtml` 时用
+  `injectIntoHtmlText` 把 import map 写进 HTML，并给 CSP 追加该内联 map 的
+  `'sha256-…'` hash source（无需 `'unsafe-inline'`）。pack 脚本只做组装、不再改 HTML。
 - 宿主 UI（apps/desktop）：electron-vite build 时读 manifest，同样 external +
   `transformIndexHtml` 注入（见 `apps/desktop/electron.vite.config.ts`）。
 - **dev / 独立应用不 external**：仍走 node_modules 全内联，manifest 缺失时 pack

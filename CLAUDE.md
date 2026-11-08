@@ -53,4 +53,5 @@
 - [ ] 手动 bun run dev 确认启动默认打开 home 页、卡片点击切换与主题观感
 - [ ] 手动 bun run dev 目测两页与 media-manager 的视觉一致性（卡片/表格风格、暗亮切换、依赖图连线）
 - [!] page://shared 是保留 host（组件 id 禁用），跨 host ESM import 需协议响应带 ACAO 头——这是 import map 方案的成立前提
+- [!] renderer 共享层 = vendor:// 协议 + packages/page-vendor（Bun.build 预构建、manifest 注入 import map 与 CSP sha256）；dev/独立构建回退全内联，改共享集需同步 SHARED_SPECIFIERS/entries/importMapOf 与各消费方 external
 <!-- cc-todo:end -->
