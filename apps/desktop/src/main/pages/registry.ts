@@ -321,6 +321,8 @@ export class PageRegistry {
     const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
+      // out/pages 的共享 npm 依赖层（sync-pages 合并产物），不是组件
+      if (entry.name === "node_modules") continue;
       try {
         const root = await realpath(join(dir, entry.name));
         const manifest = await readPageManifest(root);

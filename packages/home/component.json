@@ -1,0 +1,9 @@
+{
+  "id": "home",
+  "kind": "page",
+  "name": "首页",
+  "version": "0.1.0",
+  "color": "#7dcfff",
+  "entry": "index.html",
+  "preload": "preload.js"
+}

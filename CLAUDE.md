@@ -49,4 +49,5 @@
 - [!] 宿主主进程的平台抓取暂无速率/冷却/风控：appHost.net（governor）未随迁移安装，reportRisk/browserGate/policy 全是可选链静默 no-op；强反爬平台真机验证前需把 amoeba 的 governor 迁入 platform-kit runtime（评审 P2，本轮未做）
 - [ ] 真机宿主里经 UI 或 devtools 调一次 gateway 数据 op（fetch/play/danmaku），目前只有 Bun 真实探针 + smoke 注册级覆盖
 - [!] media-manager 独立形态必须从 `@tabs/platform-*/provider` 子路径导入 provider 工厂，走包根会把 platform-kit runtime 拉进根 tsc（那套代码只由 Bun.build + smoke 校验）
+- [ ] 手动 bun run dev 目测组件依赖页的 SVG 连线布局、明暗主题与安装/卸载后的自动刷新
 <!-- cc-todo:end -->

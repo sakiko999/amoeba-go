@@ -1,0 +1,13 @@
+{
+  "name": "@tabs/home",
+  "version": "0.1.0",
+  "private": true,
+  "description": "宿主首页：列出当前可打开的子页面与运行环境/组件概览。",
+  "scripts": {
+    "pack": "bun run scripts/pack.ts"
+  },
+  "devDependencies": {
+    "@host/sdk": "workspace:*",
+    "electron": "^45.2.3"
+  }
+}

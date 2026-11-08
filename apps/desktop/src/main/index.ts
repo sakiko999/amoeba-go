@@ -10,8 +10,17 @@ import type { Session, WebContents } from "electron";
 import { appendFile } from "node:fs/promises";
 import { join } from "node:path";
 import os from "node:os";
-import { COMPONENT_CHANNELS, HOST_STATE_CHANNELS } from "@host/sdk";
-import type { SystemInfo, TabSummary, Theme } from "@host/sdk";
+import {
+  COMPONENT_CHANNELS,
+  HOST_STATE_CHANNELS,
+  NAV_CHANNELS,
+} from "@host/sdk";
+import type {
+  NavEntry,
+  SystemInfo,
+  TabSummary,
+  Theme,
+} from "@host/sdk";
 import { createPageActions } from "./pages/actions";
 import { registerPageProtocol } from "./pages/protocol";
 import { PageRegistry } from "./pages/registry";
@@ -159,6 +168,37 @@ ipcMain.on("tabs:move", (e, instanceId: string, overInstanceId: string) => {
 
 /* ---------- 组件依赖视图（只读；组件检查页使用） ---------- */
 ipcMain.handle(COMPONENT_CHANNELS.list, () => pages?.inspect() ?? []);
+
+/* ---------- 首页导航（子页面清单 + 打开；任何 tab 页面可调用） ---------- */
+ipcMain.handle(NAV_CHANNELS.list, (): NavEntry[] => {
+  const staticEntries: NavEntry[] = TAB_KINDS.map((kind) => ({
+    id: kind.id,
+    title: kind.title,
+    color: kind.color,
+    origin: "static",
+  }));
+  const pageEntries: NavEntry[] = (pages?.list() ?? [])
+    .filter((page) => page.kind === "page" && page.state !== "inactive")
+    .map((page) => {
+      const version = pages?.get(page.id)?.manifest.version;
+      return {
+        id: page.id,
+        title: page.name,
+        color: page.color,
+        origin: "page",
+        state: page.state === "error" ? "error" : "active",
+        ...(version !== undefined ? { version } : {}),
+      };
+    });
+  // 页面组件在前（安装的应用能力），静态 tab 在后（内置演示）
+  return [...pageEntries, ...staticEntries];
+});
+ipcMain.handle(NAV_CHANNELS.open, (e, id: unknown): boolean => {
+  // 打开子页面是页面级动作（等同宿主新建 tab 菜单）；host 与未知 sender 拒绝
+  if (manager?.whoami(e.sender.id).role !== "tab") return false;
+  if (typeof id !== "string" || id.length === 0) return false;
+  return manager.create(id) !== undefined;
+});
 
 /* ---------- 调试入口（host tab 条的 bug 按钮弹出） ---------- */
 ipcMain.on("debug:menu", (e) => {
@@ -391,6 +431,7 @@ async function main(): Promise<void> {
     const loads: Promise<void>[] = [];
     let mediaWc: WebContents | undefined;
     let inspectorWc: WebContents | undefined;
+    let homeWc: WebContents | undefined;
     for (const id of [...staticIds, ...pageIds]) {
       const tabStarted = Date.now();
       const summary = manager.create(id);
@@ -403,6 +444,7 @@ async function main(): Promise<void> {
       }
       if (id === "media-manager") mediaWc = wc;
       if (id === "component-inspector") inspectorWc = wc;
+      if (id === "home") homeWc = wc;
       loads.push(
         new Promise<void>((resolve, reject) => {
           wc.once("did-finish-load", () => {
@@ -499,6 +541,58 @@ async function main(): Promise<void> {
       console.log(`SMOKE: component inspector ok (${rendered} nodes)`);
     }
 
+    // 首页：子页面清单 + 打开链路（静态 tab + 非 inactive 页面都必须出现）
+    if (homeWc !== undefined) {
+      const expectedNav =
+        TAB_KINDS.length +
+        pages
+          .list()
+          .filter((page) => page.kind === "page" && page.state !== "inactive")
+          .length;
+      let navCount = 0;
+      for (let i = 0; i < 20 && navCount !== expectedNav; i += 1) {
+        navCount = (await homeWc.executeJavaScript(
+          "document.querySelectorAll('[data-nav-id]').length",
+        )) as number;
+        if (navCount === expectedNav) break;
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+      if (navCount !== expectedNav) {
+        throw new Error(`smoke: home nav rendered ${navCount}/${expectedNav}`);
+      }
+      const beforeIds = new Set(
+        manager.summaries().map((t) => t.instanceId),
+      );
+      const opened = (await homeWc.executeJavaScript(
+        "window.homeNav.open('clock')",
+      )) as boolean;
+      if (opened !== true) {
+        throw new Error("smoke: home nav open failed");
+      }
+      // 等新 tab 加载完成，避免 app.exit 与 did-finish-load 竞态打出错误日志
+      const openedLoaded = await new Promise<boolean>((resolve) => {
+        const started = Date.now();
+        const tick = (): void => {
+          const done = (manager?.summaries() ?? []).some(
+            (t) =>
+              t.kind === "clock" &&
+              !beforeIds.has(t.instanceId) &&
+              t.loading !== true,
+          );
+          if (done || Date.now() - started > 5_000) {
+            resolve(done);
+            return;
+          }
+          setTimeout(tick, 50);
+        };
+        setTimeout(tick, 50);
+      });
+      if (openedLoaded !== true) {
+        throw new Error("smoke: home-opened tab did not finish loading");
+      }
+      console.log(`SMOKE: home nav ok (${navCount} entries, open ok)`);
+    }
+
     console.log(
       `SMOKE OK: ${loads.length} tabs loaded (${staticIds.length} static + ${pageIds.length} pages)`,
     );
@@ -507,13 +601,20 @@ async function main(): Promise<void> {
     return;
   }
 
-  void activation.catch((err: unknown) =>
-    console.error("[pages] activation failed:", err),
-  );
-
-  // 默认打开第一个 tab（此刻 host 已 did-finish-load，broadcast 一定能到达）
-  const first = TAB_KINDS[0];
-  if (first) manager.create(first.id);
+  // 默认打开首页组件（未安装/未激活时回退第一个静态 tab）。等激活完成再开，
+  // 否则页面可能仍处 inactive，create 会被拒；此刻 host 已 did-finish-load。
+  activation
+    .then(() => {
+      const home = pages?.get("home");
+      const id =
+        home !== undefined && home.state !== "inactive"
+          ? "home"
+          : TAB_KINDS[0]?.id;
+      if (id !== undefined) manager?.create(id);
+    })
+    .catch((err: unknown) =>
+      console.error("[pages] activation failed:", err),
+    );
 }
 
 app.on("before-quit", () => {

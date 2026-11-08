@@ -36,6 +36,25 @@ export const COMPONENT_CHANNELS = {
   changed: "components:changed",
 } as const;
 
+/** 首页导航的 IPC 渠道（子页面清单 + 打开；首页使用，任何 tab 页面可调用） */
+export const NAV_CHANNELS = {
+  /** invoke：当前可打开的子页面清单（静态 tab + 非 inactive 的页面组件） */
+  list: "nav:list",
+  /** invoke：打开一个子页面（id 必须是已知 kind；sender 必须是 tab 角色） */
+  open: "nav:open",
+} as const;
+
+/** 首页导航项：静态 tab 或已安装页面组件（按 TabManager.create 语义可达） */
+export interface NavEntry {
+  id: string;
+  title: string;
+  color: string;
+  origin: "static" | "page";
+  /** 仅 origin=page（inactive 的页面不可开 tab，不进清单） */
+  state?: "active" | "error";
+  version?: string;
+}
+
 /* ---------- runtime 组件包（component.json / page.json + 可选 main 扩展） ---------- */
 
 /** manifest.provides 的项：声明本组件向其他组件提供的服务 */

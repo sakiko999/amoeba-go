@@ -140,6 +140,14 @@
         "electron": "^45.2.3",
       },
     },
+    "packages/home": {
+      "name": "@tabs/home",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "electron": "^45.2.3",
+      },
+    },
     "packages/host-sdk": {
       "name": "@host/sdk",
     },
@@ -707,6 +715,8 @@
     "@tabs/component-inspector": ["@tabs/component-inspector@workspace:packages/component-inspector"],
 
     "@tabs/desktop": ["@tabs/desktop@workspace:apps/desktop"],
+
+    "@tabs/home": ["@tabs/home@workspace:packages/home"],
 
     "@tabs/media-library": ["@tabs/media-library@workspace:packages/media-library"],
 
