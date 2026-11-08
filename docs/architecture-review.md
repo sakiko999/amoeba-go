@@ -1,5 +1,9 @@
 # Runtime 页面架构评审
 
+> 历史快照（2026-11-06）：文中「静态 tab」「page-sdk」「TAB_KINDS」等描述已被后续改造取代——
+> tab 已全部改为页面组件（`component.json` + `out/page`），共享层见
+> [renderer-shared-layer.md](renderer-shared-layer.md)。保留此文仅作评审记录。
+
 日期：2026-11-06
 范围：`apps/desktop` 的 runtime 页面系统、`packages/page-sdk`、`packages/media-manager` 的独立/嵌入双形态。
 

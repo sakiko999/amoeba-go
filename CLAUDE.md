@@ -5,14 +5,14 @@
 - [!] 本机网关证书过期（CERT_HAS_EXPIRED）：装需下载二进制的依赖时要临时 `$env:NODE_TLS_REJECT_UNAUTHORIZED='0'`（electron 已这样装好）
 - [!] electron 装在 apps/desktop（bun per-workspace 安装），根目录启动必须 `bun run --cwd apps/desktop`，直接 `electron apps/desktop` 找不到命令
 - [ ] 用 TMDB_TOKEN 实测 TMDB 渠道，并找网络条件验证豆瓣渠道
-- [!] runtime 页面 main 只接受 CJS（宿主 createRequire + require.cache 失效实现热重载）；页面 main 等价完整主进程权限，安装必须警告
+- [!] runtime 页面 main 只接受 CJS（宿主 createRequire + require.cache 失效实现热重载）——这是加载器约束，不是 Electron 限制（main ≥28 支持 ESM、renderer 原生 ESM、沙箱 preload 必须 CJS）；页面 main 等价完整主进程权限，安装必须警告
 - [ ] 手动跑 `bun run dev` 验证 + 菜单：打开媒体库页面、外部页面安装/卸载/重载
 - [!] media-manager 发布物是 out/ + package.json（运行时零依赖）；不要为独立分发把 @demo/ui 源码搬出 monorepo，成本高收益为零
 - [ ] 待确认后落地 media-manager 独立分发打包（@electron/packager asar → electron-builder）
 - [!] `app.setName` 后独立形态的 userData 换到新路径，旧的库根（localStorage）需要重新选择；嵌入形态的 `persist:page-media-manager` 数据不受影响。尚未做安装器（NSIS）、应用图标和 TMDB_TOKEN 设置界面。
 - [!] media-manager 独立版 userData 已固定为 %APPDATA%/media-manager（app.setName）；发布后改名会孤儿化 cache 与 Chromium profile
 - [ ] 后续：NSIS 安装器/应用图标、TMDB_TOKEN 设置界面、打包版手动启动验收
-- [ ] 按评审 P0 落地：渲染侧统一 bridge（registerPreloadScript）、启动时序与失败隔离，再考虑 IPC 鉴权与安装/升级队列
+- [!] 渲染侧统一 bridge 已落地（pageBridge + registerPreloadScript）；启动有 8s 激活超时与 error 态。仍未做：IPC 鉴权与安装/升级队列
 - [!] runtime 页面自带 preload 会替换宿主 preload，渲染侧能力必须由宿主用 registerPreloadScript 叠加，不要要求每个页面重复造桥
 - [ ] 若 `library:scan` 耗时仍大：做扫描结果缓存（按库根 + mtime）与首屏先展示上次结果、后台增量刷新
 - [!] 修改主进程文件会触发 electron-vite 重启，inspector 会断开并在同一端口重新监听；VS Code 需要重新 attach，`chrome://inspect` 需要重新点一次。生产构建不带 inspector，那时 bug 菜单的「调试主进程」才会带 `--inspect=9229` 重启。
@@ -23,11 +23,11 @@
 - [ ] 手动确认暗色冷启动从骨架到 loading 不再闪亮色，以及 F5 热启动是否稳定在 ~1s（缓存热时）
 - [!] 宿主打包时 workspace 依赖（如 @host/sdk）必须放 devDependencies：electron-vite 会 externalize dependencies，asar 内没有 node_modules 可 require；tab-* 已是独立页面组件，不再进宿主构建
 - [ ] 手动确认暗色下新建 media-manager tab 不再闪白（view 背景色修复，自动化只能覆盖到数据链）
-- [ ] 组件化 v1 已落地并推送（feat/componentize-media-backend + submodule feat/componentize-backend，均含全绿 smoke）；待用户决定是否开 PR 合并
+- [!] 组件化 v1 已落地并推送（feat/componentize-media-backend + submodule feat/componentize-backend，均含全绿 smoke）；按用户指示合入 main（fast-forward）
 - [ ] 完整内核 v2 剩余项：pending 态+tab 保活降级、alive 令牌、effect 栈、渲染侧 window.component 服务桥、staging 升级事务、disabled 持久化、卸载删目录
 - [!] media-manager 组件化后：宿主组件包 = out/page（页面）+ out/service（服务）双产物；cache 移到 page-data/media-library；pack:page 已是 pack:components 别名
 - [!] 修正早前记录：media-manager 的后端已整体迁到主仓库普通子包 packages/media-library（@tabs/media-library，非 submodule）；submodule 只剩 UI/页面侧；组件产物分别为 media-manager 的 out/page 与 media-library 的 out/component；后端测试命令改为 bun run --cwd packages/media-library test
-- [ ] 待用户决定 feat/componentize-media-backend（主仓库）与 feat/componentize-backend（submodule）是否开 PR 合并；合并前 worktree X:\wtcmb 保留
+- [!] feat/* 已按用户指示合入 main；worktree X:\wtcmb 保留，待确认后再清理
 - [ ] rss-service 组件已落地（薄桥模式：spawn amoeba 数据服务 + provide rss.endpoint）；后续：RSS 页面组件消费该服务、Electron 抓取浏览器接入、升级链路（tauri-rss service:build → 重 pack）
 - [!] rss-service 组件运行前提：bun 在 PATH（或 AMOEBA_BUN）+ service.js（AMOEBA_SERVICE_JS/包内副本/tauri-rss dist）；宿主 smoke 会真实拉起该服务，构建机缺 bun 会 smoke 失败；owner token 绝不能注入 renderer
 - [!] rss 组件已按职责拆为三包：browser-proxy（基础组件：Electron CDP 代理，provides browser.proxy）/ rss-service（数据进程宿主，inject browser.proxy）/ rss-client（RPC 访问层，inject rss.endpoint）；拓扑激活+级联已由宿主 registry 保证
@@ -52,7 +52,11 @@
 - [ ] 手动 bun run dev 目测组件依赖页的 SVG 连线布局、明暗主题与安装/卸载后的自动刷新
 - [ ] 手动 bun run dev 确认启动默认打开 home 页、卡片点击切换与主题观感
 - [ ] 手动 bun run dev 目测两页与 media-manager 的视觉一致性（卡片/表格风格、暗亮切换、依赖图连线）
-- [!] page://shared 是保留 host（组件 id 禁用），跨 host ESM import 需协议响应带 ACAO 头——这是 import map 方案的成立前提
-- [!] renderer 共享层 = vendor:// 协议 + packages/page-vendor（Bun.build 预构建、manifest 注入 import map 与 CSP sha256）；dev/独立构建回退全内联，改共享集需同步 SHARED_SPECIFIERS/entries/importMapOf 与各消费方 external
+- [!] 共享层用独立 vendor:// scheme（不占用 page:// host）；跨 scheme ESM import 必须响应带 ACAO 头——这是 import map 方案的成立前提
+- [!] renderer 共享层 = vendor:// 协议 + packages/page-vendor（Bun.build 预构建、manifest 注入 import map 与 CSP sha256）；dev/独立构建回退全内联，改共享集需同步 SHARED_SPECIFIERS/entries/importMapOf 与各消费方 external；细节见 docs/renderer-shared-layer.md
+- [!] import map 注入：源 HTML 无占位，构建插件插在 CSP meta 之后（早于 module script），hash 覆盖精确 JSON；dev 不注入、无内联脚本/CSP hash
+- [!] pages:prepare 打印三页 JS 体积，>120KB 直接失败：external 静默失效时 React 会重新打进页面包，而功能 smoke 仍可能全绿
 - [!] vite 8 打包器是 rolldown：electron.vite.config 统一用 rolldownOptions（rollupOptions 已 deprecated 别名）
+- [!] tab-* 已统一为页面组件（无 main/preload，pageBridge 提供 window.tab；Notes 草稿用 sessionStorage）：dev 前先 bun run pages:prepare（dev 只投影不构建）；新增 tab 只需复制组件包并在 pack-components.ts 登记一行，无需改宿主
+- [!] Electron 支持 ESM（main ≥28、renderer 原生；沙箱 preload 仍须 CJS）；组件 main 限定 CJS 是热重载加载器的设计选择，不是 Electron 限制
 <!-- cc-todo:end -->

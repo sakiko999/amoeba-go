@@ -26,6 +26,7 @@ apps/desktop/out/pages/<id>/    组件包投影（构建产物，gitignored）
    page://<id>/<entry>，每页面 persist:page-<id> 分区
 
 packages/host-sdk        @host/sdk：宿主契约（tab / runtime 页面 / HostState 渠道）
+packages/page-vendor    renderer 共享层构建（vendor:// + import map，非组件）
 packages/ui             @demo/ui：全仓公共 shadcn 组件库（CLI 全量生成，61 组件 + 主题 CSS）
 packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后端；刮削/NFO/整理）
                         也可打包为 runtime 页面包（bun run pages:prepare）
@@ -33,6 +34,7 @@ packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后�
 
 要点：
 
+- 所有 tab 都是页面组件（`packages/tab-*` 也走 `component.json` + `out/page`）；宿主没有编译期静态 tab。默认打开 home，home 不可用时回退第一个可用页面组件。
 - tab 页面与 host 页面互不知道对方，一切状态经主进程（`TabManager.broadcast()` 单向投影给 tab 条）。
 - tab 内唯一能力是 preload 暴露的 `window.tab`（setTitle / close / ping / systemInfo）。
 - `contextIsolation` + `sandbox` 全开，只加载本地文件；tab 侧 IPC 一律用 sender 定位调用者，不信任页面自报身份。
@@ -57,6 +59,31 @@ packages/media-manager  submodule：媒体库管理器（Electron 前端 + 后�
 - 页面 tab 用 `window.tab.state()/onStateChanged()` 订阅整份状态（pageBridge 注入）；
   `theme()/onThemeChanged` 保留兼容（内部仍是同一份状态）。
 - smoke 会真实切换一次宿主主题并断言 media 页面跟随（`SMOKE: theme propagated`）。
+
+### renderer 共享层（vendor:// + import maps）
+
+页面组件与宿主 UI 共用一份预构建的 `react / react-dom / @demo/ui`（`packages/page-vendor`）：
+
+- `pages:prepare` 先构建共享层：Bun.build 逐 entry 产出内容 hash 文件 + `manifest.json`
+  （文件名与版本）。
+- 消费方 electron-vite 构建读 manifest，把共享裸名 external，并在 `transformIndexHtml`
+  里把 import map 插在 **CSP meta 之后**（必须早于 module script），同时给 CSP 追加其
+  `'sha256-…'`；源 HTML 不含任何占位脚本。
+- 宿主 `vendor://` 协议提供 `out/vendor`（带 `Access-Control-Allow-Origin: *`）；
+  dev / 独立构建不 external，回退全内联。
+- 实测页面 JS：home ~19KB、inspector ~26KB、media-manager ~57KB，vendor 全宿主一份，
+  并以 120KB/页的体积守卫防 external 静默失效。CSS 暂不共享。
+
+设计取舍、扩展共享集的步骤与常见坑见 [`docs/renderer-shared-layer.md`](docs/renderer-shared-layer.md)。
+
+### 模块格式（CJS / ESM）
+
+- **renderer**：原生 ESM（页面与宿主 UI 都是 ESM bundle）。
+- **main process**：Electron ≥28 支持 ESM；本项目由 electron-vite 输出 CJS 入口。
+- **preload**：沙箱 preload（`sandbox: true`）只能 CJS；本项目的 preload 全部沙箱化。
+- **组件 `main.js`**：必须是 CJS——宿主用 `createRequire` 加载并删除 `require.cache`
+  实现热重载。这是本项目加载器的设计选择，**不是 Electron 只支持 CJS**；ESM 没有可清除的
+  模块缓存 API，无法可靠卸载传递依赖。
 
 ### Runtime 页面（热插拔）
 
