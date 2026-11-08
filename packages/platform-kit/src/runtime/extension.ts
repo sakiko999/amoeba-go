@@ -25,6 +25,9 @@ import type {
   MetadataProvider,
 } from "@tabs/platform-contracts";
 
+// 平台插件只引 kit：媒体/数据契约与错误类从这里统一可达。
+export * from "@tabs/platform-contracts";
+
 import type { DataChannel, FetchResult, SourceInfo } from "../data";
 import { installPlatformAppHost } from "./electron-host";
 import {

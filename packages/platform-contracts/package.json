@@ -2,7 +2,7 @@
   "name": "@tabs/platform-contracts",
   "version": "0.1.0",
   "private": true,
-  "description": "平台插件统一契约（类型 + 纯函数）：媒体数据模型、MetadataProvider 接口、provider 错误。零运行时依赖，平台插件与域服务共用同一份定义。",
+  "description": "平台插件统一契约（类型 + 纯函数）：媒体数据模型、MetadataProvider 接口、数据渠道契约（DataChannel / DataSource / FetchResult）、provider 错误。零运行时依赖，平台插件与域服务共用同一份定义。",
   "exports": {
     ".": "./src/index.ts"
   },

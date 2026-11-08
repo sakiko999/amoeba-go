@@ -10,15 +10,13 @@
  * - 每集一次请求拿全集（TMDB 要按季逐个请求）
  */
 
-import type {
-  EpisodeMetadata,
-  MediaMetadata,
-  MediaType,
-  MetadataProvider,
-  SearchResult,
-} from "@tabs/platform-contracts";
-import { newMetadata } from "@tabs/platform-contracts";
 import {
+  type EpisodeMetadata,
+  type MediaMetadata,
+  type MediaType,
+  type MetadataProvider,
+  type SearchResult,
+  newMetadata,
   NotFoundError,
   ProviderError,
   getJsonCached,

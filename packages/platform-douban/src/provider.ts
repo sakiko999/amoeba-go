@@ -8,13 +8,13 @@
  * - 请求频率必须低（连续请求会被限流返回空响应）——有缓存兜底
  */
 
-import type {
-  Actor,
-  MediaMetadata,
-  MetadataProvider,
-} from "@tabs/platform-contracts";
-import { newMetadata } from "@tabs/platform-contracts";
-import { getJsonCached } from "@tabs/platform-kit/provider";
+import {
+  type Actor,
+  type MediaMetadata,
+  type MetadataProvider,
+  newMetadata,
+  getJsonCached,
+} from "@tabs/platform-kit/provider";
 
 const API = "https://m.douban.com/rexxar/api/v2";
 

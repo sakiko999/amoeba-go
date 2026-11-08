@@ -2,7 +2,7 @@
   "name": "@tabs/platform-kit",
   "version": "0.1.0",
   "private": true,
-  "description": "platform 插件共享工具：平台数据渠道契约/工厂（data）、媒体元数据渠道入口、抓取运行时基座（runtime）与组件打包辅助。",
+  "description": "platform 插件共享工具：数据渠道装配工厂（data）、平台入口与协议 helper（runtime）、provider HTTP 基座与组件打包辅助；契约类型统一来自 @tabs/platform-contracts。",
   "exports": {
     ".": "./src/runtime/extension.ts",
     "./pack": "./src/pack.ts",

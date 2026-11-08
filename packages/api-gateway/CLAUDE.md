@@ -56,6 +56,9 @@ rss 订阅栈源码（rss-service / rss-client / rss-subscriptions）保留在�
   协议 op 与平台私有 op 一致；消费方按平台与操作判定，不解析错误文案。
 - **统一传输**：媒体 provider 与数据渠道的 HTTP 都优先走 `appHost.http`
   （宿主主进程 `net.fetch`，回传 set-cookie）；独立形态无 appHost 时回退直连。
+- **契约位置**：媒体/数据契约集中在 `@tabs/platform-contracts`；`@tabs/platform-kit`
+  的根入口与 `/data`、`/provider` 子路径都 re-export 它——平台插件（含 provider）
+  只依赖 kit 即可，域服务（media-library）仍直接依赖 contracts。
 
 ## 命令
 

@@ -6,16 +6,17 @@
  * - 凭证只从环境变量 TMDB_TOKEN 读，不经前端传递
  */
 
-import type {
-  Actor,
-  EpisodeMetadata,
-  MediaMetadata,
-  MediaType,
-  MetadataProvider,
-  SearchResult,
-} from "@tabs/platform-contracts";
-import { newMetadata } from "@tabs/platform-contracts";
-import { ProviderError, getJsonCached } from "@tabs/platform-kit/provider";
+import {
+  type Actor,
+  type EpisodeMetadata,
+  type MediaMetadata,
+  type MediaType,
+  type MetadataProvider,
+  type SearchResult,
+  newMetadata,
+  ProviderError,
+  getJsonCached,
+} from "@tabs/platform-kit/provider";
 
 const API = "https://api.themoviedb.org/3";
 const IMG = "https://image.tmdb.org/t/p";

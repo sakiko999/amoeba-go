@@ -17,7 +17,8 @@ import { DatabaseSync } from "node:sqlite";
 
 import { NotFoundError, ProviderError } from "@tabs/platform-contracts";
 
-export { NotFoundError, ProviderError } from "@tabs/platform-contracts";
+// 平台 provider 只引本模块：契约类型 + 错误类随 provider 基座一起 re-export。
+export * from "@tabs/platform-contracts";
 
 export const USER_AGENT =
   "media-manager/2.0 (https://github.com/sakiko999/media-manager)";
