@@ -6,7 +6,7 @@
  * 现在平台组件直接跑在宿主主进程里，由本模块提供等价的最小实现：
  *   - http.request → Electron net.fetch（走系统证书）
  *   - ws.connect   → `ws` 包（自定义握手 header：douyin 需要 UA/Cookie/Origin）
- *   - browser      → 可选，由 rss.browser 的 CDP 代理构造（见 extension.ts）
+ *   - browser      → 可选，由 browser.proxy 的 CDP 代理构造（见 extension.ts）
  */
 
 import { net } from "electron";
@@ -149,7 +149,7 @@ async function hostHttpRequest(
 
 /**
  * 安装/补齐宿主主进程的 appHost。幂等：已存在的 http/now/ws/js 不覆盖；
- * browser **提供即覆盖** —— rss.browser 每次激活端口都会变（临时端口），
+ * browser **提供即覆盖** —— browser.proxy 每次激活端口都会变（临时端口），
  * 重载后依赖方重新 activate 时必须拿到新 backend，否则一直连旧端口。
  */
 export function installPlatformAppHost(opts?: { browser?: unknown }): void {

@@ -4,7 +4,7 @@
   "name": "RSS 数据服务",
   "version": "0.3.0",
   "main": "main.js",
-  "inject": ["rss.browser"],
+  "inject": ["browser.proxy"],
   "provides": [
     {
       "name": "rss.endpoint",

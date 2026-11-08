@@ -123,6 +123,15 @@
         "@tabs/platform-kit": "workspace:*",
       },
     },
+    "packages/browser-proxy": {
+      "name": "@tabs/browser-proxy",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@host/sdk": "workspace:*",
+        "@types/ws": "^8.18.0",
+        "ws": "^8.18.0",
+      },
+    },
     "packages/host-sdk": {
       "name": "@host/sdk",
     },
@@ -284,15 +293,6 @@
       "devDependencies": {
         "@host/sdk": "workspace:*",
         "@tabs/platform-kit": "workspace:*",
-      },
-    },
-    "packages/rss-browser": {
-      "name": "@tabs/rss-browser",
-      "version": "0.1.0",
-      "devDependencies": {
-        "@host/sdk": "workspace:*",
-        "@types/ws": "^8.18.0",
-        "ws": "^8.18.0",
       },
     },
     "packages/rss-client": {
@@ -692,6 +692,8 @@
 
     "@tabs/api-gateway": ["@tabs/api-gateway@workspace:packages/api-gateway"],
 
+    "@tabs/browser-proxy": ["@tabs/browser-proxy@workspace:packages/browser-proxy"],
+
     "@tabs/clock": ["@tabs/clock@workspace:packages/tab-clock"],
 
     "@tabs/desktop": ["@tabs/desktop@workspace:apps/desktop"],
@@ -727,8 +729,6 @@
     "@tabs/platform-xhs": ["@tabs/platform-xhs@workspace:packages/platform-xhs"],
 
     "@tabs/platform-youtube": ["@tabs/platform-youtube@workspace:packages/platform-youtube"],
-
-    "@tabs/rss-browser": ["@tabs/rss-browser@workspace:packages/rss-browser"],
 
     "@tabs/rss-client": ["@tabs/rss-client@workspace:packages/rss-client"],
 

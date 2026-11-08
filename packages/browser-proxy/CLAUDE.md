@@ -1,6 +1,6 @@
-# rss-browser
+# browser-proxy
 
-抓取浏览器组件（`@tabs/rss-browser`）：把 amoeba crawler 的浏览器载具从
+抓取浏览器组件（`@tabs/browser-proxy`）：把 amoeba crawler 的浏览器载具从
 WebView2 sidecar（`amoeba-browser.exe`）换成 **Electron 自带 Chromium**。
 
 ## 形态
@@ -15,8 +15,8 @@ WebView2 sidecar（`amoeba-browser.exe`）换成 **Electron 自带 Chromium**。
   debugger 事件 → 文本帧广播（lane/超时/资源拦截语义全在 host 侧 CdpBrowserBackend）
 - 控制面：`POST /amoeba/close-targets`（空闲回收）、`POST /amoeba/reset-profile`（清分区）
 
-provides `rss.browser`（`endpoint()` → `{port}`、`targetCount()`），
-rss-service 组件 inject 它并把端口传给数据服务（`--browser-cdp`）。
+provides `browser.proxy`（`endpoint()` → `{port}`、`targetCount()`），
+平台组件 inject 它构造 `appHost.browser`；数据服务（rss-service，暂未启用）也经它把端口传给服务进程（`--browser-cdp`）。
 
 ## 与 WebView2 sidecar 的差异（有意）
 
@@ -35,7 +35,7 @@ rss-service 组件 inject 它并把端口传给数据服务（`--browser-cdp`）
 ## 命令（monorepo 根）
 
 ```bash
-bun run --cwd packages/rss-browser pack   # 产出 out/component/
+bun run --cwd packages/browser-proxy pack   # 产出 out/component/
 ```
 
 activate 内自检覆盖：createTarget → Network.enable/setBlockedURLs/getAllCookies →

@@ -13,7 +13,7 @@
  *
  * 卸载语义（v1）：注册活在网关内，组件停用不撤销，直到网关 reload。
  *
- * 浏览器型渠道（xhs/weibo/douyin）需在 inject 里声明 rss.browser，
+ * 浏览器型渠道（xhs/weibo/douyin）需在 inject 里声明 browser.proxy，
  * 由 CDP 代理构造 BrowserBackend。
  */
 
@@ -43,7 +43,7 @@ interface ApiGateway {
   }): void;
 }
 
-/** rss.browser 的服务面（本仓库 rss-browser 组件提供）。 */
+/** browser.proxy 的服务面（本仓库 browser-proxy 组件提供）。 */
 interface BrowserService {
   endpoint(): { port: number };
 }
@@ -105,9 +105,9 @@ export function definePlatformExtension(
     async activate(ctx) {
       installPlatformAppHost();
 
-      // 浏览器型渠道：组件 inject 了 rss.browser 时构造 CDP BrowserBackend。
-      if ((ctx.manifest.inject ?? []).includes("rss.browser")) {
-        const svc = ctx.get("rss.browser") as BrowserService | undefined;
+      // 浏览器型渠道：组件 inject 了 browser.proxy 时构造 CDP BrowserBackend。
+      if ((ctx.manifest.inject ?? []).includes("browser.proxy")) {
+        const svc = ctx.get("browser.proxy") as BrowserService | undefined;
         if (svc !== undefined) {
           const { createCdpPortBrowser } = await import(
             "./browser/node/browser-cdp.ts"

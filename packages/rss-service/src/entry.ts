@@ -9,8 +9,8 @@
  *              → 解析 stdout 的 `READY <port>` → provide("rss.endpoint")
  *   deactivate → POST /v1/shutdown（owner token）→ 等退出 → kill 兜底
  *
- * 抓取浏览器拆在独立组件 rss-browser（Electron CDP 代理）：本组件 manifest inject
- * `rss.browser`，activate 里 ctx.require 拿端口并以 `--browser-cdp` 传给服务进程。
+ * 抓取浏览器拆在独立组件 browser-proxy（Electron CDP 代理）：本组件 manifest inject
+ * `browser.proxy`，activate 里 ctx.require 拿端口并以 `--browser-cdp` 传给服务进程。
  *
  * 运行前提：bun 在 PATH（或 AMOEBA_BUN 指定）；service.js 来自 AMOEBA_SERVICE_JS、
  * 组件包内（pack 时复制）或 tauri-rss 仓库的构建产物。探测失败 = 组件 error（可诊断）。
@@ -50,7 +50,7 @@ export interface RssServiceHandle {
   call<T = unknown>(method: string, params?: Record<string, unknown>): Promise<T>;
 }
 
-/** rss-browser 组件提供的端点形状（只取用得到的字段，避免跨包类型依赖） */
+/** browser-proxy 组件提供的端点形状（只取用得到的字段，避免跨包类型依赖） */
 interface BrowserEndpoint {
   endpoint(): { port: number };
   targetCount?(): number;
@@ -137,7 +137,7 @@ export async function startRssService(opts: {
   dataDir: string;
   /** 宿主进程 pid：宿主崩溃时服务自杀（服务支持 --parent-pid 轮询） */
   parentPid: number;
-  /** Electron CDP 代理端口：抓取浏览器（隐藏 BrowserWindow）由 rss-browser 组件提供；缺省 = 无浏览器 */
+  /** Electron CDP 代理端口：抓取浏览器（隐藏 BrowserWindow）由 browser-proxy 组件提供；缺省 = 无浏览器 */
   browserCdpPort?: number;
   log(...args: unknown[]): void;
 }): Promise<RssServiceHandle> {
@@ -249,8 +249,8 @@ export async function activate(ctx: PageMainContext): Promise<void> {
       "找不到数据服务产物 service.js（设置 AMOEBA_SERVICE_JS，或 pack 时从 tauri-rss 复制）",
     );
   }
-  // 抓取浏览器由 rss-browser 组件提供（manifest.inject 声明；拓扑保证先于本组件激活）
-  const browser = ctx.require<BrowserEndpoint>("rss.browser");
+  // 抓取浏览器由 browser-proxy 组件提供（manifest.inject 声明；拓扑保证先于本组件激活）
+  const browser = ctx.require<BrowserEndpoint>("browser.proxy");
   const browserPort = browser.endpoint().port;
 
   handle = await startRssService({

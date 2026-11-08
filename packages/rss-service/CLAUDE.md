@@ -60,8 +60,8 @@ HTTP/WS 服务层、事件直连）是后续工作，届时 `runtime/` 与 `pack
 
 | 组件包 | provides | inject | 职责 |
 | --- | --- | --- | --- |
-| `rss-browser` | `rss.browser`（port/targetCount） | — | Electron 隐藏浏览器 + CDP 代理（替代 WebView2 sidecar） |
-| `rss-service`（本包） | `rss.endpoint`（baseUrl/port/token） | `rss.browser` | 数据服务进程生命周期（spawn/READY/shutdown） |
+| `browser-proxy` | `browser.proxy`（port/targetCount） | — | Electron 隐藏浏览器 + CDP 代理（替代 WebView2 sidecar） |
+| `rss-service`（本包） | `rss.endpoint`（baseUrl/port/token） | `browser.proxy` | 数据服务进程生命周期（spawn/READY/shutdown） |
 | `rss-client` | `rss.client`（call/health/endpoint） | `rss.endpoint` | 方法化 RPC 访问层（token 不出组件边界） |
 
 宿主按 provides/inject 拓扑激活（browser → service → client）；任一服务 reload 时
@@ -105,6 +105,6 @@ bun run --cwd packages/rss-service test   # 真实进程生命周期集成（spa
 
 宿主 `bun run smoke` 不再拉起本服务（rss-service/rss-client 已停用打包）；
 `bun run pages:prepare` 当前打包 16 个组件（api-gateway + media-manager +
-media-library + rss-browser + 12 个 platform-*）。
+media-library + browser-proxy + 12 个 platform-*）。
 历史验证记录：dev 宿主里经 rss-client `call("probe.fetch", …)` 抓真实渠道
 （weibo:user:search ~7KB / ~3s）；强反爬平台（xhs/douyin）需真机登录验证。

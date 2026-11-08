@@ -1,8 +1,8 @@
 {
-  "name": "@tabs/rss-browser",
+  "name": "@tabs/browser-proxy",
   "version": "0.1.0",
   "private": true,
-  "description": "抓取浏览器组件：Electron 自带 Chromium（隐藏 BrowserWindow）+ CDP 代理，向 rss 数据服务提供 rss.browser 端点（替代 WebView2 sidecar）。",
+  "description": "抓取浏览器组件：Electron 自带 Chromium（隐藏 BrowserWindow）+ CDP 代理，向平台组件与数据服务提供 browser.proxy 端点（替代 WebView2 sidecar）。",
   "exports": {
     ".": "./src/entry.ts"
   },

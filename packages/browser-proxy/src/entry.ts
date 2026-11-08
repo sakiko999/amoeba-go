@@ -5,7 +5,7 @@
  * 替代 tauri-rss 原 WebView2 sidecar（amoeba-browser.exe）。浏览器本体是宿主进程里
  * 的隐藏 BrowserWindow（session 分区 persist:rss-crawler），不额外起进程。
  *
- * provides rss.browser:
+ * provides browser.proxy:
  *   - endpoint(): { port }   —— CDP 代理端口（HTTP /json/* + WS /devtools/*）
  *   - targetCount(): number  —— 当前托管的隐藏窗口数（诊断用）
  *
@@ -16,7 +16,7 @@
 import type { PageMainContext } from "@host/sdk";
 import { startCdpProxy, type CdpProxy } from "./proxy";
 
-export const SERVICE_NAME = "rss.browser";
+export const SERVICE_NAME = "browser.proxy";
 
 let proxy: CdpProxy | undefined;
 
@@ -35,7 +35,7 @@ export async function activate(ctx: PageMainContext): Promise<void> {
     },
     { expose: ["endpoint", "targetCount"] },
   );
-  ctx.log(`rss.browser ready: cdp proxy :${p.port} (UA: ${ua})`);
+  ctx.log(`browser.proxy ready: cdp proxy :${p.port} (UA: ${ua})`);
 }
 
 export async function deactivate(): Promise<void> {

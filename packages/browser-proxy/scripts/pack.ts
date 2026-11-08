@@ -1,5 +1,5 @@
 /**
- * 把 rss-browser 打成宿主可注册的服务组件包（out/component/）。
+ * 把 browser-proxy 打成宿主可注册的服务组件包（out/component/）。
  * 产物：main.js（CJS：CDP 代理 + ws 已 bundle）+ component.json。
  * 无外部运行时依赖（浏览器就是 Electron 本身）。
  */
@@ -24,7 +24,7 @@ const result = await Bun.build({
 });
 if (!result.success) {
   for (const log of result.logs) console.error(log);
-  throw new Error("bun build rss-browser main failed");
+  throw new Error("bun build browser-proxy main failed");
 }
 
-console.log(`rss browser component ready: ${dist}`);
+console.log(`browser-proxy component ready: ${dist}`);

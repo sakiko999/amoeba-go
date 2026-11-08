@@ -32,7 +32,7 @@ node_modules），引 graphql-js 已无分发障碍，只是没必要——仍�
 `platform-media-*`。**gateway 就是数据接口层**：页面/域服务经
 `call("<平台>.<操作>")` 取数据，不再依赖 rss 的订阅/抓取/存储/事件栈。
 rss 订阅栈源码（rss-service / rss-client / rss-subscriptions）保留在仓库但不由
-`scripts/pack-components.ts` 打包（已停用）；`rss-browser` 仍打包 —— 它是
+`scripts/pack-components.ts` 打包（已停用）；`browser-proxy` 仍打包 —— 它是
 浏览器型数据渠道（xhs/weibo/douyin）的浏览器载具（CDP 代理），与订阅栈无关。
 
 ## 平台怎么注册
@@ -45,7 +45,7 @@ rss 订阅栈源码（rss-service / rss-client / rss-subscriptions）保留在�
   `fetch`（channel + info → 结构化 items，cursor 翻页 / passive 被动采集）、
   `play`（url|id → 可播流；URL→id/kind 由平台自带的 playback.routes 路由）、`danmaku`
   （url|id → 弹幕流，subscribe 返回取消函数，进程内消费）。执行体在宿主主进程
-  （appHost 由 `runtime/electron-host` 安装；浏览器型渠道 inject `rss.browser`）。
+  （appHost 由 `runtime/electron-host` 安装；浏览器型渠道 inject `browser.proxy`）。
   9 个数据渠道平台注册 tags `platform.data`。
 - **metadata 协议**（`metadataOps(provider)`）：provider 包成
   `search` / `fetchMetadata` / `fetchEpisodes`（tags: media.metadata）；media-library

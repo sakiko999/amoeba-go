@@ -1,12 +1,12 @@
 {
-  "id": "rss-browser",
+  "id": "browser-proxy",
   "kind": "service",
-  "name": "RSS 抓取浏览器",
+  "name": "抓取浏览器",
   "version": "0.1.0",
   "main": "main.js",
   "provides": [
     {
-      "name": "rss.browser",
+      "name": "browser.proxy",
       "expose": ["endpoint", "targetCount"]
     }
   ]
