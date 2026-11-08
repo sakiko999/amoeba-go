@@ -1,9 +1,10 @@
 /**
  * 平台 provider 的 HTTP 基座（中立包，供 platform-media-* 使用）：
- * net.fetch（走系统证书，主进程专用）+ UA + 缓存包装 + 错误类型。
+ * 统一传输面 + UA + 缓存包装 + 错误类型。
  *
- * 与 media-library 的域实现解耦：平台插件只依赖本文件与
- * @tabs/platform-contracts，不依赖 media-library。缓存固定落在
+ * 传输优先走 `globalThis.appHost.http`（与数据渠道平台的 runtime/host 同一条
+ * 路径，宿主形态由 electron-host 安装、未来共享治理）；独立形态
+ * （media-manager app，无 appHost）回退直连 net.fetch。缓存固定落在
  * userData/provider-cache/cache.db（宿主与独立形态一致）。
  *
  * net.fetch 只能在 app ready 后调用（组件 activate 之后的调用满足）。
@@ -57,6 +58,51 @@ function cacheSet(key: string, value: string): void {
     .run(key, value, Date.now());
 }
 
+interface ProviderHttpRequest {
+  url: string;
+  method?: string;
+  headers?: Record<string, string>;
+  body?: string;
+  responseType?: string;
+}
+
+/**
+ * 统一传输：appHost.http 存在则走宿主（与数据渠道同路径）；否则回退
+ * net.fetch（独立形态）。响应形状对齐 runtime/electron-host 的 hostHttpRequest。
+ */
+async function httpRequest(
+  req: ProviderHttpRequest,
+): Promise<{ status: number; headers: Record<string, string>; body: unknown }> {
+  const host = (
+    globalThis as unknown as {
+      appHost?: {
+        http?: {
+          request?: (
+            r: ProviderHttpRequest,
+          ) => Promise<{ status: number; headers: Record<string, string>; body: unknown }>;
+        };
+      };
+    }
+  ).appHost?.http;
+  if (typeof host?.request === "function") {
+    return host.request(req);
+  }
+  const res = await net.fetch(req.url, {
+    method: req.method ?? "GET",
+    headers: { "User-Agent": USER_AGENT, ...req.headers },
+    ...(req.body !== undefined ? { body: req.body } : {}),
+  });
+  const rawSetCookie = res.headers.getSetCookie?.() ?? [];
+  const headers: Record<string, string> =
+    rawSetCookie.length > 0 ? { "set-cookie": rawSetCookie.join("\n") } : {};
+  const text = await res.text();
+  return {
+    status: res.status,
+    headers,
+    body: req.responseType === "json" ? (text.trim() === "" ? null : JSON.parse(text)) : text,
+  };
+}
+
 async function request(
   source: string,
   url: string,
@@ -66,22 +112,23 @@ async function request(
     headers?: Record<string, string>;
   } = {},
 ): Promise<string> {
-  const resp = await net.fetch(url, {
-    method: init.method ?? "GET",
-    headers: { "User-Agent": USER_AGENT, ...init.headers },
-    body: init.body,
+  const resp = await httpRequest({
+    url,
+    ...(init.method !== undefined ? { method: init.method } : {}),
+    ...(init.body !== undefined ? { body: init.body } : {}),
+    headers: { "User-Agent": USER_AGENT, Accept: "application/json", ...init.headers },
+    responseType: "text",
   });
-  const text = await resp.text();
   if (resp.status === 404) {
     throw new NotFoundError(`${source} 中不存在该条目：${url}`);
   }
-  if (!resp.ok) {
+  if (resp.status < 200 || resp.status >= 300) {
     throw new ProviderError(
       source,
-      `HTTP ${resp.status}: ${text.slice(0, 200)}`,
+      `HTTP ${resp.status}: ${String(resp.body).slice(0, 200)}`,
     );
   }
-  return text;
+  return String(resp.body);
 }
 
 /** GET JSON（带缓存；headers 供 TMDB 的 Authorization 用） */
@@ -94,9 +141,7 @@ export async function getJsonCached(
   const key = cacheKey(keyParts);
   const cached = cacheGet(key);
   if (cached !== undefined) return JSON.parse(cached);
-  const text = await request(source, url, {
-    headers: { Accept: "application/json", ...headers },
-  });
+  const text = await request(source, url, { headers });
   cacheSet(key, text);
   return JSON.parse(text);
 }
@@ -114,7 +159,7 @@ export async function postJsonCached(
   const text = await request(source, url, {
     method: "POST",
     body: JSON.stringify(body),
-    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json" },
   });
   cacheSet(key, text);
   return JSON.parse(text);

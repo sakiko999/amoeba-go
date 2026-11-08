@@ -46,4 +46,6 @@
 - [!] 「组件零运行时依赖」不是原则，是历史打包约束：组件现已支持自带 npm 依赖（platform-kit pack 对非 workspace 依赖 external 并 production 安装进产物 node_modules；宿主 createRequire(main.js)/数据服务进程 import 都以组件目录解析）；workspace 依赖仍须内联（asar 内无 workspace 链接）；宿主投影时 sync-pages 把组件 npm 依赖合并成 out/pages/node_modules 共享层（同名同版本去重，冲突版本保留局部）
 - [!] 平台 URL 路由已平台自带：playback.routes + kit 的 matchRoute，platform-kit 不再有全局路由表（runtime/resolver 已删）；twitch 归一化在 platform-twitch/src/lib/twitch.ts
 - [ ] 清理 XML 时代死配置：各平台 impl 里的 channelTitle/channelLink/channelOptions 与 data.ts 的 SerializeOptions 兼容层
+- [!] 宿主主进程的平台抓取暂无速率/冷却/风控：appHost.net（governor）未随迁移安装，reportRisk/browserGate/policy 全是可选链静默 no-op；强反爬平台真机验证前需把 amoeba 的 governor 迁入 platform-kit runtime（评审 P2，本轮未做）
+- [ ] 真机宿主里经 UI 或 devtools 调一次 gateway 数据 op（fetch/play/danmaku），目前只有 Bun 真实探针 + smoke 注册级覆盖
 <!-- cc-todo:end -->

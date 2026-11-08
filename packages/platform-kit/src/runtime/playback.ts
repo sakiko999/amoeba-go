@@ -7,8 +7,8 @@
 
 import type { Stream } from "@tabs/platform-contracts";
 
-import type { DanmakuStream } from "./danmaku/types.ts";
-import type { SourceInfo } from "../data.ts";
+import type { DanmakuStream } from "./danmaku/types";
+import type { SourceInfo } from "../data";
 
 /** resolver 解析参数：复用 SourceInfo（含 cookie），必要时扩展。 */
 export type ResolveInfo = SourceInfo & { cookie?: string };

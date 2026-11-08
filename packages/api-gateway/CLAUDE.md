@@ -47,6 +47,11 @@ rss 订阅栈源码（rss-service / rss-client / rss-subscriptions）保留在�
   `play`（url|id → 可播流；URL→id/kind 由平台自带的 playback.routes 路由）、`danmaku`
   （url|id → 弹幕流，subscribe 返回取消函数，进程内消费）。执行体在宿主主进程
   （appHost 由 `runtime/electron-host` 安装；浏览器型渠道 inject `rss.browser`）。
+- **统一错误出口**：四个数据 op 与三个媒体 op 的失败都包成
+  `PlatformOpError`（`@tabs/platform-contracts`，含 platform / op / cause），
+  消费方按平台与操作判定，不解析错误文案。
+- **统一传输**：媒体 provider 与数据渠道的 HTTP 都优先走 `appHost.http`
+  （宿主主进程 `net.fetch`，回传 set-cookie）；独立形态无 appHost 时回退直连。
 
 ## 命令
 

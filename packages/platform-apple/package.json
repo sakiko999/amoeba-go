@@ -7,7 +7,8 @@
     ".": "./src/main.ts"
   },
   "scripts": {
-    "pack": "bun run scripts/pack.ts"
+    "pack": "bun run scripts/pack.ts",
+    "test": "bun test"
   },
   "devDependencies": {
     "@host/sdk": "workspace:*",

@@ -17,8 +17,8 @@ import {
 /** twitch 平台全部渠道实例（插件导出用） */
 export const twitchChannels: DataChannel[] = [
   new TwitchLiveChannel(),
-  TwitchHotChannel,
-  TwitchCategoryChannel,
+  new TwitchHotChannel(),
+  new TwitchCategoryChannel(),
   TwitchCategoriesChannel,
   TwitchUserSearchChannel,
 ]

@@ -4,7 +4,7 @@
   "private": true,
   "description": "platform 插件共享工具：平台数据渠道契约/工厂（data）、媒体元数据渠道入口、抓取运行时基座（runtime）与组件打包辅助。",
   "exports": {
-    ".": "./src/index.ts",
+    ".": "./src/runtime/extension.ts",
     "./pack": "./src/pack.ts",
     "./provider": "./src/provider/http.ts",
     "./data": "./src/data.ts",
