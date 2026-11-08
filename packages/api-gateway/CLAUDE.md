@@ -37,19 +37,23 @@ rss 订阅栈源码（rss-service / rss-client / rss-subscriptions）保留在�
 
 ## 平台怎么注册
 
-- **media 平台**（platform-kit `defineMediaPlatformExtension`）：provider 包成
-  `<source>` 的 search / fetchMetadata / fetchEpisodes（tags: media.metadata）；media-library 组件
-  inject `api.gateway`，刮削时按命名空间**惰性**解析（平台组件晚注册也能被发现，
-  不依赖激活顺序）。
-- **数据渠道平台**（platform-kit `runtime/extension` 的 `definePlatformExtension`）：
-  组件 main 直接把渠道与播放/弹幕能力注册成四个 op —— `channels`（静态描述）、
+- **统一入口**：所有平台组件 main 都只调 platform-kit 的
+  `definePlatformExtension({ tags, ops })`；命名空间取组件 id 去掉 `platform-` 前缀，
+  label 取组件名称。协议只是围绕消费方约定的 op 集合（helper），平台可以只实现
+  协议、只注册私有 op，或在协议结果上追加私有 op。
+- **feed 协议**（`feedOps({ channels, playback })`）：`channels`（静态描述）、
   `fetch`（channel + info → 结构化 items，cursor 翻页 / passive 被动采集）、
   `play`（url|id → 可播流；URL→id/kind 由平台自带的 playback.routes 路由）、`danmaku`
   （url|id → 弹幕流，subscribe 返回取消函数，进程内消费）。执行体在宿主主进程
   （appHost 由 `runtime/electron-host` 安装；浏览器型渠道 inject `rss.browser`）。
-- **统一错误出口**：四个数据 op 与三个媒体 op 的失败都包成
+  9 个数据渠道平台注册 tags `platform.data`。
+- **metadata 协议**（`metadataOps(provider)`）：provider 包成
+  `search` / `fetchMetadata` / `fetchEpisodes`（tags: media.metadata）；media-library
+  组件 inject `api.gateway`，刮削时按命名空间**惰性**解析（平台组件晚注册也能被发现，
+  不依赖激活顺序）。douban / bangumi / tmdb 走这一协议。
+- **统一错误出口**：工厂给每个 op 包一层 opGuard，失败统一成
   `PlatformOpError`（`@tabs/platform-contracts`，含 platform / op / cause），
-  消费方按平台与操作判定，不解析错误文案。
+  协议 op 与平台私有 op 一致；消费方按平台与操作判定，不解析错误文案。
 - **统一传输**：媒体 provider 与数据渠道的 HTTP 都优先走 `appHost.http`
   （宿主主进程 `net.fetch`，回传 set-cookie）；独立形态无 appHost 时回退直连。
 

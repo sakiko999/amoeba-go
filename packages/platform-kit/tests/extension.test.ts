@@ -1,13 +1,19 @@
 /**
- * definePlatformExtension 单测：fake ctx + fake gateway，验证注册的 op 面与分发
- * （channels / fetch / play / danmaku），不发网络、不碰真实 Electron。
+ * definePlatformExtension 单测：fake ctx + fake gateway，验证注册机制与两种协议
+ * （feedOps / metadataOps），不发网络、不碰真实 Electron。
  */
 
 import { describe, expect, test } from "bun:test";
 
+import type { MediaMetadata, MetadataProvider, MediaType } from "@tabs/platform-contracts";
+
 import type { DataChannel, Item } from "../src/data.ts";
 import type { PlatformPlayback } from "../src/runtime/playback.ts";
-import { definePlatformExtension } from "../src/runtime/extension.ts";
+import {
+  definePlatformExtension,
+  feedOps,
+  metadataOps,
+} from "../src/runtime/extension.ts";
 
 const item: Item = {
   id: "demo:1",
@@ -122,7 +128,10 @@ function makeCtx(): {
 describe("definePlatformExtension", () => {
   test("注册 channels/fetch/play/danmaku 四个 op", async () => {
     const { ctx, getReg } = makeCtx();
-    const mod = definePlatformExtension({ channels: [channel], playback });
+    const mod = definePlatformExtension({
+      tags: ["platform.data"],
+      ops: feedOps({ channels: [channel], playback }),
+    });
     await mod.activate(ctx);
     const reg = getReg();
     expect(reg.namespace).toBe("demo");
@@ -138,7 +147,7 @@ describe("definePlatformExtension", () => {
 
   test("channels 只暴露静态描述", async () => {
     const { ctx, getReg } = makeCtx();
-    await definePlatformExtension({ channels: [channel] }).activate(ctx);
+    await definePlatformExtension({ ops: feedOps({ channels: [channel] }) }).activate(ctx);
     const channels = (await getReg().ops.channels!.invoke({})) as Array<
       Record<string, unknown>
     >;
@@ -153,7 +162,7 @@ describe("definePlatformExtension", () => {
 
   test("fetch 分发 fetch / fetchMore / passive", async () => {
     const { ctx, getReg } = makeCtx();
-    await definePlatformExtension({ channels: [channel] }).activate(ctx);
+    await definePlatformExtension({ ops: feedOps({ channels: [channel] }) }).activate(ctx);
     const fetch = getReg().ops.fetch!.invoke;
 
     const first = (await fetch({ channel: "demo:items", info: { q: "x" } })) as {
@@ -186,7 +195,9 @@ describe("definePlatformExtension", () => {
 
   test("play 按 id/kind 分发视频与直播", async () => {
     const { ctx, getReg } = makeCtx();
-    await definePlatformExtension({ channels: [channel], playback }).activate(ctx);
+    await definePlatformExtension({
+      ops: feedOps({ channels: [channel], playback }),
+    }).activate(ctx);
     const play = getReg().ops.play!.invoke;
 
     const video = (await play({ id: "BV1", kind: "video" })) as {
@@ -206,7 +217,9 @@ describe("definePlatformExtension", () => {
 
   test("play/danmaku 按 url 走平台自带路由", async () => {
     const { ctx, getReg } = makeCtx();
-    await definePlatformExtension({ channels: [channel], playback }).activate(ctx);
+    await definePlatformExtension({
+      ops: feedOps({ channels: [channel], playback }),
+    }).activate(ctx);
 
     const video = (await getReg().ops.play!.invoke({
       url: "https://www.bilibili.com/video/BV1xx411c7mD",
@@ -232,7 +245,9 @@ describe("definePlatformExtension", () => {
 
   test("danmaku 返回可订阅流；id-only 不硬填 kind（交给平台缺省）", async () => {
     const { ctx, getReg } = makeCtx();
-    await definePlatformExtension({ channels: [channel], playback }).activate(ctx);
+    await definePlatformExtension({
+      ops: feedOps({ channels: [channel], playback }),
+    }).activate(ctx);
     const result = (await getReg().ops.danmaku!.invoke({
       id: "123",
       kind: "live",
@@ -254,5 +269,60 @@ describe("definePlatformExtension", () => {
     };
     expect(idOnly.kind).toBeUndefined();
     expect(received.danmakuInfo).toEqual({ id: "BV1" });
+  });
+
+  test("私有 op 可与协议共存，失败统一带 平台.操作 上下文", async () => {
+    const { ctx, getReg } = makeCtx();
+    await definePlatformExtension({
+      tags: ["demo.private"],
+      ops: {
+        ...feedOps({ channels: [channel] }),
+        whoami: { description: "demo", invoke: () => ({ ok: true }) },
+        explode: {
+          invoke: () => {
+            throw new Error("boom");
+          },
+        },
+      },
+    }).activate(ctx);
+    expect(getReg().tags).toEqual(["demo.private"]);
+    expect(await getReg().ops.whoami!.invoke({})).toEqual({ ok: true });
+    await expect(getReg().ops.explode!.invoke({})).rejects.toThrow(
+      "[demo.explode] boom",
+    );
+  });
+
+  test("metadataOps 按 provider 契约暴露 search/fetchMetadata/fetchEpisodes", async () => {
+    const calls: string[] = [];
+    const provider: MetadataProvider = {
+      source: "demo",
+      search: async (keyword: string, mediaType: MediaType) => {
+        calls.push(`search:${keyword}:${mediaType}`);
+        return [];
+      },
+      fetchMetadata: async (id: string, mediaType: MediaType) => {
+        calls.push(`meta:${id}:${mediaType}`);
+        return { title: id } as unknown as MediaMetadata;
+      },
+      fetchEpisodes: async (_meta: MediaMetadata, id: string) => {
+        calls.push(`eps:${id}`);
+        return [];
+      },
+    };
+    const { ctx, getReg } = makeCtx();
+    await definePlatformExtension({
+      tags: ["media.metadata"],
+      ops: () => metadataOps(provider),
+    }).activate(ctx);
+
+    expect(Object.keys(getReg().ops).sort()).toEqual([
+      "fetchEpisodes",
+      "fetchMetadata",
+      "search",
+    ]);
+    await getReg().ops.search!.invoke({ keyword: "k" });
+    await getReg().ops.fetchMetadata!.invoke({ id: "42" });
+    await getReg().ops.fetchEpisodes!.invoke({ meta: {}, id: "42" });
+    expect(calls).toEqual(["search:k:tv", "meta:42:tv", "eps:42"]);
   });
 });
