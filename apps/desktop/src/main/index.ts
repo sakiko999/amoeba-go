@@ -35,6 +35,7 @@ import {
 import { hostUrl } from "./renderTarget";
 import { isInside } from "./pages/manifest";
 import { serveFile } from "./staticFiles";
+import { registerVendorProtocol } from "./vendorProtocol";
 
 const SMOKE = process.argv.includes("--smoke");
 const INSPECT_ARG = "--inspect=9229";
@@ -299,6 +300,16 @@ protocol.registerSchemesAsPrivileged([
       corsEnabled: true,
     },
   },
+  {
+    // renderer 共享层（react / @demo/ui 预构建 ESM，import map 解析目标）
+    scheme: "vendor",
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      corsEnabled: true,
+    },
+  },
 ]);
 
 /** app:// → out/renderer；必须按 session 注册：每个 tab 实例的独立 partition 是另一个 session。
@@ -316,6 +327,7 @@ function registerAppProtocol(ses: Session): void {
 
 function registerSessionProtocols(ses: Session): void {
   registerAppProtocol(ses);
+  registerVendorProtocol(ses);
   if (pages !== undefined) registerPageProtocol(ses, pages);
   denyAllPermissions(ses);
 }

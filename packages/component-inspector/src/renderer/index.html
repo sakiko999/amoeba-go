@@ -2,9 +2,12 @@
 <html lang="zh-CN" class="dark">
   <head>
     <meta charset="utf-8" />
+    <!-- 共享层：react/@demo/ui 解析到 vendor://（pack 时按 page-vendor manifest 注入；
+         CSP 由注入器补 importmap 的 sha256 hash source） -->
+    <script type="importmap">{"imports":{}}</script>
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws:"
+      content="default-src 'self'; script-src 'self' vendor:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws:"
     />
     <title>组件依赖</title>
   </head>

@@ -5,7 +5,7 @@
   "description": "宿主首页：列出当前可打开的子页面与运行环境/组件概览（React + @demo/ui）。",
   "scripts": {
     "build": "electron-vite build",
-    "pack": "bun run build && bun run scripts/pack.ts"
+    "pack": "bun run scripts/pack.ts"
   },
   "devDependencies": {
     "@demo/ui": "workspace:*",

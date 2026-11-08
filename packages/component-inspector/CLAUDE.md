@@ -30,3 +30,5 @@ bun run --cwd packages/component-inspector pack    # build + 组装 out/page/
 ```
 
 `bun run pages:prepare` 会打包本页；smoke 断言依赖图节点数 = 已安装组件数。
+
+renderer 构建走 vendor:// 共享层：pack 时 react/@demo/ui external + import map 注入（manifest 缺失自动回退全内联），dev 不受影响。

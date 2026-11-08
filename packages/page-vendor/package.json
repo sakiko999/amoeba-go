@@ -1,0 +1,15 @@
+{
+  "name": "@tabs/page-vendor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "renderer 共享层（vendor://）：react/react-dom/@demo/ui 的预构建 ESM + import map manifest，供页面组件与宿主 UI 去重。",
+  "scripts": {
+    "build": "bun run scripts/build.ts"
+  },
+  "devDependencies": {
+    "@demo/ui": "workspace:*",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "vite": "^8.3.6"
+  }
+}

@@ -30,3 +30,5 @@ bun run --cwd packages/home pack    # build + 组装 out/page/（renderer/ + pre
 ```
 
 `bun run pages:prepare` 会打包本页；smoke 断言子页面清单完整且 `open('clock')` 可用。
+
+renderer 构建走 vendor:// 共享层：pack 时 react/@demo/ui external + import map 注入（manifest 缺失自动回退全内联），dev 不受影响。

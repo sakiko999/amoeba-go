@@ -5,7 +5,7 @@
   "description": "宿主组件检查页：已安装组件的状态与 provides/inject 依赖图（React + @demo/ui）。",
   "scripts": {
     "build": "electron-vite build",
-    "pack": "bun run build && bun run scripts/pack.ts"
+    "pack": "bun run scripts/pack.ts"
   },
   "devDependencies": {
     "@demo/ui": "workspace:*",

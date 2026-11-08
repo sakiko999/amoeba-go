@@ -38,6 +38,8 @@ const extensionComponents = allPackages
   .sort();
 
 const components: [string, string][] = [
+  // 共享层最先构建：页面 pack 依赖它的 manifest 注入 import map
+  ["page-vendor", "build"],
   ...baseComponents,
   ...extensionComponents.map((name): [string, string] => [name, "pack"]),
 ];

@@ -2,9 +2,12 @@
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
+    <!-- 共享层：react/@demo/ui 解析到 vendor://（build 时按 manifest 注入 map + CSP hash；
+         dev 下为空 map，不影响 alias 解析） -->
+    <script type="importmap">{"imports":{}}</script>
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' ws:"
+      content="default-src 'self'; script-src 'self' vendor:; style-src 'self' 'unsafe-inline'; connect-src 'self' ws:"
     />
     <!-- 'self' 给打包后的 tailwind css；'unsafe-inline' 给 React 的 style 属性；ws: 供 dev HMR。导航拦截在主进程 -->
     <title>Tabs Demo</title>

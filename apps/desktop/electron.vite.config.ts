@@ -4,21 +4,48 @@
  * renderer root 提到仓库根：packages/* 与 apps/* 都在 root 内，
  * 产物路径 = 源路径相对仓库根（如 packages/tab-clock/src/index.html），
  * 寻址约定见 src/main/renderTarget.ts。
+ *
+ * 共享层（vendor://）：build 时若 page-vendor 的 manifest 存在，宿主 UI 的
+ * react/@demo/ui 走 external（import map 解析到 vendor://，全宿主单实例），
+ * 并由插件把 map + CSP hash 注入 host html；manifest 缺失（未跑 pages:prepare）
+ * 则回退全内联。dev 不 external（alias 仍指向本包 node_modules）。
  */
 
 import { defineConfig } from "electron-vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { resolve } from "node:path";
+import {
+  IMPORT_MAP_PLACEHOLDER,
+  injectIntoHtmlText,
+  readVendorManifest,
+} from "../../packages/page-vendor/scripts/import-map";
 
 const repoRoot = resolve(__dirname, "../..");
 const desktopModules = resolve(__dirname, "node_modules");
+const vendorManifestPath = resolve(
+  repoRoot,
+  "packages",
+  "page-vendor",
+  "out",
+  "dist",
+  "manifest.json",
+);
+
+/** pack 页面的共享集（宿主 UI 同形；host 与页面组件共享同一份 vendor） */
+const SHARED_EXTERNAL = [
+  "react",
+  "react/jsx-runtime",
+  "react-dom",
+  "react-dom/client",
+  "@demo/ui",
+];
 
 /**
  * renderer root 是仓库根，vite 的 optimizeDeps 会从 root 解析依赖；react 按“谁用谁声明”
- * 装在 apps/desktop（@demo/ui 是 peer）。这里显式把 react 系列指向本包 node_modules，
+ * 装在 apps/desktop（@demo/ui 是 peer）。dev 下把 react 系列指向本包 node_modules，
  * 否则 dev 报 Failed to resolve dependency: react，且 @demo/ui 的 react 也无法从 packages/ui 向上解析。
- * 同版本在 bun store 里是同一份 realpath，仍是单实例。
+ * build + vendor 共享层时不能 alias（external 需按裸名匹配），由 import map 解析。
  */
 const reactAlias = [
   "react/jsx-dev-runtime",
@@ -28,63 +55,84 @@ const reactAlias = [
   "react",
 ].map((id) => ({ find: id, replacement: resolve(desktopModules, id) }));
 
-export default defineConfig({
-  main: {
-    build: {
-      outDir: "out/main",
-      rollupOptions: {
-        input: resolve(__dirname, "src/main/index.ts"),
-      },
-    },
-  },
-  preload: {
-    build: {
-      outDir: "out/preload",
-      rollupOptions: {
-        input: {
-          // 宿主页面与静态 tab 用 index；runtime 页面用 pageBridge 叠加
-          index: resolve(__dirname, "src/preload/index.ts"),
-          pageBridge: resolve(__dirname, "src/preload/pageBridge.ts"),
+export default defineConfig(({ command }) => {
+  const vendorManifest =
+    command === "build" ? readVendorManifest(vendorManifestPath) : undefined;
+
+  return {
+    main: {
+      build: {
+        outDir: "out/main",
+        rollupOptions: {
+          input: resolve(__dirname, "src/main/index.ts"),
         },
       },
     },
-  },
-  renderer: {
-    root: repoRoot,
-    resolve: { alias: reactAlias },
-    // react 只处理宿主 ui 的 tsx（html 入口与 tab 子包纯 ts 不进 babel）；tailwind 处理宿主 styles.css
-    plugins: [
-      react({ include: /apps\/desktop\/src\/ui\/.*\.tsx?$/ }),
-      tailwindcss(),
-    ],
-    server: {
-      // dev server 就绪时先转换宿主入口，Electron 请求页面时少等一轮按需编译
-      warmup: {
-        clientFiles: [
-          "apps/desktop/src/ui/renderer.tsx",
-          "apps/desktop/src/ui/styles.css",
-        ],
-      },
-    },
-    build: {
-      outDir: resolve(__dirname, "out/renderer"),
-      rollupOptions: {
-        input: {
-          "ui/index": resolve(__dirname, "src/ui/index.html"),
-          "tabs/clock/index": resolve(
-            repoRoot,
-            "packages/tab-clock/src/index.html",
-          ),
-          "tabs/notes/index": resolve(
-            repoRoot,
-            "packages/tab-notes/src/index.html",
-          ),
-          "tabs/sysinfo/index": resolve(
-            repoRoot,
-            "packages/tab-sysinfo/src/index.html",
-          ),
+    preload: {
+      build: {
+        outDir: "out/preload",
+        rollupOptions: {
+          input: {
+            // 宿主页面与静态 tab 用 index；runtime 页面用 pageBridge 叠加
+            index: resolve(__dirname, "src/preload/index.ts"),
+            pageBridge: resolve(__dirname, "src/preload/pageBridge.ts"),
+          },
         },
       },
     },
-  },
+    renderer: {
+      root: repoRoot,
+      ...(command === "serve" ? { resolve: { alias: reactAlias } } : {}),
+      // react 只处理宿主 ui 的 tsx（html 入口与 tab 子包纯 ts 不进 babel）；tailwind 处理宿主 styles.css
+      plugins: [
+        react({ include: /apps\/desktop\/src\/ui\/.*\.tsx?$/ }),
+        tailwindcss(),
+        ...(vendorManifest !== undefined
+          ? [
+              {
+                name: "vendor-import-map",
+                apply: "build" as const,
+                transformIndexHtml(html: string): string {
+                  return html.includes(IMPORT_MAP_PLACEHOLDER)
+                    ? injectIntoHtmlText(html, vendorManifest)
+                    : html;
+                },
+              },
+            ]
+          : []),
+      ],
+      server: {
+        // dev server 就绪时先转换宿主入口，Electron 请求页面时少等一轮按需编译
+        warmup: {
+          clientFiles: [
+            "apps/desktop/src/ui/renderer.tsx",
+            "apps/desktop/src/ui/styles.css",
+          ],
+        },
+      },
+      build: {
+        outDir: resolve(__dirname, "out/renderer"),
+        rollupOptions: {
+          input: {
+            "ui/index": resolve(__dirname, "src/ui/index.html"),
+            "tabs/clock/index": resolve(
+              repoRoot,
+              "packages/tab-clock/src/index.html",
+            ),
+            "tabs/notes/index": resolve(
+              repoRoot,
+              "packages/tab-notes/src/index.html",
+            ),
+            "tabs/sysinfo/index": resolve(
+              repoRoot,
+              "packages/tab-sysinfo/src/index.html",
+            ),
+          },
+          ...(vendorManifest !== undefined
+            ? { external: SHARED_EXTERNAL }
+            : {}),
+        },
+      },
+    },
+  };
 });

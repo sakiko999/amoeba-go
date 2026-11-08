@@ -23,12 +23,17 @@ const MIME: Record<string, string> = {
   ".woff2": "font/woff2",
 };
 
-export async function serveFile(file: string): Promise<Response> {
+export async function serveFile(
+  file: string,
+  extraHeaders?: Record<string, string>,
+): Promise<Response> {
   try {
     const body = await readFile(file);
     const type =
       MIME[extname(file).toLowerCase()] ?? "application/octet-stream";
-    return new Response(body, { headers: { "content-type": type } });
+    return new Response(body, {
+      headers: { "content-type": type, ...extraHeaders },
+    });
   } catch {
     return new Response(null, { status: 404 });
   }

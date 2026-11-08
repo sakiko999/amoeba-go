@@ -64,6 +64,18 @@ const conflicted: string[] = [];
 const pagesRoot = join(appRoot, "out", "pages");
 await rm(pagesRoot, { recursive: true, force: true });
 
+// 项目级共享层投影：page-vendor 的预构建 ESM（vendor:// 协议的根）。
+// 未构建时清掉旧层避免残留半套产物（页面 pack 会同步回退全内联）。
+const vendorSource = join(repoRoot, "packages", "page-vendor", "out", "dist");
+const vendorRoot = join(appRoot, "out", "vendor");
+await rm(vendorRoot, { recursive: true, force: true });
+if (existsSync(vendorSource)) {
+  await cp(vendorSource, vendorRoot, { recursive: true });
+  console.log(`pages: vendor layer synced → ${vendorRoot}`);
+} else {
+  console.log("pages: page-vendor 未构建，跳过 vendor 层投影");
+}
+
 // 已停用的 rss 订阅栈不投影：即使有人手动跑了它们的 pack（out/ 残留），
 // 也不能把它们（含已退役的 rss.extend 链路）带进宿主。与
 // scripts/pack-components.ts 的打包清单同步维护。

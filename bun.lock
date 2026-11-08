@@ -205,6 +205,16 @@
         "vite": "^8.3.6",
       },
     },
+    "packages/page-vendor": {
+      "name": "@tabs/page-vendor",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@demo/ui": "workspace:*",
+        "react": "^19.3.0",
+        "react-dom": "^19.3.0",
+        "vite": "^8.3.6",
+      },
+    },
     "packages/platform-apple": {
       "name": "@tabs/platform-apple",
       "version": "0.1.0",
@@ -743,6 +753,8 @@
     "@tabs/media-library": ["@tabs/media-library@workspace:packages/media-library"],
 
     "@tabs/notes": ["@tabs/notes@workspace:packages/tab-notes"],
+
+    "@tabs/page-vendor": ["@tabs/page-vendor@workspace:packages/page-vendor"],
 
     "@tabs/platform-apple": ["@tabs/platform-apple@workspace:packages/platform-apple"],
 

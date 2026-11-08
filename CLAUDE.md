@@ -51,4 +51,6 @@
 - [!] media-manager 独立形态必须从 `@tabs/platform-*/provider` 子路径导入 provider 工厂，走包根会把 platform-kit runtime 拉进根 tsc（那套代码只由 Bun.build + smoke 校验）
 - [ ] 手动 bun run dev 目测组件依赖页的 SVG 连线布局、明暗主题与安装/卸载后的自动刷新
 - [ ] 手动 bun run dev 确认启动默认打开 home 页、卡片点击切换与主题观感
+- [ ] 手动 bun run dev 目测两页与 media-manager 的视觉一致性（卡片/表格风格、暗亮切换、依赖图连线）
+- [!] page://shared 是保留 host（组件 id 禁用），跨 host ESM import 需协议响应带 ACAO 头——这是 import map 方案的成立前提
 <!-- cc-todo:end -->

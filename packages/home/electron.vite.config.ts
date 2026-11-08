@@ -9,6 +9,16 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { resolve } from "node:path";
 
+/** pack 时置 1：react/@demo/ui 走 vendor:// 共享层（import map 解析）；dev/独立构建全内联 */
+const vendorExternal = process.env.PAGE_VENDOR_EXTERNAL === "1";
+const SHARED_EXTERNAL = [
+  "react",
+  "react/jsx-runtime",
+  "react-dom",
+  "react-dom/client",
+  "@demo/ui",
+];
+
 export default defineConfig({
   preload: {
     build: {
@@ -20,7 +30,10 @@ export default defineConfig({
     root: "src/renderer",
     build: {
       outDir: resolve(__dirname, "out/renderer"),
-      rollupOptions: { input: resolve(__dirname, "src/renderer/index.html") },
+      rollupOptions: {
+        input: resolve(__dirname, "src/renderer/index.html"),
+        ...(vendorExternal ? { external: SHARED_EXTERNAL } : {}),
+      },
     },
     plugins: [react(), tailwindcss()],
   },
