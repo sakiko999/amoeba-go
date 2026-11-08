@@ -134,15 +134,12 @@ export interface MediaApi {
   clearCache(): Promise<number>;
 }
 
-/** preload 注入的宿主状态桥（独立应用没有宿主，initial 回退 dark） */
-export interface HostStateBridge {
-  readonly initial: HostState;
-  onChanged(cb: (state: HostState) => void): void;
-}
+/** preload 注入的宿主状态桥（类型统一在 @host/sdk；独立应用没有宿主，initial 回退 dark） */
+export type { HostStateBridge } from "@host/sdk";
 
 declare global {
   interface Window {
     media?: MediaApi;
-    hostState?: HostStateBridge;
+    hostState?: import("@host/sdk").HostStateBridge;
   }
 }

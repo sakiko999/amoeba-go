@@ -3,7 +3,7 @@
  *
  * 宿主注册 NAV_CHANNELS.list / NAV_CHANNELS.open（apps/desktop/src/main/index.ts）；
  * 组件数据来自 COMPONENT_CHANNELS（与组件检查页同一份只读 IPC）。
- * 页面不含 main.js（无后端状态）。
+ * 页面不含 main.js（无后端状态）。sandbox 下 electron 受限子集正好够用。
  */
 
 import { contextBridge, ipcRenderer } from "electron";

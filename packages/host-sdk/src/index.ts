@@ -16,6 +16,12 @@ export interface HostState {
 
 export type HostStatePatch = Partial<HostState>;
 
+/** 宿主 pageBridge 注入的 window.hostState 形状（sendSync 初始状态 + 变更订阅） */
+export interface HostStateBridge {
+  readonly initial: HostState;
+  onChanged(cb: (state: HostState) => void): void;
+}
+
 /** 宿主与各 preload 之间的固定 IPC 渠道名 */
 export const HOST_STATE_CHANNELS = {
   /** sendSync：preload 首帧同步取初始状态 */

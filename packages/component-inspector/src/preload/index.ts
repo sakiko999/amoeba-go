@@ -3,6 +3,7 @@
  *
  * 宿主在 ipcMain 注册 COMPONENT_CHANNELS.list（PageRegistry.inspect()），
  * 安装/卸载/重载后向所有 tab 广播 changed。页面不含 main.js（无后端状态）。
+ * sandbox 下 electron 受限子集正好够用。
  */
 
 import { contextBridge, ipcRenderer } from "electron";
