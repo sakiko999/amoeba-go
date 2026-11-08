@@ -22,7 +22,7 @@ bun run --cwd packages/page-vendor build   # out/dist + manifest.json
 ## 消费方式
 
 - 页面 pack（home / component-inspector / media-manager）：manifest 存在时以
-  `PAGE_VENDOR_EXTERNAL=1` 触发 external 构建（vite `rollupOptions.external` =
+  `PAGE_VENDOR_EXTERNAL=1` 触发 external 构建（vite `rolldownOptions.external` =
   `SHARED_SPECIFIERS`），各页 electron-vite 插件在 `transformIndexHtml` 时用
   `injectIntoHtmlText` 把 import map 写进 HTML，并给 CSP 追加该内联 map 的
   `'sha256-…'` hash source（无需 `'unsafe-inline'`）。pack 脚本只做组装、不再改 HTML。

@@ -47,14 +47,14 @@ export default defineConfig({
   preload: {
     build: {
       outDir: "out/preload",
-      rollupOptions: { input: resolve(__dirname, "src/preload/index.ts") },
+      rolldownOptions: { input: resolve(__dirname, "src/preload/index.ts") },
     },
   },
   renderer: {
     root: "src/renderer",
     build: {
       outDir: resolve(__dirname, "out/renderer"),
-      rollupOptions: {
+      rolldownOptions: {
         input: resolve(__dirname, "src/renderer/index.html"),
         ...(vendorManifest !== undefined
           ? { external: SHARED_EXTERNAL }

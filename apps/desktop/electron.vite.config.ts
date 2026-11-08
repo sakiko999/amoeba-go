@@ -63,7 +63,7 @@ export default defineConfig(({ command }) => {
     main: {
       build: {
         outDir: "out/main",
-        rollupOptions: {
+        rolldownOptions: {
           input: resolve(__dirname, "src/main/index.ts"),
         },
       },
@@ -71,7 +71,7 @@ export default defineConfig(({ command }) => {
     preload: {
       build: {
         outDir: "out/preload",
-        rollupOptions: {
+        rolldownOptions: {
           input: {
             // 宿主页面与静态 tab 用 index；runtime 页面用 pageBridge 叠加
             index: resolve(__dirname, "src/preload/index.ts"),
@@ -112,7 +112,7 @@ export default defineConfig(({ command }) => {
       },
       build: {
         outDir: resolve(__dirname, "out/renderer"),
-        rollupOptions: {
+        rolldownOptions: {
           input: {
             "ui/index": resolve(__dirname, "src/ui/index.html"),
             "tabs/clock/index": resolve(
