@@ -10,11 +10,11 @@
  * crawler/resolver(按 item.url→live.bilibili.com/{roomId} 路由)。翻页(Pageable)保留。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { biliClient } from "../lib/index.ts";
-import type { Live } from "@amoeba/xml"
+import type { Live } from "@tabs/platform-kit/data"
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 
 const API_LIVE = "https://api.live.bilibili.com"
 const PAGE_SIZE = 30

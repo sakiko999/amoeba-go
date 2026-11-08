@@ -18,15 +18,15 @@
  * ⚠️ 本渠道**不声明** `passive`:翻页要 interactive 滚动,不是纯导航采集。
  */
 
-import { withBrowserOp } from "@amoeba/resolve/browser/cdp";
-import { now } from "@amoeba/resolve/host";
-import { log } from "@amoeba/resolve/log";
+import { withBrowserOp } from "@tabs/platform-kit/runtime/browser/cdp";
+import { now } from "@tabs/platform-kit/runtime/host";
+import { log } from "@tabs/platform-kit/runtime/log";
 import { XHS_BASE, extractInitialState, noteCardToSocial, xhsClient } from "../lib/index.ts";
-import type { Item, Social } from "@amoeba/xml"
-import { serializeFeed, type SerializeOptions } from "@amoeba/xml"
+import type { Item, Social } from "@tabs/platform-kit/data"
+import { type SerializeOptions } from "@tabs/platform-kit/data"
 
-import type { ItemDetailSource, Pageable, RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"
-import { apiFetchItems } from "@amoeba/crawler/factory"
+import type { ItemDetailSource, Pageable, DataChannel, DataSource, SourceInfo } from "@tabs/platform-kit/data"
+import { apiFetchItems } from "@tabs/platform-kit/data"
 import { XhsChannelBase } from "./base.ts"
 import {
   ensureXhsPageReady,
@@ -41,13 +41,13 @@ import {
   XHS_LOGIN_REQUIRED,
 } from "./shared.ts"
 
-export class XhsUserChannel extends XhsChannelBase implements RssChannel {
+export class XhsUserChannel extends XhsChannelBase implements DataChannel {
   readonly key = "xhs:user"
   readonly name = "小红书用户笔记"
   readonly kind = "social" as const
   readonly sourceInfoTpl = [{ key: "user_id", label: "用户 ID(24 位)", required: true }]
 
-  getSource(info: SourceInfo): RssSource & Partial<Pageable> & ItemDetailSource {
+  getSource(info: SourceInfo): DataSource & Partial<Pageable> & ItemDetailSource {
     const userId = String(info.user_id ?? "").trim()
     // 显式空串 = 强制匿名（CLI `--kv cookie=`）：匿名态已移除，浏览器路径也不得绕过。
     if (info.cookie === "") {
@@ -67,7 +67,7 @@ export class XhsUserChannel extends XhsChannelBase implements RssChannel {
               this.fetchMoreViaBrowser(browser, userId, cursor, ctx?.existing),
           }
         : { fetch }
-    ) as RssSource & Partial<Pageable> & ItemDetailSource
+    ) as DataSource & Partial<Pageable> & ItemDetailSource
     // 详情与 explore 共用同一套策略。刻意不传 info.cookie:桌面有浏览器时详情走浏览器栈
     // (reqwest 带账号 cookie 既拿不到数据——xhs WAF 按客户端栈判定——又让凭据走非浏览器栈
     // 出站);无浏览器门面(mobile/CLI)会回落 provider 登录态,这是登录态必需的。
@@ -141,7 +141,7 @@ export class XhsUserChannel extends XhsChannelBase implements RssChannel {
     userId: string,
     cursor?: string,
     existing?: number,
-  ): Promise<{ xml: string; cursor?: string }> {
+  ): Promise<{ items: Item[]; cursor?: string }> {
     // 滚动 + 读 state 原子(user 专属 lane tab,防并发抢页)。
     // ⚠️ 滚动驱动必须 interactive：hidden（SW_HIDE）下渲染管线停摆，
     // window.scrollTo 只改 scrollTop、不派发 scroll 事件，IntersectionObserver
@@ -186,16 +186,15 @@ export class XhsUserChannel extends XhsChannelBase implements RssChannel {
         // 窗口化:只取 [startIdx, startIdx+WINDOW)——平台一次滚到底加载 120 条,每次只返回 30。
         const page = after.slice(startIdx, startIdx + XHS_FETCH_MORE_WINDOW)
         const items = this.notesToItems(page)
-        const xml = serializeFeed(items, this.channelOptions({ user_id: userId }))
         if (!page.length) {
           // 0 条:平台还在追加(scrollHeight 增长)但 notes 未渲染到位 → 返回 cursor 让 core 重试
           // (而非 hasMore false → desktop 标 ended → 用户被迫手动刷新)。cursor 不变,desktop
           // onRender 无进展保护(items 不增长)不会自动重复触发,只由用户手动再点「加载更多」。
-          if (platformActive) return { xml, cursor: String(startIdx) }
+          if (platformActive) return { items, cursor: String(startIdx) }
           ended = true
-          return { xml } // 真到底:多次滚动 scrollHeight 无增长 = 平台无更多
+          return { items } // 真到底:多次滚动 scrollHeight 无增长 = 平台无更多
         }
-        return { xml, cursor: String(startIdx + page.length) }
+        return { items, cursor: String(startIdx + page.length) }
         // 真到底：不再需要页面累计的 notes/滚动位置，release 在 lane 锁内关 target。
       },
     )

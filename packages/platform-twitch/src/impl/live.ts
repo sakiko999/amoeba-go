@@ -10,16 +10,16 @@
  * passive（浏览器被动）。播放走 resolver by-url(见 docs/twitch-channel.md §4.1)。
  */
 
-import { now } from "@amoeba/resolve/host";
-import { log } from "@amoeba/resolve/log";
+import { now } from "@tabs/platform-kit/runtime/host";
+import { log } from "@tabs/platform-kit/runtime/log";
 import { TwitchStreamNode, TwitchUser, fetchTwitchUsers } from "../lib/index.ts";
-import { parseRoomIds } from "@amoeba/resolve/utils/room-ids";
-import { normalizeTwitchLogin } from "@amoeba/resolve/utils/twitch";
-import type { Item, Live } from "@amoeba/xml"
-import { type SerializeOptions } from "@amoeba/xml"
+import { parseRoomIds } from "@tabs/platform-kit/runtime/utils/room-ids";
+import { normalizeTwitchLogin } from "../lib/twitch.ts";
+import type { Item, Live } from "@tabs/platform-kit/data"
+import { type SerializeOptions } from "@tabs/platform-kit/data"
 
-import type { RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"
-import { apiFetchItems } from "@amoeba/crawler/factory"
+import type { DataChannel, DataSource, SourceInfo } from "@tabs/platform-kit/data"
+import { apiFetchItems } from "@tabs/platform-kit/data"
 
 /** 缩略图模板(Twitch 预览图;离线频道也返回占位图)。 */
 function thumbnailFor(login: string): string {
@@ -88,7 +88,7 @@ export function twitchLiveItem(user: TwitchUser, login: string, fetchedAt: numbe
   }
 }
 
-export class TwitchLiveChannel implements RssChannel {
+export class TwitchLiveChannel implements DataChannel {
   readonly key = "twitch:live"
   readonly name = "Twitch 直播"
   readonly kind = "live" as const
@@ -101,7 +101,7 @@ export class TwitchLiveChannel implements RssChannel {
     },
   ]
 
-  getSource(info: SourceInfo): RssSource {
+  getSource(info: SourceInfo): DataSource {
     return {
       fetch: apiFetchItems(
         () => this.fetchItems(info),

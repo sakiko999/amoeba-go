@@ -15,8 +15,8 @@
  * 会话是否还有效由下一次抓取如实报错。
  */
 
-import { serializeCookieDict } from "@amoeba/resolve/utils/cookie"
-import type { LoginCookieSnapshot } from "@amoeba/resolve/platform/types"
+import { serializeCookieDict } from "@tabs/platform-kit/runtime/utils/cookie"
+import type { LoginCookieSnapshot } from "@tabs/platform-kit/runtime/platform/types"
 
 const DOUYIN_BASE = "https://www.douyin.com"
 

@@ -8,11 +8,11 @@
  * 翻页(本页为空 = 没有更多)。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { douyinClient, douyinOnline } from "../lib/index.ts";
-import type { Live } from "@amoeba/xml"
+import type { Live } from "@tabs/platform-kit/data"
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 
 const LIVE = "https://live.douyin.com"
 const COUNT = 15

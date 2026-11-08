@@ -9,8 +9,8 @@
  *   - 非 bilibili host / 缺 ID / 空串 → null。
  */
 
-import { parseBiliFavlistRef, parseBiliSeasonRef, parseBiliSeriesRef } from "../impl/bili/refs.ts"
-import { ugc } from "../impl/bili/video-common.ts"
+import { parseBiliFavlistRef, parseBiliSeasonRef, parseBiliSeriesRef } from "../impl/refs.ts"
+import { ugc } from "../impl/video-common.ts"
 
 let fails = 0
 const ok = (c: unknown, label: string) => {

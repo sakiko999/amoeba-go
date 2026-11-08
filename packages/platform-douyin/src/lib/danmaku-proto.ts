@@ -15,7 +15,7 @@
  * internalExt};needAck=true 时回 ack(修正 dart sendAck 的 payloadType 被覆盖 bug)。
  */
 
-import type { DanmakuItem } from "@amoeba/resolve"
+import type { DanmakuItem } from "@tabs/platform-kit/runtime"
 
 // wire format:tag = varint(field<<3 | wireType);0=varint,1=64bit,2=length,5=32bit。
 

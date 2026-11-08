@@ -12,8 +12,9 @@
  */
 
 import { parseTwitchMaster, twitchStreamsFromMaster } from "../lib/live.ts"
-import { resolveRoute } from "../resolver/router.ts"
-import { normalizeTwitchCategory, normalizeTwitchLogin } from "@amoeba/resolve/utils/twitch"
+import { matchRoute } from "@tabs/platform-kit/runtime"
+import { twitchRoutes } from "../playback.ts"
+import { normalizeTwitchCategory, normalizeTwitchLogin } from "@tabs/platform-kit/runtime/utils/twitch"
 
 let fails = 0
 const ok = (c: unknown, label: string) => {
@@ -104,14 +105,15 @@ cat("https://www.twitch.tv/directory/category/just%2Fchatting", null) // 解码�
 cat("https://example.com/directory/category/just-chatting", null) // 非 twitch 域
 cat("https://clips.twitch.tv/directory/category/just-chatting", null) // 非频道域
 
-console.log("router 只认频道域:")
-ok(resolveRoute("https://www.twitch.tv/shroud")?.id === "shroud", "www 频道页命中")
-ok(resolveRoute("https://m.twitch.tv/shroud")?.id === "shroud", "移动端频道页命中")
-ok(resolveRoute("https://www.twitch.tv/%73hroud")?.id === "shroud", "百分号编码 login 命中")
-ok(resolveRoute("https://clips.twitch.tv/FunnySlug") === null, "clip 页(单段路径)不命中")
-ok(resolveRoute("https://www.twitch.tv/shroud/clip/ObscureSlug") === null, "频道内 clip 不命中")
-ok(resolveRoute("https://www.twitch.tv/videos/123") === null, "VOD 页不命中")
-ok(resolveRoute("https://nottwitch.tv/shroud") === null, "伪造域不命中")
+console.log("路由只认频道域:")
+const route = (u: string) => matchRoute(twitchRoutes, u)
+ok(route("https://www.twitch.tv/shroud")?.id === "shroud", "www 频道页命中")
+ok(route("https://m.twitch.tv/shroud")?.id === "shroud", "移动端频道页命中")
+ok(route("https://www.twitch.tv/%73hroud")?.id === "shroud", "百分号编码 login 命中")
+ok(route("https://clips.twitch.tv/FunnySlug") === undefined, "clip 页(单段路径)不命中")
+ok(route("https://www.twitch.tv/shroud/clip/ObscureSlug") === undefined, "频道内 clip 不命中")
+ok(route("https://www.twitch.tv/videos/123") === undefined, "VOD 页不命中")
+ok(route("https://nottwitch.tv/shroud") === undefined, "伪造域不命中")
 
 // ── 2. master 解析 / 排序 ─────────────────────────────────────────────────────
 // 刻意乱序：720p 在前、audio_only 排第二、1080p 倒数第二、480p 最后。

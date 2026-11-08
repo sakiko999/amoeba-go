@@ -7,20 +7,20 @@
  * 搜索该词微博流(需完整登录 cookie)。
  */
 
-import { httpJson, now } from "@amoeba/resolve/host";
+import { httpJson, now } from "@tabs/platform-kit/runtime/host";
 import { PC_UA, WB_BASE, mblogCardsToItems, weiboClient } from "../lib/index.ts";
-import type { Item } from "@amoeba/xml"
-import { type SerializeOptions } from "@amoeba/xml"
+import type { Item } from "@tabs/platform-kit/data"
+import { type SerializeOptions } from "@tabs/platform-kit/data"
 
-import type { HotWordSource, RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"
-import { apiFetchItems } from "@amoeba/crawler/factory"
+import type { HotWordSource, DataChannel, DataSource, SourceInfo } from "@tabs/platform-kit/data"
+import { apiFetchItems } from "@tabs/platform-kit/data"
 
-export class WeiboHotChannel implements RssChannel {
+export class WeiboHotChannel implements DataChannel {
   readonly key = "weibo:hot"
   readonly name = "微博实时热搜"
   readonly kind = "social" as const
   readonly defaultInfo: SourceInfo = {}
-  getSource(info: SourceInfo): RssSource & HotWordSource {
+  getSource(info: SourceInfo): DataSource & HotWordSource {
     const cookie = (info.cookie as string) || undefined
     return {
       fetch: apiFetchItems(

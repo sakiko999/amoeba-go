@@ -22,7 +22,7 @@
  * 5 分钟内存缓存(含并发去重:缓存的是 Promise)。不落库、不写内容缓存。
  */
 
-import { now } from "@amoeba/resolve/host"
+import { now } from "@tabs/platform-kit/runtime/host"
 import type { YoutubeLiveHit } from "./client.ts"
 import { youtubeBrowse } from "./client.ts"
 

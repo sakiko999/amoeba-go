@@ -6,11 +6,11 @@
  * 每段 6 分钟,段数 = ceil(durationSec/360) + 1。
  */
 
-import { formatError } from "@amoeba/log"
+import { formatError } from "@tabs/platform-kit/runtime/log"
 
-import { argbToHex, deferredStream } from "@amoeba/resolve"
-import type { DanmakuItem, DanmakuStream } from "@amoeba/resolve"
-import { log } from "@amoeba/resolve/log"
+import { argbToHex, deferredStream } from "@tabs/platform-kit/runtime"
+import type { DanmakuItem, DanmakuStream } from "@tabs/platform-kit/runtime"
+import { log } from "@tabs/platform-kit/runtime/log"
 import { BILIBILI_UA, biliClient } from "./client.ts"
 import { decodeDanmakuSeg } from "./danmaku-proto.ts"
 

@@ -16,14 +16,14 @@ import type {
   MediaType,
   MetadataProvider,
   SearchResult,
-} from "@tabs/media-library";
-import { newMetadata } from "@tabs/media-library";
+} from "@tabs/platform-contracts";
+import { newMetadata } from "@tabs/platform-contracts";
 import {
   NotFoundError,
   ProviderError,
   getJsonCached,
   postJsonCached,
-} from "@tabs/media-library";
+} from "@tabs/platform-kit/provider";
 
 const API_BASE = "https://api.bgm.tv/v0";
 

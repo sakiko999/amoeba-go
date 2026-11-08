@@ -5,16 +5,12 @@
  * channels.registerPlugin 把插件导出的 channels 数组登记进数据服务。
  */
 
-import type { RssChannel } from "@amoeba/crawler"
-import { registerChannel } from "@amoeba/crawler"
+import type { DataChannel } from "@tabs/platform-kit/data"
 import { ApplePodcastChartChannel, ApplePodcastSearchChannel } from "./index.ts"
 
 /** apple 平台全部渠道实例（插件导出用） */
-export const appleChannels: RssChannel[] = [
+export const appleChannels: DataChannel[] = [
   ApplePodcastChartChannel,
   ApplePodcastSearchChannel,
 ]
 
-export function registerAppleChannels(): void {
-  for (const channel of appleChannels) registerChannel(channel)
-}

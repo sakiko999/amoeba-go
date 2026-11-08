@@ -11,13 +11,13 @@
  * 条目没有作者名(archives[] 只有 bvid/title/pic/pubdate/duration/stat),author 留空。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { biliClient } from "../lib/index.ts";
-import type { Item } from "@amoeba/xml"
-import { type SerializeOptions } from "@amoeba/xml"
+import type { Item } from "@tabs/platform-kit/data"
+import { type SerializeOptions } from "@tabs/platform-kit/data"
 
-import type { Pageable, RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"
-import { apiFetchItems, apiFetchMore } from "@amoeba/crawler/factory"
+import type { Pageable, DataChannel, DataSource, SourceInfo } from "@tabs/platform-kit/data"
+import { apiFetchItems, apiFetchMore } from "@tabs/platform-kit/data"
 import { parseBiliSeasonRef } from "./refs.ts"
 import { API, ugc } from "./video-common.ts"
 
@@ -60,13 +60,13 @@ function seasonIdFor(raw: string): Promise<string> {
   return p
 }
 
-export class BiliSeasonChannel implements RssChannel {
+export class BiliSeasonChannel implements DataChannel {
   readonly key = "bili:season"
   readonly name = "B站视频合集"
   readonly kind = "video" as const
   readonly sourceInfoTpl = [{ key: "seasonId", label: "合集 ID 或视频链接", required: true }]
 
-  getSource(info: SourceInfo): RssSource & Pageable {
+  getSource(info: SourceInfo): DataSource & Pageable {
     const seasonId = (): Promise<string> => seasonIdFor(info.seasonId ?? "")
     return {
       fetch: apiFetchItems(

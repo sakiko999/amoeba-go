@@ -9,16 +9,16 @@
  * resolveBiliLivePlay + helpers 已迁 platform/bili/live-play.ts。
  */
 
-import { formatError } from "@amoeba/log"
-import { now } from "@amoeba/resolve/host";
-import { log } from "@amoeba/resolve/log";
+import { formatError } from "@tabs/platform-kit/runtime/log"
+import { now } from "@tabs/platform-kit/runtime/host";
+import { log } from "@tabs/platform-kit/runtime/log";
 import { biliClient } from "../lib/index.ts";
-import { parseRoomIds } from "@amoeba/resolve/utils/room-ids";
-import type { Item, Live } from "@amoeba/xml"
-import { type SerializeOptions } from "@amoeba/xml"
+import { parseRoomIds } from "@tabs/platform-kit/runtime/utils/room-ids";
+import type { Item, Live } from "@tabs/platform-kit/data"
+import { type SerializeOptions } from "@tabs/platform-kit/data"
 
-import type { RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"
-import { apiFetchItems } from "@amoeba/crawler/factory"
+import type { DataChannel, DataSource, SourceInfo } from "@tabs/platform-kit/data"
+import { apiFetchItems } from "@tabs/platform-kit/data"
 
 const API_LIVE = "https://api.live.bilibili.com"
 
@@ -64,7 +64,7 @@ async function fetchBiliRoom(roomId: string, cookie?: string): Promise<Live | nu
   }
 }
 
-export class BiliLiveChannel implements RssChannel {
+export class BiliLiveChannel implements DataChannel {
   readonly key = "bili:live"
   readonly name = "B站直播房间"
   readonly kind = "live" as const
@@ -78,7 +78,7 @@ export class BiliLiveChannel implements RssChannel {
     },
   ]
   // 仅输出 Live item;流/弹幕统一走 crawler/resolver(按 item.url)。
-  getSource(info: SourceInfo): RssSource {
+  getSource(info: SourceInfo): DataSource {
     return {
       fetch: apiFetchItems(
         () => this.fetchItems(info),

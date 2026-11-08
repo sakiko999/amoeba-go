@@ -7,11 +7,11 @@
  * 字段映射照 hot.ts(getListByArea 同形:roomId/title/uname/cover/online)。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { fetchBiliAreaRooms } from "../lib/index.ts";
-import type { Live } from "@amoeba/xml"
+import type { Live } from "@tabs/platform-kit/data"
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 
 export const BiliLiveAreaChannel = makeApiChannel({
   key: "bili:live:area",

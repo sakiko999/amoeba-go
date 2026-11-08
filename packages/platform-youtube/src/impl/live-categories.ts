@@ -9,11 +9,11 @@
  * 被 LIVE badge 过滤成空栏目的(Recent/Upcoming)也不列入。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { fetchYoutubeLiveShelves } from "../lib/index.ts";
-import type { Category, Item } from "@amoeba/xml"
+import type { Category, Item } from "@tabs/platform-kit/data"
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 
 export const YoutubeLiveCategoriesChannel = makeApiChannel({
   key: "youtube:live-categories",

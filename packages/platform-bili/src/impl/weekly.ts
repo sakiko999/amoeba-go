@@ -4,10 +4,10 @@
  * app 接口拿 series 列表 + 期内容。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { biliClient } from "../lib/index.ts";
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 import { ugc } from "./video-common.ts"
 
 export const BiliWeeklyChannel = makeApiChannel({

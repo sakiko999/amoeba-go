@@ -17,9 +17,9 @@
  * 按 bit_rate 降序取最高档（产流侧的「最高清晰度排最前」契约）。
  */
 
-import type { Social, SocialImage } from "@amoeba/xml"
+import type { Social, SocialImage } from "@tabs/platform-kit/data"
 
-import { toHttps } from "@amoeba/resolve/utils/url"
+import { toHttps } from "@tabs/platform-kit/runtime/utils/url"
 
 export const DOUYIN_WEB = "https://www.douyin.com"
 

@@ -10,13 +10,13 @@
  * 输入:series ID 或列表 URL(`/lists/<sid>`、`seriesdetail?sid=`、`list/<mid>?sid=`)。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { biliClient } from "../lib/index.ts";
-import type { Item } from "@amoeba/xml"
-import { type SerializeOptions } from "@amoeba/xml"
+import type { Item } from "@tabs/platform-kit/data"
+import { type SerializeOptions } from "@tabs/platform-kit/data"
 
-import type { Pageable, RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"
-import { apiFetchItems, apiFetchMore } from "@amoeba/crawler/factory"
+import type { Pageable, DataChannel, DataSource, SourceInfo } from "@tabs/platform-kit/data"
+import { apiFetchItems, apiFetchMore } from "@tabs/platform-kit/data"
 import { parseBiliSeriesRef } from "./refs.ts"
 import { API, ugc } from "./video-common.ts"
 
@@ -51,13 +51,13 @@ function midFor(seriesId: string): Promise<string> {
   return p
 }
 
-export class BiliSeriesChannel implements RssChannel {
+export class BiliSeriesChannel implements DataChannel {
   readonly key = "bili:series"
   readonly name = "B站视频列表"
   readonly kind = "video" as const
   readonly sourceInfoTpl = [{ key: "seriesId", label: "视频列表 ID 或链接", required: true }]
 
-  getSource(info: SourceInfo): RssSource & Pageable {
+  getSource(info: SourceInfo): DataSource & Pageable {
     const mid = (): Promise<string> => {
       const ref = parseBiliSeriesRef(info.seriesId ?? "")
       if (!ref) {

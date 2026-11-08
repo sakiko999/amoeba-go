@@ -9,7 +9,7 @@
 
 import { readXhsLoginCookie, xhsScanLogin } from "../lib/index.ts";
 
-import type { Loginable, LoginCookieSnapshot, LoginResult } from "@amoeba/crawler"
+import type { Loginable, LoginCookieSnapshot, LoginResult } from "@tabs/platform-kit/data"
 
 export class XhsChannelBase implements Loginable {
   // ⚠️ `passive` 不下放在基类：xhs:user 的翻页要 interactive 滚动，不是纯导航

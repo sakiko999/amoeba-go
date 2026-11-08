@@ -1,0 +1,267 @@
+/**
+ * stream —— 弹幕流原语:异步 setup 竞态守卫(deferredStream)+ WS 连接管理(createWsStream)。
+ *
+ * 两个原语都是「构造 DanmakuStream」的基础层,各平台弹幕按需组合:
+ *   - deferredStream:异步 setup(ensureCookie / enter 长号 / getDanmuInfo / 页面解析)→
+ *     建流的 stopped 守卫(setup 完成前已退订则不再建流,连接零泄漏)。bili VOD 只用它。
+ *   - createWsStream:WS 连接生命周期(订阅即建连、退订即断开、指数退避重连、心跳、
+ *     认证帧在 onopen 发)。四平台直播弹幕(bili/douyu/huya/douyin)共用,配合
+ *     deferredStream 组合(先异步 setup 再建 WS)。
+ *
+ * 连接层:统一走 `globalThis.appHost.ws`(桌面 Rust ws_connect / node ws 包,
+ * 握手可带自定义 header——douyin 需要 UA/Cookie/Origin);原生 WebSocket 仅兜底
+ * 无宿主环境(纯浏览器调试,无自定义 header)。曾按 opts.headers 分流——「douyu
+ * danmuproxy:8506 schannel 证书校验失败」走原生;2026-08-14 probe 实测 native-tls
+ * 连 douyu 8/8 握手成功(证书 GlobalSign 有效,失败实为集群节点偶发 RST),故统一
+ * 走宿主。两形态在内部归一成 WsLike 抽象(send/close/readyState)。
+ */
+
+import { formatError } from "../logger/index.ts"
+
+import { log } from "../log.ts"
+import type { DanmakuItem, DanmakuStream } from "./types.ts"
+
+export interface WsStreamOptions {
+  /** 连接地址。传函数 = 每次建连重新求值(重连时 host/token 可能已变)。 */
+  url: string | (() => string)
+  /** 自定义握手 header(透传给宿主 ws;douyin 带 UA/Cookie/Origin)。 */
+  headers?: Record<string, string>
+  /** 握手超时,ms(宿主 ws 用)。 */
+  timeoutMs?: number
+  /**
+   * **每次重连前**调用(bili 直播:token 有寿命,断线重连须刷新 getDanmuInfo;
+   * 鉴权失败 op=8 code!=0 也走此路径——onMessage 里 close() 触发)。
+   * 返回 false = 放弃重连(刷新重试超限)。首次连接不调用。
+   */
+  refresh?: () => Promise<boolean>
+  /** 连接建立后调用(发认证帧)。ws 是 WsLike,直接 send(Uint8Array) 免断言。 */
+  onOpen?: (ws: WsLike) => void
+  /** 每帧解码 → 弹幕。可异步(如 bilibili 的 brotli DecompressionStream)。
+   *  第二参 ws:用于回执(douyin 的 ack)/ 鉴权失败时 close() 触发重连,其余平台忽略。 */
+  onMessage: (data: ArrayBuffer, ws: WsLike) => DanmakuItem[] | Promise<DanmakuItem[]>
+  /** 心跳帧(定时发送)。 */
+  heartbeat?: () => Uint8Array
+  heartbeatMs?: number
+  /** 断线重连最大延迟,ms(指数退避 1s→2s→4s…)。 */
+  maxReconnectMs?: number
+  /**
+   * 连续重连次数上限,超过则**放弃**(默认 10)。连接成功会清零计数,所以长时间
+   * 在线后偶发断线仍有完整额度。房间下播/平台封禁时,没有这一层就是**永不停止**的
+   * 重连循环(后台一直打请求)。
+   */
+  maxAttempts?: number
+  /** 连接关闭回调(排查握手失败/被拒)。 */
+  onClose?: (code: number, reason: string) => void
+}
+
+/** 连接统一抽象:原生 WebSocket 与宿主 WsConnection 都满足。onOpen/onMessage 暴露它,免断言直接 send(Uint8Array)。 */
+export interface WsLike {
+  readonly readyState: number
+  send(data: Uint8Array): void
+  close(): void
+}
+
+/** 创建弹幕 WS 流(订阅即建连)。 */
+export function createWsStream(opts: WsStreamOptions): DanmakuStream {
+  return (onItems) => {
+    let stopped = false
+    /** 主动退订标志:onClose 区分「正常关闭直播间」vs「意外断线」。 */
+    let userClosed = false
+    let ws: WsLike | null = null
+    let heartbeatTimer: ReturnType<typeof setInterval> | null = null
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+    let attempts = 0
+
+    const clearHeartbeat = (): void => {
+      if (heartbeatTimer) {
+        clearInterval(heartbeatTimer)
+        heartbeatTimer = null
+      }
+    }
+    const send = (data: Uint8Array): void => {
+      if (ws && ws.readyState === 1 /* OPEN */) {
+        ws.send(data)
+      }
+    }
+    const safeClose = (conn: WsLike): void => {
+      try {
+        conn.close()
+      } catch {
+        /* noop */
+      }
+    }
+
+    /** 连接就绪(open)后:发 onOpen 认证帧 + 启动心跳。 */
+    function onReady(conn: WsLike): void {
+      attempts = 0
+      opts.onOpen?.(conn)
+      if (opts.heartbeat) {
+        const hb = (): void => {
+          if (!stopped) send(opts.heartbeat!())
+        }
+        hb()
+        heartbeatTimer = setInterval(hb, opts.heartbeatMs ?? 30000)
+      }
+    }
+
+    /** 帧分发统一入口(宿主/原生共用):解码 → 过滤已退订/空 → 上报。 */
+    function deliver(data: ArrayBuffer, conn: WsLike): void {
+      const report = (items: DanmakuItem[]): void => {
+        if (!stopped && items.length) onItems(items)
+      }
+      // 解码抛错(bili op=8 鉴权被拒)= 当前连接不可用 → 主动断开走重连(含 refresh)。
+      const onError = (e: unknown): void => {
+        if (stopped || userClosed) return
+        log.danmaku.wsHandshakeError({ message: formatError(e) })
+        safeClose(conn)
+      }
+      // 快路径:同步解码器(huya/douyu)不经微任务;异步(brotli/ack)才包 Promise。
+      try {
+        const result = opts.onMessage(data, conn)
+        if (result instanceof Promise) result.then(report).catch(onError)
+        else report(result)
+      } catch (e) {
+        onError(e)
+      }
+    }
+
+    /** 连接关闭统一入口:清心跳 + 意外断线 warn + 重连(主动退订的提示在 unsub 统一打)。 */
+    function handleClose(code: number, reason: string): void {
+      clearHeartbeat()
+      if (!userClosed) log.danmaku.wsClosed({ code, reason })
+      opts.onClose?.(code, reason)
+      if (!stopped) void beforeReconnect()
+    }
+
+    /** open 统一入口:退订后握手才完成(异步 connect)时拦截,立即关闭刚建的连接。 */
+    function handleOpen(conn: WsLike): void {
+      if (stopped) {
+        safeClose(conn)
+        return
+      }
+      ws = conn
+      onReady(conn)
+    }
+
+    /** 当前连接地址(opts.url 传函数则每次重新求值)。 */
+    const currentUrl = (): string => (typeof opts.url === "function" ? opts.url() : opts.url)
+
+    function connect(): void {
+      if (stopped) return
+      const host = globalThis.appHost.ws
+
+      if (host) {
+        void host
+          .connect({
+            url: currentUrl(),
+            headers: opts.headers,
+            timeoutMs: opts.timeoutMs,
+            onOpen: (conn) => handleOpen(conn as unknown as WsLike),
+            onMessage: (data, conn) => deliver(data as unknown as ArrayBuffer, conn as unknown as WsLike),
+            onClose: handleClose,
+          })
+          .catch((e) => {
+            // 握手失败原因(douyin 415 / TLS 证书 / HTTP 拒绝)——之前被吞,重连循环无迹可循。
+            log.danmaku.wsHandshakeError({ message: formatError(e) })
+            if (!stopped) void beforeReconnect()
+          })
+        return
+      }
+
+      // 原生 WebSocket(webview / 纯浏览器调试;不能带自定义 header)。
+      try {
+        ws = new WebSocket(currentUrl()) as unknown as WsLike
+      } catch (e) {
+        log.danmaku.wsHandshakeError({ message: formatError(e) })
+        void beforeReconnect()
+        return
+      }
+      const raw = ws as unknown as WebSocket
+      raw.binaryType = "arraybuffer"
+      raw.onopen = () => handleOpen(raw as unknown as WsLike)
+      raw.onmessage = (ev) => deliver(ev.data as ArrayBuffer, raw as unknown as WsLike)
+      raw.onclose = (ev) => handleClose(ev.code, ev.reason)
+      raw.onerror = () => {
+        // onclose 跟随触发,重连逻辑在 onclose。
+      }
+    }
+
+    /**
+     * 重连前置:先刷新凭证(bili token 有寿命),再排重连。
+     * refresh 返回 false = 刷新重试超限,放弃(不再排重连)。
+     */
+    async function beforeReconnect(): Promise<void> {
+      if (stopped) return
+      if (opts.refresh) {
+        let ok = false
+        try {
+          ok = await opts.refresh()
+        } catch (e) {
+          log.danmaku.wsHandshakeError({ message: `刷新凭证失败: ${formatError(e)}` })
+        }
+        if (stopped) return
+        if (!ok) return
+      }
+      scheduleReconnect()
+    }
+
+    function scheduleReconnect(): void {
+      if (stopped) return
+      const maxAttempts = opts.maxAttempts ?? 10
+      if (attempts >= maxAttempts) {
+        // 熔断:不再排重连(退订/重进直播间会拿到全新的流)。
+        log.danmaku.wsReconnectGaveUp({ attempts })
+        return
+      }
+      const base = Math.min(1000 * 2 ** attempts, opts.maxReconnectMs ?? 30000)
+      // Full Jitter(±15%):多个直播间同时断线时错开重连时刻,避免同刻齐发
+      // (上游限流/封禁场景下,整齐的退避等于自己制造一次小流量尖峰)。
+      const delay = Math.round(base * (0.85 + Math.random() * 0.3))
+      attempts += 1
+      log.danmaku.wsReconnect({ attempt: attempts, delayMs: delay })
+      reconnectTimer = setTimeout(connect, delay)
+    }
+
+    connect()
+
+    // 退订:断开 WS + 清心跳/重连定时器(「退订即断开」,正常关闭零日志;
+    // 意外断线的 warn 由 handleClose 按 userClosed 区分)。
+    return () => {
+      stopped = true
+      userClosed = true
+      clearHeartbeat()
+      if (reconnectTimer) clearTimeout(reconnectTimer)
+      if (ws) safeClose(ws)
+    }
+  }
+}
+
+/**
+ * 异步 setup + build 组合成 DanmakuStream。
+ * [setup] 异步探测(返回 build 所需的参数);[build] setup 成功后建流,返回退订函数
+ * (或 void);[onError] setup/build 失败回调(不传则静默吞掉)。
+ * 退订在 setup 未完成时置 stopped,完成后不再建流——连接零泄漏。
+ */
+export function deferredStream<T>(
+  setup: () => Promise<T>,
+  build: (value: T, onItems: (items: DanmakuItem[]) => void) => (() => void) | void,
+  onError?: (error: unknown) => void,
+): DanmakuStream {
+  return (onItems) => {
+    let stopped = false
+    let unsub: (() => void) | undefined
+    void setup()
+      .then((value) => {
+        if (stopped) return
+        const u = build(value, onItems)
+        if (u) unsub = u
+      })
+      .catch((e) => {
+        if (!stopped) onError?.(e)
+      })
+    return () => {
+      stopped = true
+      unsub?.()
+    }
+  }
+}

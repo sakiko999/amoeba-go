@@ -14,8 +14,8 @@
  * 有没有登录材料」。失效由下一次抓取如实报错,不在启动期额外访问平台。
  */
 
-import { serializeCookieDict } from "@amoeba/resolve/utils/cookie"
-import type { LoginCookieSnapshot } from "@amoeba/resolve/platform/types"
+import { serializeCookieDict } from "@tabs/platform-kit/runtime/utils/cookie"
+import type { LoginCookieSnapshot } from "@tabs/platform-kit/runtime/platform/types"
 import { XHS_BASE } from "./client.ts"
 
 export async function readXhsLoginCookie(browser: BrowserBackend): Promise<LoginCookieSnapshot | null> {

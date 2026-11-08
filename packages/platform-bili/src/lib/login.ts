@@ -13,9 +13,9 @@
  * 用任意 QR 库编码即可;本模块只负责协议。
  */
 
-import { httpJson } from "@amoeba/resolve/host"
-import type { LoginResult } from "@amoeba/resolve"
-import { log } from "@amoeba/resolve/log"
+import { httpJson } from "@tabs/platform-kit/runtime/host"
+import type { LoginResult } from "@tabs/platform-kit/runtime"
+import { log } from "@tabs/platform-kit/runtime/log"
 
 const PASSPORT = "https://passport.bilibili.com/x/passport-login/web/qrcode"
 const UA =

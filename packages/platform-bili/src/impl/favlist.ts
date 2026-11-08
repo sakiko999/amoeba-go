@@ -9,11 +9,11 @@
  * ⚠️ 收藏夹页 URL 的 `fid` 与 API 的 `media_id` 是同一个值。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { biliClient } from "../lib/index.ts";
-import type { Item } from "@amoeba/xml"
+import type { Item } from "@tabs/platform-kit/data"
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 import { parseBiliFavlistRef } from "./refs.ts"
 import { API, ugc } from "./video-common.ts"
 

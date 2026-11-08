@@ -6,16 +6,16 @@
  * 参考 RSSHub `routes/weibo/` 的 container/getIndex 两步流程。
  */
 
-import type { Social } from "@amoeba/xml"
+import type { Social } from "@tabs/platform-kit/data"
 
-import { httpGet, now } from "@amoeba/resolve/host"
-import { fillImageSizes } from "@amoeba/resolve/utils/img-size"
-import { parseJsonSafe } from "@amoeba/resolve/utils/inline-json"
-import { toInt } from "@amoeba/resolve/utils/number"
-import { DESKTOP_CHROME_UA } from "@amoeba/resolve/utils/ua"
-import { toHttps } from "@amoeba/resolve/utils/url"
-import { resolveCookie } from "@amoeba/resolve/platform/credentials"
-import type { PlatformClient, PlatformRequestOptions } from "@amoeba/resolve/platform/types"
+import { httpGet, now } from "@tabs/platform-kit/runtime/host"
+import { fillImageSizes } from "@tabs/platform-kit/runtime/utils/img-size"
+import { parseJsonSafe } from "@tabs/platform-kit/runtime/utils/inline-json"
+import { toInt } from "@tabs/platform-kit/runtime/utils/number"
+import { DESKTOP_CHROME_UA } from "@tabs/platform-kit/runtime/utils/ua"
+import { toHttps } from "@tabs/platform-kit/runtime/utils/url"
+import { resolveCookie } from "@tabs/platform-kit/runtime/platform/credentials"
+import type { PlatformClient, PlatformRequestOptions } from "@tabs/platform-kit/runtime/platform/types"
 
 export const WB_BASE = "https://m.weibo.cn"
 

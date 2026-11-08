@@ -12,11 +12,11 @@
  * (kind:social)。两者不同,勿混。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { fetchDouyinTrends } from "../lib/index.ts";
-import type { Item } from "@amoeba/xml"
+import type { Item } from "@tabs/platform-kit/data"
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 
 export const DouyinTrendChannel = makeApiChannel({
   key: "douyin:trend",

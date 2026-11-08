@@ -15,18 +15,18 @@
  * 抖音号,再走 enter（`live:douyin:user` 渠道已于 2026-10-28 删除，能力并入本渠道）。
  */
 
-import { formatError } from "@amoeba/log"
-import { now } from "@amoeba/resolve/host";
-import { log } from "@amoeba/resolve/log";
+import { formatError } from "@tabs/platform-kit/runtime/log"
+import { now } from "@tabs/platform-kit/runtime/host";
+import { log } from "@tabs/platform-kit/runtime/log";
 import { douyinOnline, douyinScanLogin, fetchDouyinUserLive, fetchRoom, isDouyinProfileUrl, normalizeDouyinRoomId, readDouyinLoginCookie } from "../lib/index.ts";
-import { toInt } from "@amoeba/resolve/utils/number";
-import { parseRoomIds } from "@amoeba/resolve/utils/room-ids";
-import { strOr } from "@amoeba/resolve/utils/str";
-import type { Item, Live } from "@amoeba/xml"
-import { type SerializeOptions } from "@amoeba/xml"
+import { toInt } from "@tabs/platform-kit/runtime/utils/number";
+import { parseRoomIds } from "@tabs/platform-kit/runtime/utils/room-ids";
+import { strOr } from "@tabs/platform-kit/runtime/utils/str";
+import type { Item, Live } from "@tabs/platform-kit/data"
+import { type SerializeOptions } from "@tabs/platform-kit/data"
 
-import type { Loginable, LoginCookieSnapshot, LoginResult, RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"
-import { apiFetchItems } from "@amoeba/crawler/factory"
+import type { Loginable, LoginCookieSnapshot, LoginResult, DataChannel, DataSource, SourceInfo } from "@tabs/platform-kit/data"
+import { apiFetchItems } from "@tabs/platform-kit/data"
 
 const LIVE = "https://live.douyin.com"
 
@@ -35,7 +35,7 @@ const LIVE = "https://live.douyin.com"
  * 护栏,且输入需先归一(抖音号/短 ID/直播间 URL/主页链接)才谈得上取数 ——
  * 不是「单端点 GET → 列表 → 映射」的同形面。
  */
-export class DouyinLiveChannel implements RssChannel, Loginable {
+export class DouyinLiveChannel implements DataChannel, Loginable {
   readonly key = "live:douyin"
   readonly name = "抖音直播房间"
   readonly kind = "live" as const
@@ -68,7 +68,7 @@ export class DouyinLiveChannel implements RssChannel, Loginable {
 
   // 仅输出 Live item(与 rsshub 一致);流/弹幕走 crawler/resolver(按 item.url→live.douyin.com)。
   // fetch 支持多房间(roomIds 逗号分隔)。
-  getSource(info: SourceInfo): RssSource {
+  getSource(info: SourceInfo): DataSource {
     return {
       fetch: apiFetchItems(
         () => this.fetchItems(info),

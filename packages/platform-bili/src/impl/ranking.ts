@@ -4,10 +4,10 @@
  * `/x/web-interface/ranking/v2` 分区榜。rid 支持英文分区名(见 RID_TABLE)或数字。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { biliClient } from "../lib/index.ts";
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 import { API, ugc } from "./video-common.ts"
 
 const RID_TABLE: Record<string, string> = {

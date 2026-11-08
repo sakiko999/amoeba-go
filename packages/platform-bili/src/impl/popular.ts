@@ -8,12 +8,12 @@
  * provider 注入)。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { biliClient, biliQrGenerate, biliScanLogin } from "../lib/index.ts";
-import type { Item } from "@amoeba/xml"
+import type { Item } from "@tabs/platform-kit/data"
 
-import type { LoginResult } from "@amoeba/crawler"
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import type { LoginResult } from "@tabs/platform-kit/data"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 import { API, ugc } from "./video-common.ts"
 
 /** `/x/web-interface/popular` 的响应形状（只取用到的字段）。 */

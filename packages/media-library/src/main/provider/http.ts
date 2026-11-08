@@ -1,30 +1,18 @@
 /**
- * provider 公共 HTTP 基座：net.fetch（走系统证书，主进程专用）+ UA + 缓存包装 + 错误类型。
+ * media-library 的 provider HTTP 基座：net.fetch（走系统证书，主进程专用）+ UA +
+ * 缓存包装（服务端配置化 dataDir）。错误类型与平台契约共用
+ * @tabs/platform-contracts（平台插件不再依赖本包）。
  * net.fetch 只能在 app ready 后调用（IPC handler 内满足）。
  */
 
 import { net } from "electron";
 import { cacheGet, cacheKey, cacheSet } from "../cache";
 
+export { NotFoundError, ProviderError } from "@tabs/platform-contracts";
+import { NotFoundError, ProviderError } from "@tabs/platform-contracts";
+
 export const USER_AGENT =
   "media-manager/2.0 (https://github.com/sakiko999/media-manager)";
-
-export class ProviderError extends Error {
-  constructor(
-    public readonly source: string,
-    message: string,
-  ) {
-    super(`[${source}] ${message}`);
-    this.name = "ProviderError";
-  }
-}
-
-export class NotFoundError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "NotFoundError";
-  }
-}
 
 async function request(
   source: string,

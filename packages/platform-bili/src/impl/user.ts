@@ -9,22 +9,22 @@
  * `bili:live` —— 只作「搜索添加」的取数源(previewChannel 取候选),不设计为长期订阅。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { searchBiliUsers } from "../lib/index.ts";
-import type { Item, Video } from "@amoeba/xml"
-import { type SerializeOptions } from "@amoeba/xml"
+import type { Item, Video } from "@tabs/platform-kit/data"
+import { type SerializeOptions } from "@tabs/platform-kit/data"
 
-import type { RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"
-import { apiFetchItems } from "@amoeba/crawler/factory"
+import type { DataChannel, DataSource, SourceInfo } from "@tabs/platform-kit/data"
+import { apiFetchItems } from "@tabs/platform-kit/data"
 
-export class BiliUserChannel implements RssChannel {
+export class BiliUserChannel implements DataChannel {
   readonly key = "bili:user"
   readonly name = "B站搜UP主"
   readonly kind = "video" as const
   // ⚠️ 刻意不声明 defaultInfo(防误入发现页「一键订阅」榜单,同 bili:search)。
   readonly sourceInfoTpl = [{ key: "keyword", label: "UP主关键词", placeholder: "如:半佛仙人", required: true }]
 
-  getSource(info: SourceInfo): RssSource {
+  getSource(info: SourceInfo): DataSource {
     return {
       fetch: apiFetchItems(
         () => this.fetchItems(info),

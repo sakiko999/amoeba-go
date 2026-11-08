@@ -15,15 +15,15 @@
  * 下游订阅走 `douyin:user`(sec_uid 参数),本渠道只作「搜索添加」的取数源。
  */
 
-import { cdpNavigate, withBrowserOp } from "@amoeba/resolve/browser/cdp";
-import { now } from "@amoeba/resolve/host";
+import { cdpNavigate, withBrowserOp } from "@tabs/platform-kit/runtime/browser/cdp";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { fetchDouyinUserByUniqueId, readDouyinLoginCookie } from "../lib/index.ts";
-import type { Item, Video } from "@amoeba/xml"
+import type { Item, Video } from "@tabs/platform-kit/data"
 
-import type { RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"
-import { passiveBuffer } from "@amoeba/crawler/passive/buffer"
-import { capturePage } from "@amoeba/crawler/passive/capture"
-import { apiFetchItems } from "@amoeba/crawler/factory"
+import type { DataChannel, DataSource, SourceInfo } from "@tabs/platform-kit/data"
+import { passiveBuffer } from "@tabs/platform-kit/runtime/passive/buffer"
+import { capturePage } from "@tabs/platform-kit/runtime/passive/capture"
+import { apiFetchItems } from "@tabs/platform-kit/data"
 
 /** 被动捕获的 lane(搜索页专属 tab,不与主页列表互踩)。 */
 const LANE = "search:douyin"
@@ -50,7 +50,7 @@ interface UserHit {
   followers?: number
 }
 
-export class DouyinUserSearchChannel implements RssChannel {
+export class DouyinUserSearchChannel implements DataChannel {
   readonly key = "douyin:user:search"
   readonly name = "抖音搜用户"
   readonly kind = "video" as const
@@ -63,7 +63,7 @@ export class DouyinUserSearchChannel implements RssChannel {
     },
   ]
 
-  getSource(info: SourceInfo): RssSource {
+  getSource(info: SourceInfo): DataSource {
     return {
       fetch: apiFetchItems(
         () => this.fetchItems(info),

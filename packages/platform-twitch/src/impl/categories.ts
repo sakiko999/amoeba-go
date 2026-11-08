@@ -9,11 +9,11 @@
  * ⚠️ `games(first)` 匿名可用,实测 30 个分类(slug/name/观看数/封面)。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { fetchTwitchTopCategories } from "../lib/index.ts";
-import type { Category, Item } from "@amoeba/xml"
+import type { Category, Item } from "@tabs/platform-kit/data"
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 
 export const TwitchCategoriesChannel = makeApiChannel({
   key: "twitch:categories",

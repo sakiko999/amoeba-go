@@ -5,9 +5,9 @@
  * 锁住字段映射（不需要真实网络 / 浏览器）。
  */
 
-import type { Video } from "@amoeba/xml"
+import type { Video } from "@tabs/platform-kit/data"
 
-import { parsePopularItems } from "../impl/bili/popular.ts"
+import { parsePopularItems } from "../impl/popular.ts"
 
 const FIXED = 1_700_000_000_000
 // parsePopularItems 内部读宿主时钟；自检只注入 now。

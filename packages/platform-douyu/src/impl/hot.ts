@@ -9,11 +9,11 @@
  * 的 resolveLivePlay/getDanmaku(hot 是「特殊的 live channel」——外部区分开,机制复用)。
  */
 
-import { httpJson, now } from "@amoeba/resolve/host";
-import { parseCount } from "@amoeba/resolve/utils/count";
-import type { Live } from "@amoeba/xml"
+import { httpJson, now } from "@tabs/platform-kit/runtime/host";
+import { parseCount } from "@tabs/platform-kit/runtime/utils/count";
+import type { Live } from "@tabs/platform-kit/data"
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"

@@ -12,8 +12,8 @@
  * ⚠️ `live_status`：1=直播中，0=未开播（与 enter `room.status==2` 对应）。
  */
 
-import { httpJson } from "@amoeba/resolve/host"
-import { DESKTOP_CHROME_UA } from "@amoeba/resolve/utils/ua"
+import { httpJson } from "@tabs/platform-kit/runtime/host"
+import { DESKTOP_CHROME_UA } from "@tabs/platform-kit/runtime/utils/ua"
 import { signDouyinUrl, UA_ENTER } from "./abogus.ts"
 import { douyinCookie } from "./client.ts"
 import { classifyDouyinUserInput, parseDouyinSecUid } from "./ids.ts"

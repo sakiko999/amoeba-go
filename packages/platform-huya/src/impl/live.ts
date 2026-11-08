@@ -8,16 +8,16 @@
  * resolveLivePlay 走 play.ts(profileRoom → 全档位 × 多线路)。
  */
 
-import { formatError } from "@amoeba/log"
-import { httpJson, now } from "@amoeba/resolve/host";
-import { log } from "@amoeba/resolve/log";
+import { formatError } from "@tabs/platform-kit/runtime/log"
+import { httpJson, now } from "@tabs/platform-kit/runtime/host";
+import { log } from "@tabs/platform-kit/runtime/log";
 import { HUYA_UA } from "../lib/index.ts";
-import { parseRoomIds } from "@amoeba/resolve/utils/room-ids";
-import type { Item, Live } from "@amoeba/xml"
-import { type SerializeOptions } from "@amoeba/xml"
+import { parseRoomIds } from "@tabs/platform-kit/runtime/utils/room-ids";
+import type { Item, Live } from "@tabs/platform-kit/data"
+import { type SerializeOptions } from "@tabs/platform-kit/data"
 
-import type { RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"
-import { apiFetchItems } from "@amoeba/crawler/factory"
+import type { DataChannel, DataSource, SourceInfo } from "@tabs/platform-kit/data"
+import { apiFetchItems } from "@tabs/platform-kit/data"
 
 /** 单房间 → Live item(profileRoom API)。房间失败抛错,由调用方 catch 隔离。 */
 async function fetchHuyaRoom(roomId: string): Promise<Live> {
@@ -50,14 +50,14 @@ async function fetchHuyaRoom(roomId: string): Promise<Live> {
  * 保留类实现(不走 makeApiChannel):多房间聚合 —— roomIds 解析 + 并发抓取,单房间
  * 失败 warn 后跳过,全部失败必须抛错(不能静默清空内容)。工厂只承接单端点同形渠道。
  */
-export class HuyaLiveChannel implements RssChannel {
+export class HuyaLiveChannel implements DataChannel {
   readonly key = "live:huya"
   readonly name = "虎牙直播房间"
   readonly kind = "live" as const
   readonly sourceInfoTpl = [{ key: "roomIds", label: "直播间 ID(逗号分隔,可多个)", required: true }]
   // 仅输出 Live item(与 rsshub 一致);流/弹幕走 crawler/resolver(按 item.url)。
   // fetch 支持多房间(roomIds 逗号分隔)。
-  getSource(info: SourceInfo): RssSource {
+  getSource(info: SourceInfo): DataSource {
     return {
       fetch: apiFetchItems(
         () => this.fetchItems(info),

@@ -11,6 +11,7 @@
     "pack": "bun run scripts/pack.ts"
   },
   "devDependencies": {
-    "@host/sdk": "workspace:*"
+    "@host/sdk": "workspace:*",
+    "@tabs/platform-contracts": "workspace:*"
   }
 }

@@ -18,10 +18,10 @@
  *
  */
 
-import type { Stream } from "@amoeba/xml"
+import type { Stream } from "@tabs/platform-kit/data"
 
-import { httpJson } from "@amoeba/resolve/host"
-import { HUYA_HLS_UA } from "@amoeba/resolve/media-referrer"
+import { httpJson } from "@tabs/platform-kit/runtime/host"
+import { HUYA_HLS_UA } from "@tabs/platform-kit/runtime/media-referrer"
 import { HUYA_UA, M_HUYA } from "./client.ts"
 
 /**

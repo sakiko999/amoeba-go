@@ -16,14 +16,14 @@
  * 本 client 在 resolve 后统一解 n(见 signature.ts 的 deobfuscateNParam)。
  */
 
-import { formatError } from "@amoeba/log"
-import type { Stream } from "@amoeba/xml"
+import { formatError } from "@tabs/platform-kit/runtime/log"
+import type { Stream } from "@tabs/platform-kit/data"
 import * as R from "ramda"
 
-import { log } from "@amoeba/resolve/log"
-import { buildMpd, type MpdAudioRep, type MpdVideoRep } from "@amoeba/resolve/utils/mpd"
-import { DESKTOP_CHROME_UA } from "@amoeba/resolve/utils/ua"
-import type { PlatformClient } from "@amoeba/resolve/platform/types"
+import { log } from "@tabs/platform-kit/runtime/log"
+import { buildMpd, type MpdAudioRep, type MpdVideoRep } from "@tabs/platform-kit/runtime/utils/mpd"
+import { DESKTOP_CHROME_UA } from "@tabs/platform-kit/runtime/utils/ua"
+import type { PlatformClient } from "@tabs/platform-kit/runtime/platform/types"
 import { createLiveChatPoller } from "./danmaku.ts"
 import { getItag, isPlayableItag } from "./itag.ts"
 import { deobfuscateNParam, hasThrottlingParam } from "./signature.ts"

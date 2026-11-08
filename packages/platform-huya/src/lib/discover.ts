@@ -10,9 +10,9 @@
  * (主播桶)匹配真实 `room_id`,失败才回退原值(参照 huya_site.dart:858 findRoomId)。
  */
 
-import type { Item, Live } from "@amoeba/xml"
+import type { Item, Live } from "@tabs/platform-kit/data"
 
-import { httpJson, now } from "@amoeba/resolve/host"
+import { httpJson, now } from "@tabs/platform-kit/runtime/host"
 
 /** 二级分区接口要求的 UA(Android Mobile,与主站桌面 UA 不同)。 */
 const UA_ANDROID =

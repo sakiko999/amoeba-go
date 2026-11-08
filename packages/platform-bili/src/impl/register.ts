@@ -5,8 +5,7 @@
  * channels.registerPlugin 把插件导出的 channels 数组登记进数据服务。
  */
 
-import type { RssChannel } from "@amoeba/crawler"
-import { registerChannel } from "@amoeba/crawler"
+import type { DataChannel } from "@tabs/platform-kit/data"
 import {
   BiliAnchorChannel,
   BiliDynamicChannel,
@@ -27,7 +26,7 @@ import {
 } from "./index.ts"
 
 /** bili 平台全部渠道实例（插件导出用） */
-export const biliChannels: RssChannel[] = [
+export const biliChannels: DataChannel[] = [
   BiliSquareChannel,
   BiliPopularChannel,
   BiliPreciousChannel,
@@ -46,6 +45,3 @@ export const biliChannels: RssChannel[] = [
   new BiliUserChannel(),
 ]
 
-export function registerBiliChannels(): void {
-  for (const channel of biliChannels) registerChannel(channel)
-}

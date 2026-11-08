@@ -13,8 +13,9 @@ import type {
   MediaType,
   MetadataProvider,
   SearchResult,
-} from "@tabs/media-library";
-import { newMetadata, ProviderError, getJsonCached } from "@tabs/media-library";
+} from "@tabs/platform-contracts";
+import { newMetadata } from "@tabs/platform-contracts";
+import { ProviderError, getJsonCached } from "@tabs/platform-kit/provider";
 
 const API = "https://api.themoviedb.org/3";
 const IMG = "https://image.tmdb.org/t/p";

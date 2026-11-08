@@ -28,15 +28,15 @@
  * 资料 API 只认 sec_user_id，sec_uid 本身又很难拿到，让用户直接填抖音号。
  */
 
-import { cdpEvaluate, cdpNavigate, withBrowserOp } from "@amoeba/resolve/browser/cdp";
-import { now } from "@amoeba/resolve/host";
+import { cdpEvaluate, cdpNavigate, withBrowserOp } from "@tabs/platform-kit/runtime/browser/cdp";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { awemeListToSocial, douyinUserUrl, readAwemeList, readDouyinLoginCookie, resolveDouyinSecUid } from "../lib/index.ts";
-import type { Item, Social } from "@amoeba/xml"
-import { serializeFeed, type SerializeOptions } from "@amoeba/xml"
+import type { Item, Social } from "@tabs/platform-kit/data"
+import { type SerializeOptions } from "@tabs/platform-kit/data"
 
-import type { Pageable, RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"
-import { passiveBuffer } from "@amoeba/crawler/passive/buffer"
-import { capturePage } from "@amoeba/crawler/passive/capture"
+import type { Pageable, DataChannel, DataSource, SourceInfo } from "@tabs/platform-kit/data"
+import { passiveBuffer } from "@tabs/platform-kit/runtime/passive/buffer"
+import { capturePage } from "@tabs/platform-kit/runtime/passive/capture"
 
 /** 被动捕获的 lane（列表页专属 tab）。 */
 const LANE = "list:douyin:user"
@@ -114,7 +114,7 @@ function mergeUnique(into: Social[], fresh: Social[]): void {
   }
 }
 
-export class DouyinUserChannel implements RssChannel {
+export class DouyinUserChannel implements DataChannel {
   readonly key = "douyin:user"
   readonly name = "抖音用户主页"
   readonly kind = "social" as const
@@ -127,21 +127,19 @@ export class DouyinUserChannel implements RssChannel {
     },
   ]
 
-  getSource(info: SourceInfo): RssSource & Partial<Pageable> {
+  getSource(info: SourceInfo): DataSource & Partial<Pageable> {
     // 输入可以是抖音号（unique_id）或主页链接 / sec_uid；抖音号在 fetch 时换成 sec_uid
     // （资料接口，见 resolve `resolveDouyinSecUid`）—— 换之前不知道主页 URL 与标题。
     const input = String(info.sec_uid ?? "")
     const browser = globalThis.appHost?.browser
-    const source: RssSource & Partial<Pageable> = {
+    const source: DataSource & Partial<Pageable> = {
       // 无浏览器（mobile / CLI 未加 --browser）没有被动采集通道：抖音的 HTTP 直连
       // 需要自签 a_bogus + 真实 msToken，已实测 403（且会触发平台冷却），不提供该路径。
       fetch: async () => {
         if (!browser) throw new Error(NEEDS_BROWSER)
         const secUid = await resolveDouyinSecUid(input)
         const items = await this.fetchFirstPage(browser, secUid)
-        // channelOptions 要用解析后的 sec_uid（标题/主页链接），所以不走 apiFetchItems
-        // ——它在 fetchResult 之前就取了 options。
-        return serializeFeed(items, this.channelOptions(secUid))
+        return { items }
       },
     }
     if (browser) {
@@ -185,7 +183,7 @@ export class DouyinUserChannel implements RssChannel {
     input: string,
     cursor?: string,
     existing?: number,
-  ): Promise<{ xml: string; cursor?: string; hasMore?: boolean }> {
+  ): Promise<{ items: Item[]; cursor?: string; hasMore?: boolean }> {
     // 抖音号 → sec_uid（进程内有缓存，编译后每页不重复请求）。
     const secUid = await resolveDouyinSecUid(input)
     let ended = false
@@ -242,17 +240,16 @@ export class DouyinUserChannel implements RssChannel {
         }
 
         const page = state.slice(start, start + WINDOW)
-        const xml = serializeFeed(page, this.channelOptions(secUid))
         if (!page.length) {
           // 平台还在加载(scrollHeight 增长但条目未到,或内存刚丢还在补回 existing 那段)
           // → 原样返回 cursor + hasMore 让 core 保留「加载更多」
           // (core 的「游标前进但 0 新增 ⇒ 到底」启发式会误杀这种情况)。
           // 多次滚动 scrollHeight 无增长才视为真到底(省略 cursor = 没有更多)。
-          if (platformActive) return { xml, cursor: String(start), hasMore: true }
+          if (platformActive) return { items: page, cursor: String(start), hasMore: true }
           ended = true
-          return { xml }
+          return { items: page }
         }
-        return { xml, cursor: String(start + page.length) }
+        return { items: page, cursor: String(start + page.length) }
         // 真到底：release 在 lane 锁内关 target，释放 440MB 级 renderer
         // （作品列表页的卡片/视频壳）。下次刷新/加载更多按 href 判据重新导航收首屏。
       },

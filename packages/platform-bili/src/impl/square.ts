@@ -9,11 +9,11 @@
  * credentials provider 兜底(签名与请求同 cookie,见 bili client)。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { biliClient } from "../lib/index.ts";
-import type { Item, Social } from "@amoeba/xml"
+import type { Item, Social } from "@tabs/platform-kit/data"
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 import { API } from "./video-common.ts"
 
 export const BiliSquareChannel = makeApiChannel({

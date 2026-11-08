@@ -11,8 +11,8 @@
  * 而跨域字段混在一起对消费方没有意义。
  */
 
-import { serializeCookieDict } from "@amoeba/resolve/utils/cookie"
-import type { LoginCookieSnapshot } from "@amoeba/resolve/platform/types"
+import { serializeCookieDict } from "@tabs/platform-kit/runtime/utils/cookie"
+import type { LoginCookieSnapshot } from "@tabs/platform-kit/runtime/platform/types"
 
 const WB_MOBILE = "https://m.weibo.cn"
 const WB_DESKTOP = "https://weibo.com"

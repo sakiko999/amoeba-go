@@ -9,11 +9,11 @@
  * 只作「搜索添加」的取数源。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { searchYouTubeChannels } from "../lib/index.ts";
-import type { Video } from "@amoeba/xml"
+import type { Video } from "@tabs/platform-kit/data"
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 
 export const YoutubeUserChannel = makeApiChannel({
   key: "youtube:user",

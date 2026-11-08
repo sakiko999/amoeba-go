@@ -6,13 +6,13 @@
  * 单个顶层失败不影响其余;全部为空才抛错(不能静默给空目录)。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { HUYA_TOP_CATEGORIES, HuyaSubCategory, fetchHuyaSubCategories } from "../lib/index.ts";
-import type { Category, Item } from "@amoeba/xml"
-import { type SerializeOptions } from "@amoeba/xml"
+import type { Category, Item } from "@tabs/platform-kit/data"
+import { type SerializeOptions } from "@tabs/platform-kit/data"
 
-import type { RssChannel, RssSource } from "@amoeba/crawler"
-import { apiFetchItems } from "@amoeba/crawler/factory"
+import type { DataChannel, DataSource } from "@tabs/platform-kit/data"
+import { apiFetchItems } from "@tabs/platform-kit/data"
 
 /** 二级分区 → 目录条目(纯函数,便于自检)。 */
 export function huyaCategoryItems(sourceId: string, t: number, subs: HuyaSubCategory[]): Item[] {
@@ -32,13 +32,13 @@ export function huyaCategoryItems(sourceId: string, t: number, subs: HuyaSubCate
  * 保留类实现(不走 makeApiChannel):N 个顶层分区聚合 —— 每区独立 try/catch 隔离、
  * 全部为空才抛错;且 getSource 不依赖 info。属聚合护栏,非单端点同形。
  */
-export class HuyaCategoriesChannel implements RssChannel {
+export class HuyaCategoriesChannel implements DataChannel {
   readonly key = "live:huya:categories"
   readonly name = "虎牙分区列表"
   readonly kind = "category" as const
   readonly defaultInfo = {}
 
-  getSource(): RssSource {
+  getSource(): DataSource {
     return {
       fetch: apiFetchItems(
         () => this.fetchItems(),

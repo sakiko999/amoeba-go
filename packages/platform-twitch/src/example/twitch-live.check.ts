@@ -1,5 +1,5 @@
 /**
- * twitch:live 映射自检 —— `bun packages/crawler/src/example/twitch-live.check.ts`
+ * twitch:live 映射自检 —— `bun packages/platform-twitch/src/example/twitch-live.check.ts`
  *
  * 用最小 GQL 样本直接调 channel 导出的纯函数，锁住字段映射：
  *   - `twitchLiveItem`（twitch:live）：live/offline 两态、标题回落、在线数、
@@ -9,9 +9,9 @@
  * 不需要网络 / 浏览器。
  */
 
-import type { TwitchStreamNode, TwitchUser } from "@amoeba/resolve"
+import type { TwitchStreamNode, TwitchUser } from "../lib/index.ts"
 
-import { twitchLiveItem, twitchStreamToLive } from "../impl/twitch/live.ts"
+import { twitchLiveItem, twitchStreamToLive } from "../impl/live.ts"
 
 const FIXED = 1_700_000_000_000
 

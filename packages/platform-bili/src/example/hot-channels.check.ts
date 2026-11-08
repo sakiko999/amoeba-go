@@ -1,6 +1,6 @@
 /**
  * 热搜榜单渠道的 kind 归类自检 ——
- * `bun packages/crawler/src/example/hot-channels.check.ts`
+ * `bun packages/platform-bili/src/example/hot-channels.check.ts`
  *
  * 热搜词条是**关键词**,不是可读文章。`bili:square` 曾声明 `kind: "article"`:
  * 词条于是混进「阅读」列表、被「一键归类」塞进「文章」分组,点开只有一个词的正文。
@@ -10,8 +10,10 @@
  * 会以同样的方式静默污染阅读流 —— 这里直接拦下。
  */
 
-import { squareItems } from "../impl/bili/square.ts"
-import { listChannels } from "@amoeba/crawler"
+import { squareItems } from "../impl/square.ts"
+import { biliChannels } from "../impl/register.ts"
+import { weiboChannels } from "../../../platform-weibo/src/impl/register.ts"
+import { douyinChannels } from "../../../platform-douyin/src/impl/register.ts"
 
 let fails = 0
 const ok = (c: unknown, label: string) => {
@@ -22,7 +24,8 @@ const ok = (c: unknown, label: string) => {
   }
 }
 
-const channels = listChannels()
+// gateway 模型下没有全局注册表：直接聚合各平台导出的渠道数组。
+const channels = [...biliChannels, ...weiboChannels, ...douyinChannels]
 const byKey = new Map(channels.map((c) => [c.key, c]))
 
 console.log("热搜榜渠道:")

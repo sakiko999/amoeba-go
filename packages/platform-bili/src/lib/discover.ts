@@ -13,10 +13,10 @@
  * 实测 40 条)。⚠️ 标题带 `<em class="keyword">` 高亮标签,须剥离。
  */
 
-import type { Item, Live } from "@amoeba/xml"
+import type { Item, Live } from "@tabs/platform-kit/data"
 
-import { httpText, now } from "@amoeba/resolve/host"
-import { resolveCookie } from "@amoeba/resolve/platform/credentials"
+import { httpText, now } from "@tabs/platform-kit/runtime/host"
+import { resolveCookie } from "@tabs/platform-kit/runtime/platform/credentials"
 import { biliClient } from "./client.ts"
 
 const API_MAIN = "https://api.bilibili.com"

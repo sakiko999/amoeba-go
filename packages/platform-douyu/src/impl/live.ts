@@ -12,29 +12,29 @@
  * playUrls 需额外 H5Play 请求,交由下游 resolveLivePlay 懒解析(同 huya)。
  */
 
-import { formatError } from "@amoeba/log"
-import { now } from "@amoeba/resolve/host";
-import { log } from "@amoeba/resolve/log";
+import { formatError } from "@tabs/platform-kit/runtime/log"
+import { now } from "@tabs/platform-kit/runtime/host";
+import { log } from "@tabs/platform-kit/runtime/log";
 import { douyuRoomInfo } from "../lib/index.ts";
-import { toInt } from "@amoeba/resolve/utils/number";
-import { parseRoomIds } from "@amoeba/resolve/utils/room-ids";
-import { strOr } from "@amoeba/resolve/utils/str";
-import type { Item, Live } from "@amoeba/xml"
-import { type SerializeOptions } from "@amoeba/xml"
+import { toInt } from "@tabs/platform-kit/runtime/utils/number";
+import { parseRoomIds } from "@tabs/platform-kit/runtime/utils/room-ids";
+import { strOr } from "@tabs/platform-kit/runtime/utils/str";
+import type { Item, Live } from "@tabs/platform-kit/data"
+import { type SerializeOptions } from "@tabs/platform-kit/data"
 
-import type { RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"
-import { apiFetchItems } from "@amoeba/crawler/factory"
+import type { DataChannel, DataSource, SourceInfo } from "@tabs/platform-kit/data"
+import { apiFetchItems } from "@tabs/platform-kit/data"
 
 const BASE = "https://www.douyu.com"
 
-export class DouyuLiveChannel implements RssChannel {
+export class DouyuLiveChannel implements DataChannel {
   readonly key = "live:douyu"
   readonly name = "斗鱼直播房间"
   readonly kind = "live" as const
   readonly sourceInfoTpl = [{ key: "roomIds", label: "直播间 ID(逗号分隔,可多个)", required: true }]
   // 仅输出 Live item(与 rsshub 一致);流/弹幕走 crawler/resolver(按 item.url)。
   // fetch 支持多房间(roomIds 逗号分隔)。
-  getSource(info: SourceInfo): RssSource {
+  getSource(info: SourceInfo): DataSource {
     return {
       fetch: apiFetchItems(
         () => this.fetchItems(info),

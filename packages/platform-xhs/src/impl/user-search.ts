@@ -17,15 +17,15 @@
  * 下游订阅走 `xhs:user`(user_id 参数),本渠道只作「搜索添加」的取数源。
  */
 
-import { cdpEvaluate, cdpNavigate, withBrowserOp } from "@amoeba/resolve/browser/cdp";
-import { now } from "@amoeba/resolve/host";
+import { cdpEvaluate, cdpNavigate, withBrowserOp } from "@tabs/platform-kit/runtime/browser/cdp";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { XHS_BASE, extractInitialState, xhsClient } from "../lib/index.ts";
-import type { Item, Video } from "@amoeba/xml"
+import type { Item, Video } from "@tabs/platform-kit/data"
 
-import type { RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"
-import { passiveBuffer } from "@amoeba/crawler/passive/buffer"
-import { capturePage } from "@amoeba/crawler/passive/capture"
-import { apiFetchItems } from "@amoeba/crawler/factory"
+import type { DataChannel, DataSource, SourceInfo } from "@tabs/platform-kit/data"
+import { passiveBuffer } from "@tabs/platform-kit/runtime/passive/buffer"
+import { capturePage } from "@tabs/platform-kit/runtime/passive/capture"
+import { apiFetchItems } from "@tabs/platform-kit/data"
 import {
   assertXhsLoggedIn,
   assertXhsNotBlocked,
@@ -142,7 +142,7 @@ function dedupeUsers(list: XhsUserHit[]): XhsUserHit[] {
   return out
 }
 
-export class XhsUserSearchChannel implements RssChannel {
+export class XhsUserSearchChannel implements DataChannel {
   readonly key = "xhs:user:search"
   readonly name = "小红书搜用户"
   readonly kind = "video" as const
@@ -155,7 +155,7 @@ export class XhsUserSearchChannel implements RssChannel {
     },
   ]
 
-  getSource(info: SourceInfo): RssSource {
+  getSource(info: SourceInfo): DataSource {
     return {
       fetch: apiFetchItems(
         () => this.fetchItems(info),

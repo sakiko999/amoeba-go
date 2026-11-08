@@ -2,12 +2,36 @@
   "name": "@tabs/platform-kit",
   "version": "0.1.0",
   "private": true,
-  "description": "platform 插件共享工具：扩展组件入口工厂（rss 渠道 / 媒体元数据渠道）与打包辅助。",
+  "description": "platform 插件共享工具：平台数据渠道契约/工厂（data）、媒体元数据渠道入口、抓取运行时基座（runtime）与组件打包辅助。",
   "exports": {
     ".": "./src/index.ts",
-    "./pack": "./src/pack.ts"
+    "./pack": "./src/pack.ts",
+    "./provider": "./src/provider/http.ts",
+    "./data": "./src/data.ts",
+    "./runtime": "./src/runtime/index.ts",
+    "./runtime/extension": "./src/runtime/extension.ts",
+    "./runtime/host": "./src/runtime/host.ts",
+    "./runtime/log": "./src/runtime/log.ts",
+    "./runtime/errors": "./src/runtime/errors.ts",
+    "./runtime/media-referrer": "./src/runtime/media-referrer.ts",
+    "./runtime/platform/credentials": "./src/runtime/platform/credentials.ts",
+    "./runtime/platform/types": "./src/runtime/platform/types.ts",
+    "./runtime/browser/cdp": "./src/runtime/browser/cdp.ts",
+    "./runtime/utils/*": "./src/runtime/utils/*.ts",
+    "./runtime/passive/*": "./src/runtime/passive/*.ts"
+  },
+  "scripts": {
+    "test": "bun test"
+  },
+  "dependencies": {
+    "ws": "^8.21.3"
+  },
+  "peerDependencies": {
+    "electron": ">=45"
   },
   "devDependencies": {
-    "@host/sdk": "workspace:*"
+    "@host/sdk": "workspace:*",
+    "@tabs/platform-contracts": "workspace:*",
+    "@types/ws": "^8.18.1"
   }
 }

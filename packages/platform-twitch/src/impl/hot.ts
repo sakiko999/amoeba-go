@@ -6,18 +6,18 @@
  */
 
 import { fetchTwitchTopStreams } from "../lib/index.ts";
-import { type SerializeOptions } from "@amoeba/xml"
+import { type SerializeOptions } from "@tabs/platform-kit/data"
 
-import type { Pageable, RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"
+import type { Pageable, DataChannel, DataSource, SourceInfo } from "@tabs/platform-kit/data"
 import { createTwitchStreamsSource } from "./streams.ts"
 
-export class TwitchHotChannel implements RssChannel {
+export class TwitchHotChannel implements DataChannel {
   readonly key = "twitch:hot"
   readonly name = "Twitch 热门直播"
   readonly kind = "live" as const
   readonly sourceInfoTpl = []
 
-  getSource(_info: SourceInfo): RssSource & Partial<Pageable> {
+  getSource(_info: SourceInfo): DataSource & Partial<Pageable> {
     return createTwitchStreamsSource({
       sourceId: this.key,
       channelOptions: () => this.channelOptions(),

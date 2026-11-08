@@ -9,13 +9,13 @@
  * ⚠️ 输入归一化在 refs.ts:`RD`/`WL`/`LL`/`LM` 前缀拒收(动态/私有/需登录)。
  */
 
-import { httpText, now } from "@amoeba/resolve/host";
-import { DESKTOP_CHROME_UA } from "@amoeba/resolve/utils/ua";
-import type { Item } from "@amoeba/xml"
-import { parseFeed } from "@amoeba/xml"
+import { httpText, now } from "@tabs/platform-kit/runtime/host";
+import { DESKTOP_CHROME_UA } from "@tabs/platform-kit/runtime/utils/ua";
+import type { Item } from "@tabs/platform-kit/data"
+import { parseFeed } from "../lib/feed.ts"
 
-import type { SourceInfo } from "@amoeba/crawler"
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import type { SourceInfo } from "@tabs/platform-kit/data"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 import { entryToVideo } from "./channel.ts"
 import { normalizeYoutubePlaylistId } from "./refs.ts"
 

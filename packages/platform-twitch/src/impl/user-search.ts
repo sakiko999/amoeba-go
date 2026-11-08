@@ -8,11 +8,11 @@
  * 下游订阅走 `twitch:live`(roomIds 参数 = 频道 login),本渠道只作「搜索添加」的取数源。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { searchTwitchChannels } from "../lib/index.ts";
-import type { Video } from "@amoeba/xml"
+import type { Video } from "@tabs/platform-kit/data"
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 
 /** 关注数缩写:1.2万 / 3.4亿(与桌面候选行同一读数)。 */
 function fmtCount(n: number): string {

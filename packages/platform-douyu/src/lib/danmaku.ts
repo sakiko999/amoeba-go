@@ -9,8 +9,8 @@
  * 心跳 `type@=mrkl/`(45s);进房 loginreq + joingroup。
  */
 
-import { createWsStream } from "@amoeba/resolve"
-import type { DanmakuItem, DanmakuStream } from "@amoeba/resolve"
+import { createWsStream } from "@tabs/platform-kit/runtime"
+import type { DanmakuItem, DanmakuStream } from "@tabs/platform-kit/runtime"
 
 /** 编解码复用单例(每帧热路径,共享安全)。 */
 const TE = new TextEncoder()

@@ -13,13 +13,13 @@
  * 直播结束时直接终止循环。
  */
 
-import { formatError } from "@amoeba/log"
+import { formatError } from "@tabs/platform-kit/runtime/log"
 
-import type { DanmakuItem } from "@amoeba/resolve"
-import { httpText } from "@amoeba/resolve/host"
-import { log } from "@amoeba/resolve/log"
-import { extractInlineJson } from "@amoeba/resolve/utils/inline-json"
-import { DESKTOP_CHROME_UA } from "@amoeba/resolve/utils/ua"
+import type { DanmakuItem } from "@tabs/platform-kit/runtime"
+import { httpText } from "@tabs/platform-kit/runtime/host"
+import { log } from "@tabs/platform-kit/runtime/log"
+import { extractInlineJson } from "@tabs/platform-kit/runtime/utils/inline-json"
+import { DESKTOP_CHROME_UA } from "@tabs/platform-kit/runtime/utils/ua"
 
 const YOUTUBE = "https://www.youtube.com"
 const CHAT_API = "https://www.youtube.com/youtubei/v1/live_chat/get_live_chat"

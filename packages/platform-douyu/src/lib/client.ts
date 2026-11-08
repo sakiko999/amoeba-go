@@ -5,13 +5,13 @@
  * 下沉(原 channel 私有方法)。签名脚本 CRYPTO_JS 经 host.js 执行。
  */
 
-import { formatError } from "@amoeba/log"
-import type { Stream } from "@amoeba/xml"
+import { formatError } from "@tabs/platform-kit/runtime/log"
+import type { Stream } from "@tabs/platform-kit/data"
 
-import { httpGet, httpJson, now } from "@amoeba/resolve/host"
-import { log } from "@amoeba/resolve/log"
-import { toInt } from "@amoeba/resolve/utils/number"
-import type { PlatformClient, PlatformRequestOptions } from "@amoeba/resolve/platform/types"
+import { httpGet, httpJson, now } from "@tabs/platform-kit/runtime/host"
+import { log } from "@tabs/platform-kit/runtime/log"
+import { toInt } from "@tabs/platform-kit/runtime/utils/number"
+import type { PlatformClient, PlatformRequestOptions } from "@tabs/platform-kit/runtime/platform/types"
 import { CRYPTO_JS } from "./cryptojs.ts"
 import { douyuDanmakuStream } from "./danmaku.ts"
 

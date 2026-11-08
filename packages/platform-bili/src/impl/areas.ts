@@ -8,11 +8,11 @@
  * ⚠️ 目录本身匿名可读;点进的分区列房**需登录**(见 area.ts)。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { BiliCategory, fetchBiliCategories } from "../lib/index.ts";
-import type { Category, Item } from "@amoeba/xml"
+import type { Category, Item } from "@tabs/platform-kit/data"
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 
 /** 分区树 → 目录条目(纯函数,便于自检);跳过空 id 子分区。 */
 export function biliCategoryItems(sourceId: string, t: number, tree: BiliCategory[]): Item[] {

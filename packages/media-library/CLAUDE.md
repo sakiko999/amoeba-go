@@ -56,8 +56,9 @@ bun run --cwd packages/media-library pack    # 产出宿主服务组件包 out/c
 bun run --cwd packages/media-manager start --probe-bangumi 8   # 真实网络只读探针
 ```
 
-探针实现已随渠道迁移：`packages/platform-bangumi/src/probe.ts`（`--probe-bangumi`
-/ `--probe-bangumi-apply`，写盘探针只对可丢弃目录使用），media-manager 仍负责命令行入口。
+探针实现在 media-manager（submodule）的 `src/main/probe.ts`（`--probe-bangumi`
+/ `--probe-bangumi-apply`，写盘探针只对可丢弃目录使用）——它是开发期消费方，
+复用本包的刮削能力与 @tabs/platform-bangumi/provider 的渠道实现。
 
 领域约定（库根一级子目录 = 作品、Season NN 优先、poster/folder、每集 NFO 候选
 S01E01.nfo → 视频同名 .nfo）、两套集号解析（library 展示三模式 / naming 整理 6 模式）、

@@ -2,18 +2,12 @@
   "name": "@tabs/platform-xhs",
   "version": "0.1.0",
   "private": true,
-  "description": "小红书 平台插件（渠道实现自包含；经 rss.extend 注册进数据服务）。",
+  "description": "小红书 平台插件：渠道/播放/弹幕能力注册进 api.gateway（数据接口在宿主主进程执行）。",
   "exports": {
     ".": "./src/main.ts"
   },
   "scripts": {
     "pack": "bun run scripts/pack.ts"
-  },
-  "dependencies": {
-    "@amoeba/crawler": "workspace:*",
-    "@amoeba/log": "workspace:*",
-    "@amoeba/resolve": "workspace:*",
-    "@amoeba/xml": "workspace:*"
   },
   "devDependencies": {
     "@host/sdk": "workspace:*",

@@ -8,7 +8,7 @@
 
 import { searchBiliAnchors } from "../lib/index.ts";
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 
 export const BiliAnchorChannel = makeApiChannel({
   key: "bili:anchor",

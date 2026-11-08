@@ -15,13 +15,13 @@
  * roomId 需长号(enter API 的 id_str;失败兜底用订阅 web_rid)。
  */
 
-import { formatError } from "@amoeba/log"
+import { formatError } from "@tabs/platform-kit/runtime/log"
 
-import { createWsStream, deferredStream } from "@amoeba/resolve"
-import type { DanmakuStream } from "@amoeba/resolve"
-import { httpJson } from "@amoeba/resolve/host"
-import { log } from "@amoeba/resolve/log"
-import { md5Hex } from "@amoeba/resolve/utils/md5"
+import { createWsStream, deferredStream } from "@tabs/platform-kit/runtime"
+import type { DanmakuStream } from "@tabs/platform-kit/runtime"
+import { httpJson } from "@tabs/platform-kit/runtime/host"
+import { log } from "@tabs/platform-kit/runtime/log"
+import { md5Hex } from "@tabs/platform-kit/runtime/utils/md5"
 import { DEFAULT_TTWID, enterRoomParams, signDouyinUrl, UA_ENTER } from "./abogus.ts"
 import { decodeDouyinPushFrame, douyinHeartbeatFrame } from "./danmaku-proto.ts"
 import { assertMsdkIntegrity, kWebMsSDK } from "./msdk-sign.ts"

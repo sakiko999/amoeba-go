@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@host/sdk": "workspace:*",
-    "@tabs/media-library": "workspace:*",
+    "@tabs/platform-contracts": "workspace:*",
     "@tabs/platform-kit": "workspace:*"
   }
 }

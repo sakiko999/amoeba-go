@@ -17,14 +17,14 @@
  * **不是 `web_session`** —— 小红书对游客也会立即签发 web_session。
  */
 
-import { cdpEvaluate, cdpNavigate, waitUntil, withBrowserOp } from "@amoeba/resolve/browser/cdp";
-import { now } from "@amoeba/resolve/host";
-import { resolveCookie } from "@amoeba/resolve/platform/credentials";
+import { cdpEvaluate, cdpNavigate, waitUntil, withBrowserOp } from "@tabs/platform-kit/runtime/browser/cdp";
+import { now } from "@tabs/platform-kit/runtime/host";
+import { resolveCookie } from "@tabs/platform-kit/runtime/platform/credentials";
 import { XHS_BASE, extractInitialState, extractNoteDetail, isXhsLoggedIn, isXhsOrigin, noteDetailStateExpr, noteDetailToSocial, rawOf, reportXhsRisk, xhsClient } from "../lib/index.ts";
-import type { Item } from "@amoeba/xml"
+import type { Item } from "@tabs/platform-kit/data"
 
-import { passiveBuffer } from "@amoeba/crawler/passive/buffer"
-import { capturePage } from "@amoeba/crawler/passive/capture"
+import { passiveBuffer } from "@tabs/platform-kit/runtime/passive/buffer"
+import { capturePage } from "@tabs/platform-kit/runtime/passive/capture"
 
 /** 滚动翻页每次返回的窗口大小(仅 `xhs:user`;explore 一次整批返回)。 */
 export const XHS_FETCH_MORE_WINDOW = 30

@@ -6,18 +6,19 @@
  * videoId → watch URL,产 Video Item。
  */
 
-import { httpText, now } from "@amoeba/resolve/host";
+import { httpText, now } from "@tabs/platform-kit/runtime/host";
 import { YoutubeChannelVideo, fetchYoutubeChannelVideos, getYoutubeLiveMeta } from "../lib/index.ts";
-import { DESKTOP_CHROME_UA } from "@amoeba/resolve/utils/ua";
-import type { Item, Video } from "@amoeba/xml"
-import { type ParsedItem, parseFeed, serializeFeed, type SerializeOptions } from "@amoeba/xml"
+import { DESKTOP_CHROME_UA } from "@tabs/platform-kit/runtime/utils/ua";
+import type { Item, Video } from "@tabs/platform-kit/data"
+import { type SerializeOptions } from "@tabs/platform-kit/data"
+import { type ParsedItem, parseFeed } from "../lib/feed.ts"
 
-import type { Pageable, RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"
-import { apiFetchItems } from "@amoeba/crawler/factory"
+import type { Pageable, DataChannel, DataSource, SourceInfo } from "@tabs/platform-kit/data"
+import { apiFetchItems } from "@tabs/platform-kit/data"
 
 const UA = DESKTOP_CHROME_UA
 
-export class YoutubeChannel implements RssChannel {
+export class YoutubeChannel implements DataChannel {
   readonly key: string
   readonly name: string
   readonly kind = "video" as const
@@ -40,7 +41,7 @@ export class YoutubeChannel implements RssChannel {
   }
 
   // 仅输出 Video item(与 rsshub 一致);流/弹幕走 crawler/resolver(按 item.url→watch?v=)。
-  getSource(info: SourceInfo): RssSource & Partial<Pageable> {
+  getSource(info: SourceInfo): DataSource & Partial<Pageable> {
     return {
       fetch: apiFetchItems(
         () => this.fetchItems(info),
@@ -51,19 +52,19 @@ export class YoutubeChannel implements RssChannel {
         const opts = this.channelOptions(info)
         const channelId = info.channelId ?? this.defaultChannelId ?? ""
         // 单视频/直播订阅(videoId)无翻页语义;不认识的信息源也直接到底。
-        if (info.videoId || !channelId) return { xml: serializeFeed([], opts) }
+        if (info.videoId || !channelId) return { items: [] }
         // 首翻无 cursor:先拉一次首页拿 token(条目丢弃,twitch streams 两步法同款;
         // 不能闭包缓存首页 token —— refresh 会换掉首页)。失败要 throw,别返回空页。
         let token = cursor
         if (token === undefined) {
           const first = await fetchYoutubeChannelVideos(channelId)
           token = first.continuation
-          if (!token) return { xml: serializeFeed([], opts) } // 一页到底
+          if (!token) return { items: [] } // 一页到底
         }
         const page = await fetchYoutubeChannelVideos(channelId, { continuation: token })
         const items = page.videos.map((v) => channelVideoToItem(v, now()))
         return {
-          xml: serializeFeed(items, opts),
+          items,
           ...(page.continuation ? { cursor: page.continuation, hasMore: true } : {}),
         }
       },

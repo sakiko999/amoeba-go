@@ -10,6 +10,7 @@
       "!tmp",
       "!packages/amoeba",
       "!packages/rss-service/runtime",
+      "!packages/platform-kit/src/runtime",
       "!packages/platform-*/src/impl",
       "!packages/platform-*/src/lib",
       "!packages/platform-*/src/example",

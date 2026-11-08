@@ -12,10 +12,10 @@
  * 拿它判 hasMore;缺失时退回「满页 ⇒ 可能还有下一页」。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { biliClient } from "../lib/index.ts";
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 import { API, ugc } from "./video-common.ts"
 
 const PAGE_SIZE = 30

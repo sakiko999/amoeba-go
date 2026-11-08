@@ -13,7 +13,7 @@
  * 无需 cookie / 签名,普通 GET 即可(但要带 UA,裸请求会被拒)。
  */
 
-import { httpJson } from "@amoeba/resolve/host"
+import { httpJson } from "@tabs/platform-kit/runtime/host"
 
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"

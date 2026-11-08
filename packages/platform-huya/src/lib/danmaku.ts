@@ -8,11 +8,11 @@
  * uri=1400 → HYMessage{userInfo.nickName, content, bulletFormat.fontColor}。
  */
 
-import { formatError } from "@amoeba/log"
+import { formatError } from "@tabs/platform-kit/runtime/log"
 
-import { createWsStream, deferredStream } from "@amoeba/resolve"
-import type { DanmakuStream } from "@amoeba/resolve"
-import { log } from "@amoeba/resolve/log"
+import { createWsStream, deferredStream } from "@tabs/platform-kit/runtime"
+import type { DanmakuStream } from "@tabs/platform-kit/runtime"
+import { log } from "@tabs/platform-kit/runtime/log"
 import { huyaClient, M_HUYA } from "./client.ts"
 import { decodeHuyaDanmakuFrame, TarsWriter } from "./danmaku-tars.ts"
 

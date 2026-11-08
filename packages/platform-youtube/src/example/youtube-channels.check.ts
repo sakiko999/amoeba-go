@@ -1,5 +1,5 @@
 /**
- * YouTube 频道扩展自检 —— `bun packages/crawler/src/example/youtube-channels.check.ts`
+ * YouTube 频道扩展自检 —— `bun packages/platform-youtube/src/example/youtube-channels.check.ts`
  *
  * 不联网,锁三件纯逻辑:
  *   - `parseYoutubeLiveShelves`:实测布局(richGridRenderer → richSectionRenderer →
@@ -8,9 +8,9 @@
  *   - `normalizeYoutubePlaylistId`:裸 ID / 三种 URL / 私有列表拒收。
  */
 
-import { normalizeYoutubeLiveCategory, parseYoutubeLiveShelves, youtubeShelfSlug } from "@amoeba/resolve"
+import { normalizeYoutubeLiveCategory, parseYoutubeLiveShelves, youtubeShelfSlug } from "../lib/index.ts"
 
-import { normalizeYoutubePlaylistId } from "../impl/youtube/refs.ts"
+import { normalizeYoutubePlaylistId } from "../impl/refs.ts"
 
 let fails = 0
 const ok = (c: unknown, label: string) => {

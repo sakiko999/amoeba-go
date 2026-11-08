@@ -21,12 +21,12 @@
  * host 的 **wss_port 非标(常见 2245)必须拼端口**(默认 443 握手成功但非弹幕服务)。
  */
 
-import { formatError } from "@amoeba/log"
+import { formatError } from "@tabs/platform-kit/runtime/log"
 
-import { argbToHex, createWsStream, deferredStream } from "@amoeba/resolve"
-import type { DanmakuItem, DanmakuStream } from "@amoeba/resolve"
-import { log } from "@amoeba/resolve/log"
-import { extractCookie } from "@amoeba/resolve/utils/cookie"
+import { argbToHex, createWsStream, deferredStream } from "@tabs/platform-kit/runtime"
+import type { DanmakuItem, DanmakuStream } from "@tabs/platform-kit/runtime"
+import { log } from "@tabs/platform-kit/runtime/log"
+import { extractCookie } from "@tabs/platform-kit/runtime/utils/cookie"
 import { biliClient } from "./client.ts"
 
 /** 编解码复用单例(每帧热路径,共享安全)。 */

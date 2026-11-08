@@ -14,9 +14,9 @@
  * ⚠️ persisted query hash 会轮换(2025-11 曾整体替换一次)——只改 `TWITCH_PLAYBACK_TOKEN_HASH`。
  */
 
-import type { Stream } from "@amoeba/xml"
+import type { Stream } from "@tabs/platform-kit/data"
 
-import { normalizeTwitchLogin } from "@amoeba/resolve/utils/twitch"
+import { normalizeTwitchLogin } from "./twitch.ts"
 import { twitchGql } from "./client.ts"
 
 /** PlaybackAccessToken 的 persisted query hash(Twitch 改版时只改这里)。 */

@@ -11,15 +11,15 @@
  * 下游订阅走 `weibo:user`(uid 参数),本渠道只作「搜索添加」的取数源。
  */
 
-import { cdpNavigate, withBrowserOp } from "@amoeba/resolve/browser/cdp";
-import { now } from "@amoeba/resolve/host";
+import { cdpNavigate, withBrowserOp } from "@tabs/platform-kit/runtime/browser/cdp";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { weiboUserHitsFromIndex } from "../lib/index.ts";
-import type { Video } from "@amoeba/xml"
+import type { Video } from "@tabs/platform-kit/data"
 
-import type { RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"
-import { passiveBuffer } from "@amoeba/crawler/passive/buffer"
-import { capturePage } from "@amoeba/crawler/passive/capture"
-import { apiFetchItems } from "@amoeba/crawler/factory"
+import type { DataChannel, DataSource, SourceInfo } from "@tabs/platform-kit/data"
+import { passiveBuffer } from "@tabs/platform-kit/runtime/passive/buffer"
+import { capturePage } from "@tabs/platform-kit/runtime/passive/capture"
+import { apiFetchItems } from "@tabs/platform-kit/data"
 
 /** 被动捕获的 lane(搜索页专属 tab,不与 weibo:user 的列表页互踩)。 */
 const LANE = "search:weibo"
@@ -40,13 +40,13 @@ function isWeiboUserSearchApi(u: URL): boolean {
   return (u.searchParams.get("containerid") ?? "").startsWith("100103type=3")
 }
 
-export class WeiboUserSearchChannel implements RssChannel {
+export class WeiboUserSearchChannel implements DataChannel {
   readonly key = "weibo:user:search"
   readonly name = "微博搜用户"
   readonly kind = "video" as const
   readonly sourceInfoTpl = [{ key: "keyword", label: "用户昵称", placeholder: "如:半佛仙人", required: true }]
 
-  getSource(info: SourceInfo): RssSource {
+  getSource(info: SourceInfo): DataSource {
     return {
       fetch: apiFetchItems(
         () => this.fetchItems(info),

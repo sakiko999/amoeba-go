@@ -131,6 +131,7 @@
       "version": "0.3.0",
       "devDependencies": {
         "@host/sdk": "workspace:*",
+        "@tabs/platform-contracts": "workspace:*",
       },
     },
     "packages/media-manager": {
@@ -160,12 +161,6 @@
     "packages/platform-apple": {
       "name": "@tabs/platform-apple",
       "version": "0.1.0",
-      "dependencies": {
-        "@amoeba/crawler": "workspace:*",
-        "@amoeba/log": "workspace:*",
-        "@amoeba/resolve": "workspace:*",
-        "@amoeba/xml": "workspace:*",
-      },
       "devDependencies": {
         "@host/sdk": "workspace:*",
         "@tabs/platform-kit": "workspace:*",
@@ -176,7 +171,7 @@
       "version": "0.1.0",
       "devDependencies": {
         "@host/sdk": "workspace:*",
-        "@tabs/media-library": "workspace:*",
+        "@tabs/platform-contracts": "workspace:*",
         "@tabs/platform-kit": "workspace:*",
       },
     },
@@ -184,10 +179,6 @@
       "name": "@tabs/platform-bili",
       "version": "0.1.0",
       "dependencies": {
-        "@amoeba/crawler": "workspace:*",
-        "@amoeba/log": "workspace:*",
-        "@amoeba/resolve": "workspace:*",
-        "@amoeba/xml": "workspace:*",
         "ramda": "^0.32.0",
       },
       "devDependencies": {
@@ -195,12 +186,16 @@
         "@tabs/platform-kit": "workspace:*",
       },
     },
+    "packages/platform-contracts": {
+      "name": "@tabs/platform-contracts",
+      "version": "0.1.0",
+    },
     "packages/platform-douban": {
       "name": "@tabs/platform-douban",
       "version": "0.1.0",
       "devDependencies": {
         "@host/sdk": "workspace:*",
-        "@tabs/media-library": "workspace:*",
+        "@tabs/platform-contracts": "workspace:*",
         "@tabs/platform-kit": "workspace:*",
       },
     },
@@ -208,10 +203,6 @@
       "name": "@tabs/platform-douyin",
       "version": "0.1.0",
       "dependencies": {
-        "@amoeba/crawler": "workspace:*",
-        "@amoeba/log": "workspace:*",
-        "@amoeba/resolve": "workspace:*",
-        "@amoeba/xml": "workspace:*",
         "ramda": "^0.32.0",
       },
       "devDependencies": {
@@ -222,12 +213,6 @@
     "packages/platform-douyu": {
       "name": "@tabs/platform-douyu",
       "version": "0.1.0",
-      "dependencies": {
-        "@amoeba/crawler": "workspace:*",
-        "@amoeba/log": "workspace:*",
-        "@amoeba/resolve": "workspace:*",
-        "@amoeba/xml": "workspace:*",
-      },
       "devDependencies": {
         "@host/sdk": "workspace:*",
         "@tabs/platform-kit": "workspace:*",
@@ -236,12 +221,6 @@
     "packages/platform-huya": {
       "name": "@tabs/platform-huya",
       "version": "0.1.0",
-      "dependencies": {
-        "@amoeba/crawler": "workspace:*",
-        "@amoeba/log": "workspace:*",
-        "@amoeba/resolve": "workspace:*",
-        "@amoeba/xml": "workspace:*",
-      },
       "devDependencies": {
         "@host/sdk": "workspace:*",
         "@tabs/platform-kit": "workspace:*",
@@ -250,8 +229,16 @@
     "packages/platform-kit": {
       "name": "@tabs/platform-kit",
       "version": "0.1.0",
+      "dependencies": {
+        "ws": "^8.21.3",
+      },
       "devDependencies": {
         "@host/sdk": "workspace:*",
+        "@tabs/platform-contracts": "workspace:*",
+        "@types/ws": "^8.18.1",
+      },
+      "peerDependencies": {
+        "electron": ">=45",
       },
     },
     "packages/platform-tmdb": {
@@ -259,19 +246,13 @@
       "version": "0.1.0",
       "devDependencies": {
         "@host/sdk": "workspace:*",
-        "@tabs/media-library": "workspace:*",
+        "@tabs/platform-contracts": "workspace:*",
         "@tabs/platform-kit": "workspace:*",
       },
     },
     "packages/platform-twitch": {
       "name": "@tabs/platform-twitch",
       "version": "0.1.0",
-      "dependencies": {
-        "@amoeba/crawler": "workspace:*",
-        "@amoeba/log": "workspace:*",
-        "@amoeba/resolve": "workspace:*",
-        "@amoeba/xml": "workspace:*",
-      },
       "devDependencies": {
         "@host/sdk": "workspace:*",
         "@tabs/platform-kit": "workspace:*",
@@ -280,12 +261,6 @@
     "packages/platform-weibo": {
       "name": "@tabs/platform-weibo",
       "version": "0.1.0",
-      "dependencies": {
-        "@amoeba/crawler": "workspace:*",
-        "@amoeba/log": "workspace:*",
-        "@amoeba/resolve": "workspace:*",
-        "@amoeba/xml": "workspace:*",
-      },
       "devDependencies": {
         "@host/sdk": "workspace:*",
         "@tabs/platform-kit": "workspace:*",
@@ -294,12 +269,6 @@
     "packages/platform-xhs": {
       "name": "@tabs/platform-xhs",
       "version": "0.1.0",
-      "dependencies": {
-        "@amoeba/crawler": "workspace:*",
-        "@amoeba/log": "workspace:*",
-        "@amoeba/resolve": "workspace:*",
-        "@amoeba/xml": "workspace:*",
-      },
       "devDependencies": {
         "@host/sdk": "workspace:*",
         "@tabs/platform-kit": "workspace:*",
@@ -309,10 +278,7 @@
       "name": "@tabs/platform-youtube",
       "version": "0.1.0",
       "dependencies": {
-        "@amoeba/crawler": "workspace:*",
-        "@amoeba/log": "workspace:*",
-        "@amoeba/resolve": "workspace:*",
-        "@amoeba/xml": "workspace:*",
+        "fast-xml-parser": "^5.10.1",
         "ramda": "^0.32.0",
       },
       "devDependencies": {
@@ -739,6 +705,8 @@
     "@tabs/platform-bangumi": ["@tabs/platform-bangumi@workspace:packages/platform-bangumi"],
 
     "@tabs/platform-bili": ["@tabs/platform-bili@workspace:packages/platform-bili"],
+
+    "@tabs/platform-contracts": ["@tabs/platform-contracts@workspace:packages/platform-contracts"],
 
     "@tabs/platform-douban": ["@tabs/platform-douban@workspace:packages/platform-douban"],
 

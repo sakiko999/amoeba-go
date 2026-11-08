@@ -11,11 +11,11 @@
  * (像 by-url 那样点了才解析),而不是在 fetch 里批量拉。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { APPLE_PODCAST_GENRES, fetchApplePodcastChart } from "../lib/catalog.ts";
-import type { Audio } from "@amoeba/xml"
+import type { Audio } from "@tabs/platform-kit/data"
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 
 export const ApplePodcastChartChannel = makeApiChannel({
   key: "apple:podcast-chart",

@@ -6,14 +6,14 @@
  * 从 DouyinLiveChannel 下沉(原 channel 私有 getJson/ensureCookie/abogusUrl)。
  */
 
-import { formatError } from "@amoeba/log"
+import { formatError } from "@tabs/platform-kit/runtime/log"
 
-import { deferredStream } from "@amoeba/resolve"
-import type { DanmakuOptions } from "@amoeba/resolve"
-import { httpJson } from "@amoeba/resolve/host"
-import { log } from "@amoeba/resolve/log"
-import { platformCookie } from "@amoeba/resolve/platform/credentials"
-import type { PlatformClient, PlatformRequestOptions } from "@amoeba/resolve/platform/types"
+import { deferredStream } from "@tabs/platform-kit/runtime"
+import type { DanmakuOptions } from "@tabs/platform-kit/runtime"
+import { httpJson } from "@tabs/platform-kit/runtime/host"
+import { log } from "@tabs/platform-kit/runtime/log"
+import { platformCookie } from "@tabs/platform-kit/runtime/platform/credentials"
+import type { PlatformClient, PlatformRequestOptions } from "@tabs/platform-kit/runtime/platform/types"
 import { DEFAULT_TTWID, enterRoomParams, signDouyinUrl, UA_ENTER } from "./abogus.ts"
 import { douyinDanmakuStream } from "./danmaku.ts"
 

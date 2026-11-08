@@ -5,8 +5,7 @@
  * channels.registerPlugin 把插件导出的 channels 数组登记进数据服务。
  */
 
-import type { RssChannel } from "@amoeba/crawler"
-import { registerChannel } from "@amoeba/crawler"
+import type { DataChannel } from "@tabs/platform-kit/data"
 import {
   DouyinCategoriesChannel,
   DouyinCategoryChannel,
@@ -18,7 +17,7 @@ import {
 } from "./index.ts"
 
 /** douyin 平台全部渠道实例（插件导出用） */
-export const douyinChannels: RssChannel[] = [
+export const douyinChannels: DataChannel[] = [
   new DouyinLiveChannel(),
   DouyinLiveHotChannel,
   DouyinCategoryChannel,
@@ -28,6 +27,3 @@ export const douyinChannels: RssChannel[] = [
   new DouyinUserSearchChannel(),
 ]
 
-export function registerDouyinChannels(): void {
-  for (const channel of douyinChannels) registerChannel(channel)
-}

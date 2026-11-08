@@ -15,11 +15,11 @@
  * (iOS client hlsManifestUrl,失败降级 web 页)。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { fetchYoutubeChannelLive, getYoutubeLiveMeta } from "../lib/index.ts";
-import type { Live } from "@amoeba/xml"
+import type { Live } from "@tabs/platform-kit/data"
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 
 /** channelId(UC 开头)与 videoId 的分流判据。 */
 const isChannelId = (v: string): boolean => /^UC[\w-]{20,}$/.test(v)

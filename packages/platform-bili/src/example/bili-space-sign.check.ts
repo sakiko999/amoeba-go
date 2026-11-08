@@ -10,7 +10,7 @@
 import assert from "node:assert/strict"
 
 import { biliClient, MIXIN_KEY_ENC_TAB } from "../lib/client.ts"
-import { md5Hex } from "@amoeba/resolve/utils/md5"
+import { md5Hex } from "@tabs/platform-kit/runtime/utils/md5"
 
 const IMG_KEY = "a".repeat(32)
 const SUB_KEY = "b".repeat(32)

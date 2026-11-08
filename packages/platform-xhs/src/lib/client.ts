@@ -11,15 +11,15 @@
  * 显式空串 = 强制匿名 —— 匿名态已移除,渠道层会直接报「需要登录」。
  */
 
-import type { Social, SocialImage } from "@amoeba/xml"
+import type { Social, SocialImage } from "@tabs/platform-kit/data"
 
-import { cdpEvaluate } from "@amoeba/resolve/browser/cdp"
-import { httpJson, httpText } from "@amoeba/resolve/host"
-import { parseCount } from "@amoeba/resolve/utils/count"
-import { extractInlineJson } from "@amoeba/resolve/utils/inline-json"
-import { toHttps } from "@amoeba/resolve/utils/url"
-import { resolveCookie } from "@amoeba/resolve/platform/credentials"
-import type { PlatformClient, PlatformRequestOptions } from "@amoeba/resolve/platform/types"
+import { cdpEvaluate } from "@tabs/platform-kit/runtime/browser/cdp"
+import { httpJson, httpText } from "@tabs/platform-kit/runtime/host"
+import { parseCount } from "@tabs/platform-kit/runtime/utils/count"
+import { extractInlineJson } from "@tabs/platform-kit/runtime/utils/inline-json"
+import { toHttps } from "@tabs/platform-kit/runtime/utils/url"
+import { resolveCookie } from "@tabs/platform-kit/runtime/platform/credentials"
+import type { PlatformClient, PlatformRequestOptions } from "@tabs/platform-kit/runtime/platform/types"
 
 export const XHS_BASE = "https://www.xiaohongshu.com"
 /** API 域名(edith.* 承载全部 web API)。 */

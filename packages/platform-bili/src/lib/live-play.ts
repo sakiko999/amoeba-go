@@ -13,10 +13,10 @@
  * 契约:最高清晰度排最前(player 默认选流取第一个)。
  */
 
-import type { Stream } from "@amoeba/xml"
+import type { Stream } from "@tabs/platform-kit/data"
 import * as R from "ramda"
 
-import type { SourceInfo } from "@amoeba/resolve"
+import type { SourceInfo } from "@tabs/platform-kit/runtime"
 import { BILIBILI_UA, biliClient } from "./index.ts"
 
 const API_LIVE = "https://api.live.bilibili.com"

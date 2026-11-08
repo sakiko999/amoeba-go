@@ -9,9 +9,9 @@
  * 取失败也只是少一栏,不拖垮播放。
  */
 
-import type { Stream } from "@amoeba/xml"
+import type { Stream } from "@tabs/platform-kit/data"
 
-import type { SourceInfo } from "@amoeba/resolve"
+import type { SourceInfo } from "@tabs/platform-kit/runtime"
 import { biliClient } from "./index.ts"
 
 /** 章节时间点(秒 + UP 主写的标题)。 */

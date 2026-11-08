@@ -13,9 +13,9 @@
  * (微博会话 cookie,HttpOnly → 只能经 CDP Network.getAllCookies 读)。
  */
 
-import { cdpEvaluate, cdpNavigate, withScanLoginLock } from "@amoeba/resolve/browser/cdp"
-import type { LoginResult } from "@amoeba/resolve"
-import { log } from "@amoeba/resolve/log"
+import { cdpEvaluate, cdpNavigate, withScanLoginLock } from "@tabs/platform-kit/runtime/browser/cdp"
+import type { LoginResult } from "@tabs/platform-kit/runtime"
+import { log } from "@tabs/platform-kit/runtime/log"
 
 /** passport 登录页(disp=popup 是内嵌登录页,布局稳定,含独立二维码 img)。 */
 const LOGIN_URL =

@@ -1,9 +1,7 @@
-/** 构建 platform-bili 组件包（main.js + channels.js + component.json）。 */
+/** 构建 platform-bili 组件包（main.js + component.json；渠道实现已内联进 main）。 */
 
-import { join, resolve } from "node:path";
+import { resolve } from "node:path";
 import { buildPlatformComponent } from "@tabs/platform-kit/pack";
 
 const root = resolve(import.meta.dir, "..");
-await buildPlatformComponent(root, {
-  pluginEntry: join(root, "src", "channels.ts"),
-});
+await buildPlatformComponent(root);

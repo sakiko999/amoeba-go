@@ -7,8 +7,8 @@
  * 2026-09 迁移——此前爬 HTML 的 HNF_GLOBAL_INIT 路径已删除)。
  */
 
-import { httpText } from "@amoeba/resolve/host"
-import type { PlatformClient, PlatformRequestOptions } from "@amoeba/resolve/platform/types"
+import { httpText } from "@tabs/platform-kit/runtime/host"
+import type { PlatformClient, PlatformRequestOptions } from "@tabs/platform-kit/runtime/platform/types"
 import { huyaDanmakuStream } from "./danmaku.ts"
 
 const M_HUYA = "https://m.huya.com"

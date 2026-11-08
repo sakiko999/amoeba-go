@@ -11,7 +11,7 @@
 
 import { searchHuyaAnchors } from "../lib/index.ts";
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 
 const PAGE = 50
 

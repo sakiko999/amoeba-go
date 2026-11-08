@@ -17,11 +17,11 @@
  * 本就是 data URL。两条路径 emitQr 推的都是 `data:image/...`(QrImage 直接当 img 用)。
  */
 
-import { formatError } from "@amoeba/log"
+import { formatError } from "@tabs/platform-kit/runtime/log"
 
-import { cdpEvaluate, cdpNavigate, withScanLoginLock } from "@amoeba/resolve/browser/cdp"
-import type { LoginResult } from "@amoeba/resolve"
-import { log } from "@amoeba/resolve/log"
+import { cdpEvaluate, cdpNavigate, withScanLoginLock } from "@tabs/platform-kit/runtime/browser/cdp"
+import type { LoginResult } from "@tabs/platform-kit/runtime"
+import { log } from "@tabs/platform-kit/runtime/log"
 
 const SSO = "https://sso.douyin.com"
 const MAIN = "https://www.douyin.com"

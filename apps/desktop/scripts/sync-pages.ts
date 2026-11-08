@@ -63,8 +63,14 @@ const conflicted: string[] = [];
 // （如 rss-channel-* → platform-*）继续被宿主加载
 const pagesRoot = join(appRoot, "out", "pages");
 await rm(pagesRoot, { recursive: true, force: true });
+
+// 已停用的 rss 订阅栈不投影：即使有人手动跑了它们的 pack（out/ 残留），
+// 也不能把它们（含已退役的 rss.extend 链路）带进宿主。与
+// scripts/pack-components.ts 的打包清单同步维护。
+const EXCLUDED_PACKAGES = new Set(["rss-service", "rss-client", "rss-subscriptions"]);
+
 for (const pkg of await readdir(packagesDir, { withFileTypes: true })) {
-  if (!pkg.isDirectory()) continue;
+  if (!pkg.isDirectory() || EXCLUDED_PACKAGES.has(pkg.name)) continue;
   const outDir = join(packagesDir, pkg.name, "out");
   const entries = await readdir(outDir, { withFileTypes: true }).catch(
     () => undefined,

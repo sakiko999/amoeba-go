@@ -5,8 +5,7 @@
   "description": "Bangumi 元数据平台插件（实现自包含；经 media.providers 注册进媒体库服务）。",
   "exports": {
     ".": "./src/main.ts",
-    "./provider": "./src/provider.ts",
-    "./probe": "./src/probe.ts"
+    "./provider": "./src/provider.ts"
   },
   "scripts": {
     "pack": "bun run scripts/pack.ts",
@@ -14,7 +13,7 @@
   },
   "devDependencies": {
     "@host/sdk": "workspace:*",
-    "@tabs/media-library": "workspace:*",
+    "@tabs/platform-contracts": "workspace:*",
     "@tabs/platform-kit": "workspace:*"
   }
 }

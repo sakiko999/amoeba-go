@@ -1,5 +1,12 @@
-/** Twitch 平台插件：向 rss.extend 登记 channels.js（渠道实现随包构建，运行时加载进数据服务）。 */
+/**
+ * twitch 平台组件入口：渠道与播放/弹幕能力直接注册到 api.gateway。
+ * 数据接口在宿主主进程内执行（appHost 由 platform-kit runtime 安装）。
+ */
 
-import { defineRssPlatformExtension } from "@tabs/platform-kit";
+import { definePlatformExtension } from "@tabs/platform-kit/runtime/extension";
+import { channels, playback } from "./channels.ts";
 
-export const { activate, deactivate } = defineRssPlatformExtension();
+export const { activate, deactivate } = definePlatformExtension({
+  channels,
+  playback,
+});

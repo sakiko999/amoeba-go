@@ -12,9 +12,9 @@
  * 页面已渲染的 data URL(非截屏),登录态检测是页面 loggedIn + CDP cookie 轮询。
  */
 
-import { cdpEvaluate, cdpNavigate, waitUntil, withScanLoginLock } from "@amoeba/resolve/browser/cdp"
-import type { LoginResult } from "@amoeba/resolve"
-import { log } from "@amoeba/resolve/log"
+import { cdpEvaluate, cdpNavigate, waitUntil, withScanLoginLock } from "@tabs/platform-kit/runtime/browser/cdp"
+import type { LoginResult } from "@tabs/platform-kit/runtime"
+import { log } from "@tabs/platform-kit/runtime/log"
 import { XHS_BASE, xhsDomLoggedIn, xhsPageLoggedIn } from "./client.ts"
 
 export interface XhsScanLoginOptions {

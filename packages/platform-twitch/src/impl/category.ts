@@ -8,13 +8,13 @@
  */
 
 import { fetchTwitchCategoryStreams } from "../lib/index.ts";
-import { normalizeTwitchCategory } from "@amoeba/resolve/utils/twitch";
-import { type SerializeOptions } from "@amoeba/xml"
+import { normalizeTwitchCategory } from "../lib/twitch.ts";
+import { type SerializeOptions } from "@tabs/platform-kit/data"
 
-import type { Pageable, RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"
+import type { Pageable, DataChannel, DataSource, SourceInfo } from "@tabs/platform-kit/data"
 import { createTwitchStreamsSource } from "./streams.ts"
 
-export class TwitchCategoryChannel implements RssChannel {
+export class TwitchCategoryChannel implements DataChannel {
   readonly key = "twitch:category"
   readonly name = "Twitch 分区直播"
   readonly kind = "live" as const
@@ -27,7 +27,7 @@ export class TwitchCategoryChannel implements RssChannel {
     },
   ]
 
-  getSource(info: SourceInfo): RssSource & Partial<Pageable> {
+  getSource(info: SourceInfo): DataSource & Partial<Pageable> {
     const raw = String(info.category ?? "")
     return createTwitchStreamsSource({
       sourceId: this.key,

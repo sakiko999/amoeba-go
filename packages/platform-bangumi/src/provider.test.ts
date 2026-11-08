@@ -6,7 +6,7 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { mapEpisodes, mapSearch, mapSubject } from "./provider";
-import { ProviderError } from "@tabs/media-library";
+import { ProviderError } from "@tabs/platform-contracts";
 
 const fixture = (name: string): unknown =>
   JSON.parse(

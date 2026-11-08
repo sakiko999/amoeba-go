@@ -11,14 +11,14 @@
  *   - 无浏览器(mobile/CLI)→ **不支持**(登录态 HTTP SSR 是空壳,见 `XHS_EXPLORE_NEEDS_BROWSER`)。
  */
 
-import { withBrowserOp } from "@amoeba/resolve/browser/cdp";
-import { now } from "@amoeba/resolve/host";
+import { withBrowserOp } from "@tabs/platform-kit/runtime/browser/cdp";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { XHS_BASE, noteCardToSocial } from "../lib/index.ts";
-import type { Item, Social } from "@amoeba/xml"
-import { serializeFeed, type SerializeOptions } from "@amoeba/xml"
+import type { Item, Social } from "@tabs/platform-kit/data"
+import { type SerializeOptions } from "@tabs/platform-kit/data"
 
-import type { ItemDetailSource, Pageable, RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"
-import { apiFetchItems } from "@amoeba/crawler/factory"
+import type { ItemDetailSource, Pageable, DataChannel, DataSource, SourceInfo } from "@tabs/platform-kit/data"
+import { apiFetchItems } from "@tabs/platform-kit/data"
 import { XhsChannelBase } from "./base.ts"
 import {
   ensureXhsPageReady,
@@ -47,7 +47,7 @@ function feedKey(f: any): string {
   return String(f?.id ?? f?.noteCard?.noteId ?? "")
 }
 
-export class XhsExploreChannel extends XhsChannelBase implements RssChannel {
+export class XhsExploreChannel extends XhsChannelBase implements DataChannel {
   readonly key = "xhs:explore"
   readonly name = "小红书发现页"
   readonly kind = "social" as const
@@ -55,7 +55,7 @@ export class XhsExploreChannel extends XhsChannelBase implements RssChannel {
   readonly passive = true
   readonly defaultInfo: SourceInfo = {}
 
-  getSource(info: SourceInfo): RssSource & Partial<Pageable> & ItemDetailSource {
+  getSource(info: SourceInfo): DataSource & Partial<Pageable> & ItemDetailSource {
     // 保留显式空串语义(强制匿名 → 现在会报「需要登录」),不要用 `||` 抹成 undefined。
     const cookie = info.cookie as string | undefined
     // ⚠️ 显式空串 = 强制匿名（CLI `--kv cookie=`）：匿名态已移除，浏览器路径也不得
@@ -65,7 +65,7 @@ export class XhsExploreChannel extends XhsChannelBase implements RssChannel {
       return { fetch: denied, fetchPassive: denied, fetchMore: denied, resolveDetail: denied }
     }
     const browser = globalThis.appHost?.browser
-    const source: RssSource & Partial<Pageable> & ItemDetailSource = {
+    const source: DataSource & Partial<Pageable> & ItemDetailSource = {
       fetch: apiFetchItems(
         () => (browser ? this.fetchViaBrowser(browser) : Promise.reject(new Error(XHS_EXPLORE_NEEDS_BROWSER))),
         () => this.channelOptions(),
@@ -111,7 +111,7 @@ export class XhsExploreChannel extends XhsChannelBase implements RssChannel {
     browser: BrowserBackend,
     cursor?: string,
     existing?: number,
-  ): Promise<{ xml: string; cursor?: string }> {
+  ): Promise<{ items: Item[]; cursor?: string }> {
     let ended = false
     return withBrowserOp(
       browser,
@@ -154,15 +154,14 @@ export class XhsExploreChannel extends XhsChannelBase implements RssChannel {
         // 不会重复展示);实测(2026-10-20,862→968 条)平台推荐流是尾部追加。
         const fresh = total <= returned ? [] : prepended ? after.slice(0, total - returned) : after.slice(returned)
         const items = this.toItems(fresh)
-        const xml = serializeFeed(items, this.channelOptions())
         if (!fresh.length) {
           // 平台还在追加(scrollHeight 增长)但 state 未到位 → 原样返回 cursor 让 core 重试;
           // 否则视为真到底(hasMore=false)。
-          if (platformActive) return { xml, cursor: cursor ?? String(returned) }
+          if (platformActive) return { items, cursor: cursor ?? String(returned) }
           ended = true
-          return { xml }
+          return { items }
         }
-        return { xml, cursor: String(total) }
+        return { items, cursor: String(total) }
         // 真到底：页面累计的几百条 feed/DOM 不再需要，release 在 lane 锁内关 target
         // 释放 renderer（下次刷新本来就整体重载）。翻页途中 ended=false，不关。
       },
@@ -173,7 +172,7 @@ export class XhsExploreChannel extends XhsChannelBase implements RssChannel {
    * LX 被动采集:导航 `/explore`(页面自然行为)→ CDP Network 取 SSR 文档 → 解析。
    * 拿不到缓冲返回 null(core 会回退内容缓存,绝不回退主动 `fetch()`)。
    */
-  private async fetchPassive(): Promise<string | null> {
+  private async fetchPassive(): Promise<{ items: Item[] } | null> {
     const browser = globalThis.appHost?.browser
     if (!browser?.send || !browser.onEvent) return null
     const feeds = await fetchXhsPassivePage(
@@ -195,9 +194,9 @@ export class XhsExploreChannel extends XhsChannelBase implements RssChannel {
       // 被动捕获与主动刷新同 lane:绑到本 lane 的 tab,事件/响应不串台(§3.13 坑 4)。
       "list:xhs:explore",
     )
-    // 缓冲缺失 → null(core 回退缓存);缓冲有但 0 条 → 空 XML(与旧行为一致)。
+    // 缓冲缺失 → null(core 回退缓存);缓冲有但 0 条 → 空结果(与旧行为一致)。
     if (!feeds) return null
-    return serializeFeed(this.toItems(feeds), this.channelOptions())
+    return { items: this.toItems(feeds) }
   }
 
   /** feeds[] → Item[](noteId 在展开项外层,noteCard 在内层,xsecToken 也在外层)。

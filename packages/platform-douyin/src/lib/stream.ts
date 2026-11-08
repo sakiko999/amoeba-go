@@ -11,14 +11,14 @@
  * 每次 resolve 独立取新鲜签名直链(带过期时间)。
  */
 
-import { formatError } from "@amoeba/log"
-import type { Stream } from "@amoeba/xml"
+import { formatError } from "@tabs/platform-kit/runtime/log"
+import type { Stream } from "@tabs/platform-kit/data"
 import * as R from "ramda"
 
-import { httpJson, httpText } from "@amoeba/resolve/host"
-import { log } from "@amoeba/resolve/log"
-import { parseJsonSafe } from "@amoeba/resolve/utils/inline-json"
-import { toInt } from "@amoeba/resolve/utils/number"
+import { httpJson, httpText } from "@tabs/platform-kit/runtime/host"
+import { log } from "@tabs/platform-kit/runtime/log"
+import { parseJsonSafe } from "@tabs/platform-kit/runtime/utils/inline-json"
+import { toInt } from "@tabs/platform-kit/runtime/utils/number"
 import { UA_ENTER } from "./abogus.ts"
 import { douyinCookie, fetchRoom } from "./client.ts"
 

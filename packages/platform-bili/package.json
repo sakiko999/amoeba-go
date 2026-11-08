@@ -2,7 +2,7 @@
   "name": "@tabs/platform-bili",
   "version": "0.1.0",
   "private": true,
-  "description": "B站 平台插件（渠道实现自包含；经 rss.extend 注册进数据服务）。",
+  "description": "B站 平台插件：渠道/播放/弹幕能力注册进 api.gateway（数据接口在宿主主进程执行）。",
   "exports": {
     ".": "./src/main.ts"
   },
@@ -10,10 +10,6 @@
     "pack": "bun run scripts/pack.ts"
   },
   "dependencies": {
-    "@amoeba/crawler": "workspace:*",
-    "@amoeba/log": "workspace:*",
-    "@amoeba/resolve": "workspace:*",
-    "@amoeba/xml": "workspace:*",
     "ramda": "^0.32.0"
   },
   "devDependencies": {

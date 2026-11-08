@@ -9,8 +9,8 @@
  *   字节数组 SIMPLE_LIST(BYTE 头 + 长度 + 数据);struct = BEGIN + 字段 + END。
  */
 
-import { rgbToHex } from "@amoeba/resolve"
-import type { DanmakuItem } from "@amoeba/resolve"
+import { rgbToHex } from "@tabs/platform-kit/runtime"
+import type { DanmakuItem } from "@tabs/platform-kit/runtime"
 
 /** 编解码复用单例(Tars 字符串读写,共享安全)。 */
 const TE = new TextEncoder()

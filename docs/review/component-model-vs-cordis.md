@@ -21,8 +21,10 @@
 
 - **expose 白名单**：服务方法面在 manifest 里显式声明，宿主生成代理收敛能力——
   这是渲染进程/组件边界的安全层（owner token 不出 rss-client 这类约束的基座）。
-- **跨进程组件域**：rss 数据服务进程 + 动态加载的平台 bundle（channels.js）+
-  「注册动作发生在消费方进程」的注册表契约——cordis 是单进程模型，没有对应物。
+- **跨进程组件域（已收缩）**：平台组件的渠道/播放实现现随 main.js 在宿主主进程
+  执行，API 统一注册进 api-gateway（`<平台>.channels/fetch/play/danmaku`）；
+  rss 数据服务进程（订阅/存储/事件栈）已停用打包，仅源码保留。相较 cordis 的
+  单进程模型，我们保留的是「宿主主进程 + 渲染进程」这一层进程边界。
 
 ## cordis 有而我们缺的（= v2 roadmap 的出处）
 

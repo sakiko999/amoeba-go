@@ -12,10 +12,10 @@
  * 是否在播 = `isLive==1 && roomType==0`(roomType 非 0 是录播/轮播)。
  */
 
-import type { Item, Live } from "@amoeba/xml"
+import type { Item, Live } from "@tabs/platform-kit/data"
 
-import { httpJson, now } from "@amoeba/resolve/host"
-import { parseCount } from "@amoeba/resolve/utils/count"
+import { httpJson, now } from "@tabs/platform-kit/runtime/host"
+import { parseCount } from "@tabs/platform-kit/runtime/utils/count"
 
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"

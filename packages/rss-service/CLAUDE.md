@@ -85,18 +85,16 @@ HTTP/WS 服务层、事件直连）是后续工作，届时 `runtime/` 与 `pack
 - 播放/弹幕：`@amoeba/resolve` 基座只有路由表（resolver/router）与能力注册表
   （resolver/registry）；`resolvePlayByUrl`/`getDanmakuByUrl` 按路由分发到注册的
   平台能力，未注册抛「需安装对应 platform-rss 插件」。
-- 新平台：`packages/platform-<p>/`（component.json + `defineRssPlatformExtension()`
-  的 main.ts + `src/impl/` 实现 + `src/channels.ts` 入口 + pack.ts）→ 根
-  `bun run pages:prepare` 自动发现（`scripts/pack-components.ts` 扫 `platform-*`，
-  排除 `platform-kit`）并打包进宿主。平台代码 import 基座用子路径
-  `@amoeba/crawler/factory`、`@amoeba/crawler/passive/*`、
-  `@amoeba/resolve/{host,utils/*,browser/*}`（不要用 resolve 根 barrel，会把整个
-  基座拖进 bundle）；平台自有符号走本包 `../lib`。
+- 新平台：**平台插件已不再接入本数据服务** —— `packages/platform-<p>/` 的 main
+  用 platform-kit `definePlatformExtension({ channels, playback })` 把能力直接注册进
+  api.gateway（channels/fetch/play/danmaku，宿主主进程执行）。本节描述的
+  `rss.extend` / `channels.registerPlugin` 接线属于已停用的旧链路，仅作历史参考。
+  平台代码 import 基座用子路径 `@tabs/platform-kit/runtime/*`（原 amoeba
+  resolve/host 层的自持副本）；平台自有符号走本包 `../lib`。
 - 组件可自带 npm 依赖（platform-kit pack 对非 workspace 依赖 external 并装进产物
-  node_modules，宿主/数据服务进程都按组件目录解析）；workspace 依赖仍内联。
-- **api.gateway**：平台插件同时向统一注册中心（packages/api-gateway）注册
-  `<平台>.channels` 元数据 API（pack 从 channels bundle 提取静态描述生成
-  api.json）；本数据服务仍是渠道/playback 的执行宿主，与网关互不依赖。
+  node_modules，宿主按组件目录解析）；workspace 依赖仍内联。
+- **api.gateway**：平台插件注册的数据 API 见 packages/api-gateway/CLAUDE.md；
+  本数据服务与网关互不依赖。
 
 ## 验证
 
@@ -105,8 +103,8 @@ bun run --cwd packages/rss-service pack   # 本仓库构建 out/component/（mai
 bun run --cwd packages/rss-service test   # 真实进程生命周期集成（spawn 本地 service.js）
 ```
 
-宿主 `bun run smoke` 会真实拉起 browser 代理（CDP 自检）与数据服务（三服务 active），
-并加载 9 个渠道组件（日志 `channels plugin registered`）；`bun run pages:prepare`
-当前打包 17 个组件（5 基础 + 9 platform-rss + 3 platform-media）。
-真实渠道抓取：dev 宿主里经 rss-client `call("probe.fetch", {channelKey:"weibo:user:search", info:{keyword:"微博"}})`，
-已验证返回真实 RSS（~7KB / ~3s）。强反爬平台（xhs/douyin）需真机登录验证。
+宿主 `bun run smoke` 不再拉起本服务（rss-service/rss-client 已停用打包）；
+`bun run pages:prepare` 当前打包 16 个组件（api-gateway + media-manager +
+media-library + rss-browser + 12 个 platform-*）。
+历史验证记录：dev 宿主里经 rss-client `call("probe.fetch", …)` 抓真实渠道
+（weibo:user:search ~7KB / ~3s）；强反爬平台（xhs/douyin）需真机登录验证。

@@ -5,11 +5,11 @@
  * 点开用 `live:douyu:category` + `{areaId}` 预览该分区房间,并可按同一份参数订阅。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { DouyuCategory, fetchDouyuCategories } from "../lib/index.ts";
-import type { Category, Item } from "@amoeba/xml"
+import type { Category, Item } from "@tabs/platform-kit/data"
 
-import { makeApiChannel } from "@amoeba/crawler/factory"
+import { makeApiChannel } from "@tabs/platform-kit/data"
 
 /** 分区树 → 目录条目(纯函数):只列二级分区。 */
 export function douyuCategoryItems(sourceId: string, t: number, tree: DouyuCategory[]): Item[] {

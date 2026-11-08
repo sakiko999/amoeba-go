@@ -8,31 +8,30 @@
  * 只提供 fetch / fetchMore 两项能力;不实现 resolveDetail / fetchPassive / Loginable。
  */
 
-import { formatError } from "@amoeba/log"
-import { now } from "@amoeba/resolve/host";
-import { log } from "@amoeba/resolve/log";
+import { formatError } from "@tabs/platform-kit/runtime/log"
+import { now } from "@tabs/platform-kit/runtime/host";
+import { log } from "@tabs/platform-kit/runtime/log";
 import { TwitchStreamPage } from "../lib/index.ts";
-import { type Live, serializeFeed, type SerializeOptions } from "@amoeba/xml"
+import { type Live, type SerializeOptions } from "@tabs/platform-kit/data"
 
-import type { Pageable, RssSource } from "@amoeba/crawler"
+import type { Pageable, DataSource } from "@tabs/platform-kit/data"
 import { twitchStreamToLive } from "./live.ts"
 
 export interface TwitchStreamsSourceOptions {
   /** 该 source 的 channel key(item.sourceId)。 */
   sourceId: string
-  /** 订阅标题/链接(每次调用取最新 info)。 */
+  /** @deprecated XML 时代的标题/链接选项（死配置，保留兼容旧调用点）。 */
   channelOptions: () => SerializeOptions
   /** 取一页(after 省略 = 首页)。 */
   fetchPage: (after?: string) => Promise<TwitchStreamPage>
 }
 
-export function createTwitchStreamsSource(opts: TwitchStreamsSourceOptions): RssSource & Partial<Pageable> {
-  const toXml = (page: TwitchStreamPage, o: SerializeOptions): string => {
+export function createTwitchStreamsSource(opts: TwitchStreamsSourceOptions): DataSource & Partial<Pageable> {
+  const toItems = (page: TwitchStreamPage): Live[] => {
     const fetchedAt = now()
-    const items = page.streams
+    return page.streams
       .map((s) => twitchStreamToLive(s, opts.sourceId, fetchedAt))
       .filter((i): i is Live => i !== null)
-    return serializeFeed(items, o)
   }
 
   // 首页/翻页失败都留痕(与 factory 的 apiFetch 对等),再 rethrow 给 core 隔离单源失败。
@@ -48,7 +47,7 @@ export function createTwitchStreamsSource(opts: TwitchStreamsSourceOptions): Rss
   return {
     fetch: async () => {
       const o = opts.channelOptions()
-      return run(async () => toXml(await opts.fetchPage(undefined), o), o)
+      return run(async () => ({ items: toItems(await opts.fetchPage(undefined)) }), o)
     },
     fetchMore: async (cursor?: string) => {
       const o = opts.channelOptions()
@@ -57,13 +56,15 @@ export function createTwitchStreamsSource(opts: TwitchStreamsSourceOptions): Rss
         if (cursor) {
           page = await opts.fetchPage(cursor)
         } else {
-          // 首次翻页:先取首页的 endCursor,再取下一页;首页已到底则返回空 XML(无 cursor)。
+          // 首次翻页:先取首页的 endCursor,再取下一页;首页已到底则返回空结果(无 cursor)。
           const first = await opts.fetchPage(undefined)
-          if (!first.hasMore || !first.endCursor) return { xml: serializeFeed([], o) }
+          if (!first.hasMore || !first.endCursor) return { items: [] }
           page = await opts.fetchPage(first.endCursor)
         }
-        const xml = toXml(page, o)
-        return { xml, ...(page.hasMore && page.endCursor ? { cursor: page.endCursor } : {}) }
+        return {
+          items: toItems(page),
+          ...(page.hasMore && page.endCursor ? { cursor: page.endCursor } : {}),
+        }
       }, o)
     },
   }

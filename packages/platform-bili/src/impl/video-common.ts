@@ -5,7 +5,7 @@
  * playurl 直链由下游懒解析)。播放解析在 resolve 的 platform/bili/video-play.ts。
  */
 
-import type { Video } from "@amoeba/xml"
+import type { Video } from "@tabs/platform-kit/data"
 
 export const API = "https://api.bilibili.com"
 const BVID_TIME = 1_589_990_400

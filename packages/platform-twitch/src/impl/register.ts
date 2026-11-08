@@ -5,8 +5,7 @@
  * channels.registerPlugin 把插件导出的 channels 数组登记进数据服务。
  */
 
-import type { RssChannel } from "@amoeba/crawler"
-import { registerChannel } from "@amoeba/crawler"
+import type { DataChannel } from "@tabs/platform-kit/data"
 import {
   TwitchCategoriesChannel,
   TwitchCategoryChannel,
@@ -16,7 +15,7 @@ import {
 } from "./index.ts"
 
 /** twitch 平台全部渠道实例（插件导出用） */
-export const twitchChannels: RssChannel[] = [
+export const twitchChannels: DataChannel[] = [
   new TwitchLiveChannel(),
   TwitchHotChannel,
   TwitchCategoryChannel,
@@ -24,6 +23,3 @@ export const twitchChannels: RssChannel[] = [
   TwitchUserSearchChannel,
 ]
 
-export function registerTwitchChannels(): void {
-  for (const channel of twitchChannels) registerChannel(channel)
-}

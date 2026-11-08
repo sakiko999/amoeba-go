@@ -13,19 +13,19 @@
  * 零登录:nav 未登录(`code:-101`)仍返回 wbi_img → MD5 即可签名。
  */
 
-import { formatError } from "@amoeba/log"
-import type { Stream } from "@amoeba/xml"
+import { formatError } from "@tabs/platform-kit/runtime/log"
+import type { Stream } from "@tabs/platform-kit/data"
 import * as R from "ramda"
 
-import type { DanmakuOptions, DanmakuStream } from "@amoeba/resolve"
-import { httpJson, now } from "@amoeba/resolve/host"
-import { log } from "@amoeba/resolve/log"
-import { md5Hex } from "@amoeba/resolve/utils/md5"
-import { buildMpd, type MpdAudioRep, type MpdVideoRep } from "@amoeba/resolve/utils/mpd"
-import { strOr } from "@amoeba/resolve/utils/str"
-import { DESKTOP_CHROME_UA } from "@amoeba/resolve/utils/ua"
-import { resolveCookie } from "@amoeba/resolve/platform/credentials"
-import type { PlatformClient, PlatformRequestOptions } from "@amoeba/resolve/platform/types"
+import type { DanmakuOptions, DanmakuStream } from "@tabs/platform-kit/runtime"
+import { httpJson, now } from "@tabs/platform-kit/runtime/host"
+import { log } from "@tabs/platform-kit/runtime/log"
+import { md5Hex } from "@tabs/platform-kit/runtime/utils/md5"
+import { buildMpd, type MpdAudioRep, type MpdVideoRep } from "@tabs/platform-kit/runtime/utils/mpd"
+import { strOr } from "@tabs/platform-kit/runtime/utils/str"
+import { DESKTOP_CHROME_UA } from "@tabs/platform-kit/runtime/utils/ua"
+import { resolveCookie } from "@tabs/platform-kit/runtime/platform/credentials"
+import type { PlatformClient, PlatformRequestOptions } from "@tabs/platform-kit/runtime/platform/types"
 import { biliLiveDanmakuStream } from "./danmaku-live.ts"
 import { biliVodDanmakuStream } from "./danmaku-vod.ts"
 

@@ -17,15 +17,15 @@
  * 统一映射成 Social(content + images + likes/reposts/replies),链接指向 t.bilibili.com/{id_str}。
  */
 
-import { now } from "@amoeba/resolve/host";
+import { now } from "@tabs/platform-kit/runtime/host";
 import { biliClient } from "../lib/index.ts";
-import { fillImageSizes } from "@amoeba/resolve/utils/img-size";
-import { toHttps } from "@amoeba/resolve/utils/url";
-import type { Item, Social, SocialImage } from "@amoeba/xml"
-import { serializeFeed, type SerializeOptions } from "@amoeba/xml"
+import { fillImageSizes } from "@tabs/platform-kit/runtime/utils/img-size";
+import { toHttps } from "@tabs/platform-kit/runtime/utils/url";
+import type { Item, Social, SocialImage } from "@tabs/platform-kit/data"
+import { type SerializeOptions } from "@tabs/platform-kit/data"
 
-import type { Pageable, RssChannel, RssSource, SourceInfo } from "@amoeba/crawler"
-import { apiFetchItems } from "@amoeba/crawler/factory"
+import type { Pageable, DataChannel, DataSource, SourceInfo } from "@tabs/platform-kit/data"
+import { apiFetchItems } from "@tabs/platform-kit/data"
 
 const API = "https://api.bilibili.com"
 
@@ -122,12 +122,12 @@ function requireUid(info: SourceInfo): string {
 }
 
 /** bilibili 用户动态(社交)channel。 */
-export class BiliDynamicChannel implements RssChannel {
+export class BiliDynamicChannel implements DataChannel {
   readonly key = "bili:dynamic"
   readonly name = "B站用户动态"
   readonly kind = "social" as const
   readonly sourceInfoTpl = [{ key: "uid", label: "UP 主 uid", required: true }]
-  getSource(info: SourceInfo): RssSource & Partial<Pageable> {
+  getSource(info: SourceInfo): DataSource & Partial<Pageable> {
     return {
       fetch: apiFetchItems(
         () => this.fetchItems(info),
@@ -143,12 +143,12 @@ export class BiliDynamicChannel implements RssChannel {
         if (token === undefined) {
           const first = await this.fetchRaw(info, uid, "")
           token = first.offset
-          if (!token) return { xml: serializeFeed([], opts) } // 一页到底
+          if (!token) return { items: [] } // 一页到底
         }
         const page = await this.fetchRaw(info, uid, token)
         const items = await this.toItems(page.items, now())
         return {
-          xml: serializeFeed(items, opts),
+          items,
           // has_more=true 但 offset 缺失时不给 cursor(core 判到底,不悬挂重试);
           // hasMore 显式 true:整页被过滤成 0 条时也不能让 core 按「0 新增」判到底。
           ...(page.hasMore && page.offset ? { cursor: page.offset, hasMore: true } : {}),

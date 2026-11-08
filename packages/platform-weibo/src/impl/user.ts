@@ -13,23 +13,23 @@
  * 时效问题(微博 cookie 几分钟就失效)。未注入时降级现有 HTTP + cookie 路径。
  */
 
-import { cdpJson, cdpNavigate, withBrowserOp } from "@amoeba/resolve/browser/cdp";
-import { ResolveError } from "@amoeba/resolve/errors";
+import { cdpJson, cdpNavigate, withBrowserOp } from "@tabs/platform-kit/runtime/browser/cdp";
+import { ResolveError } from "@tabs/platform-kit/runtime/errors";
 import { WB_BASE, apiHeaders, mblogCardsToItems, readWeiboLoginCookie, weiboClient, weiboScanLogin } from "../lib/index.ts";
-import type { Item, SerializeOptions } from "@amoeba/xml"
+import type { Item, SerializeOptions } from "@tabs/platform-kit/data"
 
 import type {
   Loginable,
   LoginCookieSnapshot,
   LoginResult,
   Pageable,
-  RssChannel,
-  RssSource,
+  DataChannel,
+  DataSource,
   SourceInfo,
-} from "@amoeba/crawler"
-import { apiFetch, serializeWithTotal } from "@amoeba/crawler/factory"
+} from "@tabs/platform-kit/data"
+import { apiFetch } from "@tabs/platform-kit/data"
 
-export class WeiboUserChannel implements RssChannel, Loginable {
+export class WeiboUserChannel implements DataChannel, Loginable {
   readonly key = "weibo:user"
   readonly name = "微博用户主页"
   readonly kind = "social" as const
@@ -51,7 +51,7 @@ export class WeiboUserChannel implements RssChannel, Loginable {
     return readWeiboLoginCookie(browser)
   }
 
-  getSource(info: SourceInfo): RssSource & Pageable {
+  getSource(info: SourceInfo): DataSource & Pageable {
     return {
       fetch: apiFetch(
         () => this.fetchItems(info).then((r) => ({ items: r.items, total: r.total })),
@@ -63,18 +63,29 @@ export class WeiboUserChannel implements RssChannel, Loginable {
     }
   }
 
-  /** 翻页:since_id 游标,返回新 XML + 新游标(本页为空 = 没有更多)。total 每次响应恒定,一并透传。 */
-  private async fetchMore(info: SourceInfo, sinceId?: string): Promise<{ xml: string; cursor?: string }> {
+  /** 翻页:since_id 游标,返回新条目 + 新游标(本页为空 = 没有更多)。total 每次响应恒定,一并透传。 */
+  private async fetchMore(
+    info: SourceInfo,
+    sinceId?: string,
+  ): Promise<{ items: Item[]; cursor?: string; total?: number }> {
     // ⚠️ 首次翻页(sinceId 空):refresh 已消费首页——直接重拉首页会被 store 按 id 去重
     // → 0 新增 + hasMore true(用户要多点一次才翻第 2 页)。先取首页最后一条 mid 作 since_id。
     if (!sinceId) {
       const first = await this.fetchItems(info)
-      if (!first.lastMid) return { xml: serializeWithTotal([], this.channelOptions(info), first.total) }
+      if (!first.lastMid) {
+        return {
+          items: [],
+          ...(first.total !== undefined ? { total: first.total } : {}),
+        }
+      }
       sinceId = first.lastMid
     }
     const { items, lastMid, total } = await this.fetchItems(info, sinceId)
-    const xml = serializeWithTotal(items, this.channelOptions(info), total)
-    return { xml, ...(items.length && lastMid ? { cursor: lastMid } : {}) }
+    return {
+      items,
+      ...(items.length && lastMid ? { cursor: lastMid } : {}),
+      ...(total !== undefined ? { total } : {}),
+    }
   }
 
   private async fetchItems(
