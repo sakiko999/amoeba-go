@@ -59,4 +59,8 @@
 - [!] vite 8 打包器是 rolldown：electron.vite.config 统一用 rolldownOptions（rollupOptions 已 deprecated 别名）
 - [!] tab-* 已统一为页面组件（无 main/preload，pageBridge 提供 window.tab；Notes 草稿用 sessionStorage）：dev 前先 bun run pages:prepare（dev 只投影不构建）；新增 tab 只需复制组件包并在 pack-components.ts 登记一行，无需改宿主
 - [!] Electron 支持 ESM（main ≥28、renderer 原生；沙箱 preload 仍须 CJS）；组件 main 限定 CJS 是热重载加载器的设计选择，不是 Electron 限制
+- [!] desktop:dist 已内置运行时裁剪（locales 白名单 zh-CN/en-US + 删 dxcompiler/vk_swiftshader/vulkan-1，共 -78MB）；升级 Electron 必须复核 RUNTIME_DROP_FILES——Chromium 计划在 Windows 默认开 Graphite/D3D12，届时 dxcompiler 影响渲染后端
+- [ ] media-manager 独立包 dist 落地时复制同样的 pruneRuntime 段（结构相同，约 -78MB）
+- [!] asar 内开发文件过滤（-1.4MB）用户有保留意见，暂缓不做
+- [!] 依赖产物瘦身研究已写入 desktop-release-size.md（新节「依赖产物瘦身：干预点研究」）：包管理器无安装期文件过滤能力；推荐方案②运行时白名单投影（共享层 3.15→0.48MB，require 探针实测加载闭包，保留真实文件树），方案③facade 因闭包内条件导出/ESM 具名导入实锤被否决；未实施，等定案后落 pack.ts + sync-pages 两处
 <!-- cc-todo:end -->
