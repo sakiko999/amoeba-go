@@ -232,12 +232,10 @@
     "packages/platform-bili": {
       "name": "@tabs/platform-bili",
       "version": "0.1.0",
-      "dependencies": {
-        "ramda": "^0.32.0",
-      },
       "devDependencies": {
         "@host/sdk": "workspace:*",
         "@tabs/platform-kit": "workspace:*",
+        "ramda": "^0.32.0",
       },
     },
     "packages/platform-contracts": {
@@ -256,12 +254,10 @@
     "packages/platform-douyin": {
       "name": "@tabs/platform-douyin",
       "version": "0.1.0",
-      "dependencies": {
-        "ramda": "^0.32.0",
-      },
       "devDependencies": {
         "@host/sdk": "workspace:*",
         "@tabs/platform-kit": "workspace:*",
+        "ramda": "^0.32.0",
       },
     },
     "packages/platform-douyu": {
@@ -331,13 +327,11 @@
     "packages/platform-youtube": {
       "name": "@tabs/platform-youtube",
       "version": "0.1.0",
-      "dependencies": {
-        "fast-xml-parser": "^5.10.1",
-        "ramda": "^0.32.0",
-      },
       "devDependencies": {
         "@host/sdk": "workspace:*",
         "@tabs/platform-kit": "workspace:*",
+        "fast-xml-parser": "^5.10.1",
+        "ramda": "^0.32.0",
       },
     },
     "packages/rss-client": {

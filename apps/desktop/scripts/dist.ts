@@ -116,6 +116,11 @@ const appPaths = await packager({
 const appPath = appPaths[0];
 if (appPath === undefined) throw new Error("packager 未返回产物路径");
 const freedBytes = await pruneRuntime(appPath);
+// 内联依赖的许可声明放 release 根（与 LICENSES.chromium.html 并列，便于审查）
+await cp(
+  join(root, "THIRD_PARTY_NOTICES.txt"),
+  join(appPath, "THIRD_PARTY_NOTICES.txt"),
+);
 console.log(`runtime pruned: ${(freedBytes / 1048576).toFixed(2)} MB freed`);
 // stage 只是 packager 的输入，产物已生成，删掉避免 release 里两套 app
 await rm(stage, { recursive: true, force: true });

@@ -38,4 +38,7 @@
 
 - 平台组件的 main 由 Bun.build 打成 CJS（宿主 `createRequire` 热重载）；runtime 代码
   不参与根 tsc，改动必须跑宿主 smoke（真实激活 + 网关注册）与平台自己的测试。
-- 组件依赖策略见根 CLAUDE.md：非 workspace 依赖可随组件打包安装；workspace 依赖必须内联。
+- 组件依赖运输模式（按声明字段，详见根 CLAUDE.md 与 pack.ts 头注释）：非 workspace
+  `dependencies` = external + 真实文件树安装（原生/动态/单例依赖）；`devDependencies`
+  = 构建期 tree-shake 内联（纯 JS 静态依赖的默认，ramda/fast-xml-parser/ws 均走此路）；
+  workspace 依赖必须内联。

@@ -87,4 +87,53 @@ if (existsSync(manifestPath)) {
   }
 }
 
+// 组件 main 体积预算：npm 依赖按 devDependencies 内联（运输模式约定见
+// packages/platform-kit/src/pack.ts 头注释），Bun 升级可能让 tree-shake 静默退化，
+// 用宽松上限兜底（当前实测 bili 235 / douyin 727 / youtube 336 KB）。
+const MAIN_JS_BUDGET: Record<string, number> = {
+  "platform-bili": 300,
+  "platform-douyin": 800,
+  "platform-youtube": 400,
+};
+
+// 内联守卫：bundle 里只允许 electron / node 内置的字面量 require（ctx.require 的宿主
+// 服务名是成员调用，不命中）。出现其他裸包名 = external 漏配，或该走 dependencies
+// 真实文件树通道的依赖被误内联——运行时才报 Cannot find module，必须构建期拦截。
+const { isBuiltin } = await import("node:module");
+const ALLOWED_REQUIRES = new Set(["electron"]);
+for (const pkg of allPackages) {
+  for (const mainPath of [
+    join(packagesDir, pkg, "out", "component", "main.js"),
+    join(packagesDir, pkg, "out", "page", "main.js"),
+  ]) {
+    if (!existsSync(mainPath)) continue;
+    const text = await Bun.file(mainPath).text();
+    const foreign = new Set(
+      [...text.matchAll(/(?<![.\w$])require\(\s*(['"])([^'"]+)\1\s*\)/g)]
+        .map((m) => m[2])
+        .filter(
+          (spec) =>
+            !spec.startsWith(".") &&
+            !spec.startsWith("node:") &&
+            !ALLOWED_REQUIRES.has(spec) &&
+            !isBuiltin(spec),
+        ),
+    );
+    if (foreign.size > 0) {
+      throw new Error(
+        `${pkg} ${mainPath.includes("page") ? "page" : "component"} main.js 含未内联的外部 require：${[...foreign].join(", ")}`,
+      );
+    }
+    const budget = MAIN_JS_BUDGET[pkg];
+    if (budget === undefined) continue;
+    const kb = (await stat(mainPath)).size / 1024;
+    console.log(`component main: ${pkg.padEnd(20)} ${kb.toFixed(1)} KB`);
+    if (kb > budget) {
+      throw new Error(
+        `${pkg} main.js ${kb.toFixed(1)}KB 超过 ${budget}KB 预算（tree-shake 退化？）`,
+      );
+    }
+  }
+}
+
 console.log(`\npacked ${components.length} components`);

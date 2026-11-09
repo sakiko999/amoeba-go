@@ -9,6 +9,14 @@
  *                     宿主用 createRequire(main.js) 加载，模块解析从组件目录出发，
  *                     天然命中同目录 node_modules —— 组件可以像普通 npm 包一样
  *                     带依赖（workspace 依赖仍内联，宿主 asar 内没有 workspace 链接）。
+ *
+ * 依赖运输模式（按声明字段选择，改声明前先读 docs/desktop-release-size.md）：
+ * - dependencies（非 workspace）＝ external + 真实文件树安装。给原生扩展（.node）、
+ *   运行期动态 require、从自身包目录读数据文件、需要跨组件单例/版本隔离的依赖。
+ * - devDependencies ＝ 构建期由 Bun.build tree-shake 内联进 main.js（依赖版本由
+ *   仓库 bun.lock 锁定）。纯 JS 静态依赖的默认选择——共享层因此不产生 node_modules。
+ *   误把动态依赖放 devDependencies 会在运行时才报 Cannot find module，
+ *   由 scripts/pack-components.ts 的内联守卫（无外部字面量 require + 体积预算）兜底。
  */
 
 import { cp, mkdir, rm } from "node:fs/promises";

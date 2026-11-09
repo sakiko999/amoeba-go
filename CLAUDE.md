@@ -63,4 +63,5 @@
 - [ ] media-manager 独立包 dist 落地时复制同样的 pruneRuntime 段（结构相同，约 -78MB）
 - [!] asar 内开发文件过滤（-1.4MB）用户有保留意见，暂缓不做
 - [!] 依赖产物瘦身研究已写入 desktop-release-size.md（新节「依赖产物瘦身：干预点研究」）：包管理器无安装期文件过滤能力；推荐方案②运行时白名单投影（共享层 3.15→0.48MB，require 探针实测加载闭包，保留真实文件树），方案③facade 因闭包内条件导出/ESM 具名导入实锤被否决；未实施，等定案后落 pack.ts + sync-pages 两处
+- [!] 打包管线瘦身定论：vite/构建器插件对 npm 依赖文件集无钩子（bun install 产物不在构建器图内，组件 main 走 Bun.build 不走 vite）；根源解法 = bili/douyin/youtube 的 ramda+fast-xml-parser 移到 devDependencies 由 Bun.build tree-shake 内联（共享层 3.15MB→0，app.asar -35.1%，实测优于原推荐方案②投影），dependencies 通道保留给原生/动态/单例依赖，方案②留作未来兜底
 <!-- cc-todo:end -->
