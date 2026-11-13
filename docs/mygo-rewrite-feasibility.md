@@ -12,12 +12,13 @@
   推荐走「chrome webview」路线——**现有 React tab 条代码原样保留**，还原度接近 100%。
 - **架构决策（2026-11-13 已定）：service 组件全部改 Go 原生实现，宿主不依赖 bun/任何 JS 运行时**。
   组件管理器与 page 产物形态的规划见 §5.2；代价是 platform-\*（~32k 行）与 media-library 后端
-  的 Go 重写成为主要工作量，换取体积收益全额兑现（10–20 MB）与最干净的安全模型（宿主进程内
-  再无第三方 JS）。
+  的 Go 重写成为主要工作量（服务层 2026-11-13 逐文件重估 **≈ 90 人日**，明细见 §7），
+  换取体积收益全额兑现（10–20 MB）与最干净的安全模型（宿主进程内再无第三方 JS）。
 - **最大非技术风险是成熟度**：项目仅 7 周，两周内连发 0.7.0/0.7.2/0.8.0/0.9.0 四个带 breaking
   changes 的版本，native modules 还标着 experimental。生产采用必须锁版本并持续跟进。
 - **另一个缺口**：`browser-proxy` 依赖的 `webContents.debugger`（进程内 CDP）没有等价物，
-  爬虫载体要换成「spawn 系统浏览器 + `--remote-debugging-port`」（§5.1，当前按用户指示暂缓）。
+  爬虫载体已定为「chromedp + spawn 系统浏览器 `--remote-debugging-port`」＋宿主侧 Win32
+  隐藏（§5.1.1，headless 已排除、Obscura 维持暂不接入）。
 - **收益明确**：发行体积 286.33 MB → 约 10–20 MB（service 组件 Go 化后无 JS 运行时）；内存从
   Electron 常驻（数百 MB）降到官方口径 webview 应用 ~62 MB；自带签名增量更新器与 NSIS 安装器
   （这两样本项目目前都还没做）。
@@ -167,6 +168,39 @@ CDP attach」，对 amoeba crawler 暴露标准 CDP 端点。mygo **不暴露任
    依赖用户装了什么）——而小红书/抖音在真机 Electron 上都还没验证过，**这条链路在任何
    壳下都是未验收状态**，不应单独阻塞 mygo 决策，但要排进 PoC。
 
+#### 5.1.1 载具选型与不可见性复查（2026-11-13）
+
+- **CDP 客户端选 chromedp**：活跃维护（v0.20–0.23，typed cdproto v0.157.x，泛型 API）。
+  替代项排除：go-rod 自 2024-07 休眠（fork 非直接替换）；playwright-go 附带 Node driver
+  sidecar。体积实测（tmp/size-test，strip 后）：chromedp **+~3.1 MB**（3.83 MB）；
+  playwright-go +~6.1 MB 二进制另加 ~90 MB driver（node.exe 79.4 MB）。
+- **headless=new 排除**（强反爬平台已知不可用）。形态定为：spawn 系统 Edge/Chrome
+  `--remote-debugging-port` + 独立 profile，chromedp 驱动。
+- **「页面对用户彻底不可见」刚需的落法**：chromedp 只能把窗口摆屏外，藏不了任务栏——
+  补齐靠宿主侧 Win32：窗口 `--window-position` 屏外 +
+  `--disable-features=CalculateNativeWinOcclusion`（否则 Chromium occlusion 判定隐藏 →
+  不发 XHR），宿主再以 `EnumWindows` + `GetWindowThreadProcessId` 定位 Edge 进程树窗口，
+  `SetWindowLongPtr` 叠加 `WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE` 摘掉任务栏/Alt-Tab 条目，
+  `WinEventHook` 跟踪新弹窗口——约 100 行 `golang.org/x/sys/windows`。
+- **renderLease 语义收窄（用户澄清）**：本义是「抓取时页面真实渲染但对用户不可见」
+  （interactive 模式＝窗口显示但摆屏外），不是「同一时刻只有一个页面可见」。lane/空闲回收/
+  超时自愈全部降级为可选，仅 renderLease 必须：Go 版 = 互斥锁 + `Target.activateTarget`
+  （激活排他，先激活再 scroll，否则静默丢帧），页每 fetch、fail-fast，估 1–1.5 人日。
+- **签名 JS 执行面（设计结论）**：appHost.js 的签名代码维持 JS 原文执行，不移植成 Go——
+  douyin ABogus（18,527 字符可读 SM3+RC4）、webmssdk（492,195 字符混淆 blob，仅弹幕用，
+  占 douyin ~8.7k 行的 76%）、douyu crptext（服务端动态下发）、youtube n-param。Go 侧
+  执行面三选：goja（倾向排除，纯增体积/维护成本）/ 隐藏 WebView2 `Page.Eval` /
+  系统浏览器 CDP `Runtime.evaluate`。
+- **Obscura 复查（维持暂不接入）**：Go 接入面干净——控制面即 CDP WebSocket
+  （`obscura serve --port 9222 [--stealth]`），chromedp `NewRemoteAllocator` 直连，与
+  Edge 载具同构（单二进制 sidecar ~70 MiB，无 Node）。但 CDP 域是子集：无
+  `Target.activateTarget`/Emulation，Network 事件面存疑。`-stealth` 分两层：编译期
+  BoringSSL/wreq TLS 指纹伪装（默认版 rustls 指纹可被识破；Windows scoop 默认装的是
+  非 stealth 变体）＋运行期指纹随机化/3,520 域 tracker 屏蔽——每次导航重播种，登录持久化
+  场景直接撞墙。阻塞项仍是引擎保真度（WebGL/canvas/WebSocket/连接级 cookie），与语言
+  无关；等上游修复 + 签名 release 后做 weibo-only POC，届时 Go 侧只是载具层多一个
+  backend 分支。
+
 ### 5.2 组件模型 v2：内置 Go 服务 + 静态页面包（2026-11-13 决策）
 
 > **决策：service 组件全部改 Go 原生实现，宿主不依赖 bun/任何 JS 运行时。** 早先的
@@ -266,6 +300,16 @@ experimental 风险）。收益：无 JS 运行时、体积 10–20 MB 全额兑
 - 已知缺口：home/media-manager 等页面还依赖 `window.homeNav`/`window.media` 页面自有 preload
   桥，在 v2 产物（薄客户端统一走 window.mygo）之前会空白；service 组件尚未实现
 
+#### 5.2.4 存量 TS 包去留（2026-11-13 逐包复查）
+
+| 包 | 判定 |
+| --- | --- |
+| platform-kit | **整包退役**（运行时语义全部进 Go）。唯一例外：`/provider` 子路径（152 行）——若保留 media-manager 独立 Electron 发行形态则必须存活（`packages/media-manager/src/main/backend.ts:18` 起的 provider 工厂依赖链）；随「独立形态是否继续发行」一并定案 |
+| platform-contracts | 缩成页面侧类型薄层；真实页面类型在 `packages/media-library/src/shared/types.ts`，页面侧要替换的运行时其实是 `@host/sdk`（→ window.mygo 薄客户端），contracts 不承载运行时 |
+| page-vendor | 原样保留（预构建/import map/CSP hash 全在构建期，与宿主壳解耦） |
+| platform-kit `pack.ts` | service 产物打包链随服务 Go 化失去全部用户；page 侧打包按 §5.2.2 精简保留 |
+| amoeba | 0 工作量，范围外（rss 栈不随宿主发行） |
+
 ### 5.3 Windows 下 scheme origin 形态变化
 
 mygo 在 Windows 把自定义 scheme 映射成 `http://<scheme>.localhost/`（Chromium 视
@@ -319,7 +363,22 @@ mygo 在 Windows 把自定义 scheme 映射成 `http://<scheme>.localhost/`（Ch
    转 v2 产物装进宿主，页面经 `window.mygo` 桥 + inject ACL 调 media.library——打通
    「静态页面包 → 内置 Go 服务」全链路；顺带完成 sqlite 选型（modernc.org/sqlite vs mygo 插件）
 
-### 全量迁移（PoC 通过后，粗估 4–8 周，不含爬虫真机验收）
+### 全量迁移（PoC 通过后；服务层 2026-11-13 逐文件重估）
+
+**服务层 Go 重写 ≈ 90 人日（85–105）**——12 个 platform-\* + api-gateway + kit 运行时
+（含 CDP 载具）移植；宿主壳与页面平移不在内。逐块明细：
+
+| 块 | 人日 | 明细 |
+| --- | --- | --- |
+| 元数据平台 | 9 | tmdb 1、douban 0.5、bangumi 1、apple 1.5、youtube 5 |
+| 直播平台 | 37 | bili 15、douyu 8、huya 8、twitch 6 |
+| 爬虫平台 | 25 | weibo 3、xhs 9、douyin 13（其中签名执行面 3–5） |
+| 基础设施 | 19.5 | api-gateway 1.5、kit 运行时 15（含 CDP 载具 5–8）、contracts 2、vendor 1 |
+| amoeba | 0 | 范围外 |
+
+名义 ~32k 行 platform-\* 中**真正可移植约 21k 行**（webmssdk 混淆 blob 与浏览器胶水只能
+换执行面，不能「移植」，见 §5.1.1）。不可排期项：xhs/douyin/bili 真机登录与反爬验收；
+扫码登录的 gateway op 设计（scanLogin 不在 expose 面）。
 
 1. 宿主骨架：窗口/tab/协议/session/菜单/主题（TabManager 的 Go 版）+ 组件管理器（§5.2.1）
 2. 内置服务 Go 化：api-gateway → media-library → 12 个 platform-\*（tmdb/douban 等 HTTP 元数据
