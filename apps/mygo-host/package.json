@@ -1,0 +1,9 @@
+{
+  "name": "mygo-host",
+  "private": true,
+  "scripts": {
+    "chrome": "bun run --cwd chrome build",
+    "dev": "bun run chrome && go run .",
+    "build": "bun run chrome && go build -o ../../tmp/mygo-host/mygo-host.exe ."
+  }
+}

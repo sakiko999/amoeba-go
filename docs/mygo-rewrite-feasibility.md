@@ -101,9 +101,9 @@ native UI 窗口 (Content)
 | `window.host` API | `@host/sdk` hostApi | `mygo generate` 生成的 client（窄服务 + 事件） | 改造，量小 |
 | 拖拽区 | `-webkit-app-region: drag` | CSS `--app-region: drag`（bridge 内建） | 文档支持，PoC 手感 |
 | 窗口按钮区 | `env(titlebar-area-*)` | `--mygo-titlebar-*` 变量 + `TitleBarStyle: hidden`（系统按钮 overlay）+ `SetWindowButtonsTheme` 明暗 | 文档支持，PoC |
-| 原生菜单 | `Menu.popup` | mygo 菜单 API（webview 内经绑定服务触发） | 有 API，popup 细节 PoC |
-| loading 过渡页 | host DOM 占位 | ① native overlay + `loading` 插件 spinner；② 变体 A2（见下）保留在 React | 二选一 |
-| 空 tab 状态 | host DOM | 同上 | 同上 |
+| 原生菜单 | `Menu.popup` | mygo 菜单 API（webview 内经绑定服务触发） | ✅ 已验证（原生 Popup，位置=光标） |
+| loading 过渡页 | host DOM 占位 | ① native overlay + `loading` 插件 spinner；② 变体 A2（见下）保留在 React | ✅ native UI 状态页 |
+| 空 tab 状态 | host DOM | 同上 | ✅ native UI 空态 |
 | 防闪白 | `setBackgroundColor` | `BackgroundColor: light-dark(...)` + `Hidden`/`OnReadyToShow` + WebView 自身 `BackgroundColor` | 文档支持 |
 
 **变体 A2（PoC 项）**：让 chrome webview 铺满整窗、内容 WebView 以 `Absolute + ZIndex`
@@ -140,7 +140,7 @@ mygo 原生 UI 工具包有 flexbox/grid、spring 动画、SVG 图标（Lucide �
 | import map 注入 | 构建期注入（现状本就是构建插件插入） | ✅ 不变 |
 | CSP + sha256 | 无内建 API；handler 自写 CSP 响应头，hash 逻辑沿用构建脚本 | ✅ 自己做（注意 `Page.Eval` 会绕过页面 CSP） |
 | 拒绝导航 / window.open | `OnWillNavigate`（可取消）+ `ContentRules` + `SetWindowOpenHandler`（返回 nil 拒绝）+ `Untrusted` | ✅（Linux 上 JS 弹窗到不了 handler） |
-| `Menu.popup` 原生菜单 | mygo 菜单 API | ⚠️ PoC popup 细节 |
+| `Menu.popup` 原生菜单 | mygo 菜单 API | ✅ 已验证（Popup 在光标处弹出） |
 | `titleBarStyle: hidden` + overlay 按钮配色 | `TitleBarStyle` / `HideWindowButtons` / `SetWindowButtonsTheme` / `--mygo-titlebar-*` | ✅ 官方 frameless 示例 |
 | `setBackgroundColor` 防闪白 | `BackgroundColor: light-dark(...)` + `Hidden`/`OnReadyToShow` | ✅ |
 | ipcMain/ipcRenderer + 广播 | `Bind` + 生成 client；`Event.Emit/Broadcast/EmitPage`（DOM ready 前暂存，上限 1024） | ✅ |
@@ -240,6 +240,31 @@ host/components/
 （tmdb/douban 等纯 HTTP 元数据平台先行，bili/douyin 等签名/登录平台殿后）；media-library
 后端 2.4k 行次之（sqlite 选型：modernc.org/sqlite 纯 Go 优先，避开 mygo SQLite 插件的
 experimental 风险）。收益：无 JS 运行时、体积 10–20 MB 全额兑现、宿主进程内零第三方代码。
+
+#### 5.2.3 外壳 PoC 落地记录（2026-11-13，apps/mygo-host）
+
+已跑通并验证（temp 探针 + WebView.CapturePage，正式代码只保留加载日志）：
+
+- chrome tab 条（React 19 + @demo/ui + dnd-kit）原样移植：44px、cherry 交互态、
+  关闭 collapse、右键/「+」菜单、明暗主题；编译产物内嵌进宿主（embed），页面经
+  `/` 由 `SetFrontend` 服务
+- 页面组件装载：`Protocol.Handle("page")` + component.json 扫描；clock/notes 页面真实渲染，
+  dnd 排序（`Tabs.Move`）、关闭、主题切换（host.state 广播到全部 trusted webview）链路全通
+- **页面桥**：`PageOptions.PreloadScript` 即 Electron `registerPreloadScript` 的等价物——
+  `window.mygo` 已在该脚本前注入；用它叠加 `window.tab`/`window.hostState`，Notes 的
+  `setTitle` 能实时更新 tab 条标题（页面 → Tabs 服务 → tabs.changed → chrome）
+- 两个落地期修正：①`mygo.BindAs` 会校验**全部导出方法参数**的 JSON 可编码性，管理器必须经
+  构造函数注入（不能有 `Attach(mgr)` 这类方法）；②`--mygo-titlebar-*` CSS 变量不注入
+  WebView 页面，按钮区预留改由 `ui.TitleBar()` → `Tabs.Chrome` 绑定方法下发（实测右预留 138px）
+- **观感/可操作性修正（同日验证）**：①WebView2 把 Windows 文字缩放当页面 zoom（TextScale
+  125% 时 dpr 1.875、chrome 视口只有 35px），chrome 与页面 webview 统一
+  `ZoomFactor=1/TextScale` 后 CSS px 与 DIP 一致（dpr 1.5、44px 条完整）；②chrome 只有
+  44px 高，`@demo/ui` 的 DropdownMenu/ContextMenu 会被 webview 视口裁掉（点了没反应）——
+  `+`/右键菜单改为宿主 `mygo.Menu.Popup`（`Tabs.PopupNewTabMenu`/`PopupTabMenu` 绑定方法）；
+  ③内容区改为 native UI 空态/加载页/错误页：首个 `did-finish-load` 前不挂 webview，
+  失败页带「重新加载」（`Page.Reload`），主题切换 Invalidate 重绘
+- 已知缺口：home/media-manager 等页面还依赖 `window.homeNav`/`window.media` 页面自有 preload
+  桥，在 v2 产物（薄客户端统一走 window.mygo）之前会空白；service 组件尚未实现
 
 ### 5.3 Windows 下 scheme origin 形态变化
 
