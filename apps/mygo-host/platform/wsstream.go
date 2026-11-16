@@ -164,6 +164,7 @@ func (s *wsStream) handleClose(conn *WSConn, err error) {
 	stopped := s.stopped
 	s.mu.Unlock()
 	closeHeartbeat(hbStop)
+	safeClose(conn)
 	if !userClosed {
 		s.logf("ws closed: %v", err)
 	}
