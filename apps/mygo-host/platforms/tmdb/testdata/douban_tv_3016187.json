@@ -1,0 +1,375 @@
+{
+  "actors": [
+    { "name": "\u8096\u6069\u00b7\u5bbe" },
+    { "name": "\u7c73\u6b47\u5c14\u00b7\u8d39\u5c14\u5229" },
+    { "name": "\u7433\u5a1c\u00b7\u6d77\u8482" },
+    { "name": "\u5f7c\u7279\u00b7\u4e01\u62c9\u57fa" },
+    { "name": "\u827e\u7c73\u8389\u4e9a\u00b7\u514b\u62c9\u514b" },
+    { "name": "\u57fa\u7279\u00b7\u54c8\u7075\u987f" },
+    { "name": "\u82cf\u83f2\u00b7\u7279\u7eb3" },
+    { "name": "\u9ea6\u831c\u00b7\u5a01\u5ec9\u59c6\u65af" },
+    { "name": "\u5c3c\u53e4\u62c9\u00b7\u79d1\u65af\u7279-\u74e6\u5c14\u9053" },
+    { "name": "\u4f0a\u6069\u00b7\u683c\u96f7" },
+    { "name": "\u7ea6\u7ff0\u00b7\u5e03\u83b1\u5fb7\u5229" }
+  ],
+  "aka": [
+    "\u51b0\u4e0e\u706b\u4e4b\u6b4c\uff1a\u6743\u529b\u7684\u6e38\u620f \u7b2c\u4e00\u5b63",
+    "\u738b\u5ea7\u6e38\u620f \u7b2c\u4e00\u5b63",
+    "A Song of Ice and Fire: Game of Thrones Season 1"
+  ],
+  "album_no_interact": false,
+  "body_bg_color": "f4f4f9",
+  "can_rate": true,
+  "card_subtitle": "2011 \/ \u7f8e\u56fd \u82f1\u56fd \/ \u5267\u60c5 \u5947\u5e7b \u5192\u9669 \/ \u8482\u83ab\u897f\u00b7\u8303\u00b7\u5e15\u817e \u5e03\u83b1\u6069\u00b7\u67ef\u514b \u4e39\u5c3c\u5c14\u00b7\u7c73\u7eb3\u6c49 \u963f\u5170\u00b7\u6cf0\u52d2 \/ \u8096\u6069\u00b7\u5bbe \u7c73\u6b47\u5c14\u00b7\u8d39\u5c14\u5229",
+  "color_scheme": {
+    "_base_color": [
+      0.6666666666666666, 0.03333333333333333, 0.11764705882352941
+    ],
+    "_avg_color": [0.0, 0.0, 0.1607843137254902],
+    "primary_color_light": "6e6e72",
+    "primary_color_dark": "49494c",
+    "secondary_color": "f4f4f9",
+    "is_dark": true
+  },
+  "comment_count": 94699,
+  "controversy_reason": "",
+  "countries": ["\u7f8e\u56fd", "\u82f1\u56fd"],
+  "cover": {
+    "author": {
+      "avatar": "https://img9.doubanio.com\/icon\/up23344187-64.jpg",
+      "id": "23344187",
+      "is_club": false,
+      "kind": "user",
+      "loc": { "id": "108288", "name": "\u5317\u4eac", "uid": "beijing" },
+      "name": "20\u4e2a\u5c0f\u660e\u226f",
+      "reg_time": "2009-11-09 12:01:26",
+      "type": "user",
+      "uid": "W3IQ7",
+      "uri": "douban:\/\/douban.com\/user\/23344187",
+      "url": "https:\/\/www.douban.com\/people\/23344187\/"
+    },
+    "create_time": "2011-03-16 23:29:26",
+    "description": "",
+    "id": "896064368",
+    "image": {
+      "is_animated": false,
+      "is_live": false,
+      "large": {
+        "height": 600,
+        "size": 0,
+        "url": "https:\/\/qnmob3-sign.doubanio.com\/view\/photo\/large\/public\/p896064368.jpg?sa_cv=db0d4d147b084bcc2470a095b44bd257&sa_ct=6aa426ec&imageView2\/2\/q\/80\/w\/600\/h\/3000\/format\/jpg",
+        "width": 405
+      },
+      "normal": {
+        "height": 600,
+        "size": 0,
+        "url": "https:\/\/qnmob3-sign.doubanio.com\/view\/photo\/large\/public\/p896064368.jpg?sa_cv=db0d4d147b084bcc2470a095b44bd257&sa_ct=6aa426ec&imageView2\/2\/q\/80\/w\/600\/h\/3000\/format\/jpg",
+        "width": 405
+      },
+      "primary_color": "",
+      "raw": null,
+      "small": {
+        "height": 600,
+        "size": 0,
+        "url": "https://img1.doubanio.com\/view\/photo\/s\/public\/p896064368.jpg",
+        "width": 405
+      }
+    },
+    "owner_uri": "douban:\/\/douban.com\/tv\/3016187",
+    "position": 0,
+    "sharing_url": "https:\/\/www.douban.com\/doubanapp\/dispatch?uri=\/photo\/896064368\/",
+    "type": "photo",
+    "uri": "douban:\/\/douban.com\/photo\/896064368",
+    "url": "https:\/\/movie.douban.com\/photos\/photo\/896064368\/"
+  },
+  "cover_url": "https://img1.doubanio.com\/view\/photo\/m_ratio_poster\/public\/p896064368.jpg",
+  "directors": [
+    { "name": "\u8482\u83ab\u897f\u00b7\u8303\u00b7\u5e15\u817e" },
+    { "name": "\u5e03\u83b1\u6069\u00b7\u67ef\u514b" },
+    { "name": "\u4e39\u5c3c\u5c14\u00b7\u7c73\u7eb3\u6c49" },
+    { "name": "\u963f\u5170\u00b7\u6cf0\u52d2" }
+  ],
+  "durations": ["60\u5206\u949f"],
+  "episodes_count": 10,
+  "episodes_info": "",
+  "feedback_uri": "https:\/\/m.douban.com\/subject\/feedback?id=3016187&type=tv",
+  "forum_info": null,
+  "forum_topic_count": 456,
+  "gallery_topic_count": 0,
+  "genres": ["\u5267\u60c5", "\u5947\u5e7b", "\u5192\u9669"],
+  "has_linewatch": true,
+  "head_info": null,
+  "header_bg_color": "49494c",
+  "honor_infos": [
+    {
+      "kind": "tv",
+      "rank": 2,
+      "title": "\u9ad8\u5206\u7ecf\u5178\u7f8e\u5267\u699c",
+      "uri": "douban:\/\/douban.com\/subject_collection\/ECVACWVGI?type=rank&category=movie&rank_type=tv_genre"
+    }
+  ],
+  "id": "3016187",
+  "info_url": "https:\/\/www.douban.com\/doubanapp\/\/h5\/movie\/3016187\/desc",
+  "interest": null,
+  "interest_cmt_earlier_tip_desc": "\u8be5\u77ed\u8bc4\u7684\u53d1\u5e03\u65f6\u95f4\u65e9\u4e8e\u516c\u5f00\u4e0a\u6620\u65f6\u95f4\uff0c\u4f5c\u8005\u53ef\u80fd\u901a\u8fc7\u5176\u4ed6\u6e20\u9053\u63d0\u524d\u89c2\u770b\uff0c\u8bf7\u8c28\u614e\u53c2\u8003\u3002\u5176\u8bc4\u5206\u5c06\u4e0d\u8ba1\u5165\u603b\u8bc4\u5206\u3002",
+  "interest_cmt_earlier_tip_title": "\u53d1\u5e03\u4e8e\u4e0a\u6620\u524d",
+  "interest_control_info": null,
+  "intro": "\u300a\u6743\u529b\u7684\u6e38\u620f\u300b\u662f\u4e00\u90e8\u4e2d\u4e16\u7eaa\u53f2\u8bd7\u5947\u5e7b\u9898\u6750\u7684\u7535\u89c6\u8fde\u7eed\u5267\uff0c\u8be5\u5267\u4ee5\u7f8e\u56fd\u4f5c\u5bb6\u4e54\u6cbb\u00b7R\u00b7R\u00b7\u9a6c\u4e01\u7684\u5947\u5e7b\u5de8\u4f5c\u300a\u51b0\u4e0e\u706b\u4e4b\u6b4c\u300b\u4e03\u90e8\u66f2\u4e3a\u57fa\u7840\u6539\u7f16\u521b\u4f5c\u3002\n\u6545\u4e8b\u80cc\u666f\u4e2d\u865a\u6784\u7684\u4e16\u754c\uff0c\u5206\u4e3a\u4e24\u7247\u5927\u9646\uff1a\u4f4d\u4e8e\u897f\u9762\u7684\u201c\u65e5\u843d\u56fd\u5ea6\u201d\u7ef4\u65af\u7279\u6d1b\uff1b\u4f4d\u4e8e\u4e1c\u9762\u7684\u7c7b\u4f3c\u4e9a\u6b27\u5927\u9646\u3002\u7ef4\u65af\u7279\u6d1b\u5927\u9646\u8fb9\u5883\u5904\u53d1\u73b0\u8fdc\u53e4\u4f20\u8bf4\u4e2d\u65e9\u5df2\u706d\u7edd\u7684\u751f\u7269\u5f00\u59cb\uff0c\u5371\u9669\u4e5f\u6e10\u6e10\u5728\u9760\u8fd1\u8fd9\u91cc\u3002\u8fd9\u7247\u5927\u9646\u7684\u4e34\u51ac\u57ce\u4e3b\u66a8\u5317\u5883\u7edf\u9886\u827e\u5fb7\u53f2\u5854\u514b\u5bb6\u65cf\u4e5f\u8fce\u6765\u4e86\u8001\u53cb\u517c\u56fd\u738b\u52b3\u52c3\u00b7\u62dc\u62c9\u5e2d\u6069\u7684\u6765\u8bbf\u3002\u56fd\u738b\u5e0c\u671b\u827e\u5fb7\u00b7\u53f2\u5854\u514b\uff08\u8096\u6069\u00b7\u5bbe Sean Bean \u9970\uff09\u80fd\u62c5\u4efb\u9996\u76f8\u4e00\u804c\uff0c\u5bf9\u6297\u4f01\u56fe\u593a\u53d6\u94c1\u738b\u5ea7\u7684\u53db\u519b\u3002\u5371\u60c5\u4e00\u89e6\u5373\u53d1\uff0c\u6574\u4e2a\u738b\u56fd\u770b\u4f3c\u5e73\u548c\u7684\u8868\u9762\u4e0b\u5374\u662f\u6ce2\u6d9b\u6697\u6d8c\u3002\u6743\u9ad8\u4f4d\u91cd\u7684\u62dc\u62c9\u5e2d\u6069\u5bb6\u65cf\u3001\u52c7\u6562\u5584\u826f\u7684\u53f2\u5854\u514b\u5bb6\u65cf\u3001\u4f01\u56fe\u8c0b\u53d6\u738b\u4f4d\u7684\u5766\u683c\u5229\u5b89\u5bb6\u65cf\u3001\u6709\u7740\u4e0d\u53ef\u544a\u4eba\u79d8\u5bc6\u7684\u5170\u5c3c\u65af\u7279\u5bb6\u65cf\u3002\u8fd9\u4e9b\u5bb6\u65cf\u5404\u6000\u9b3c\u80ce\uff0c\u8fd9\u4e2a\u56fd\u5bb6\u5c06\u4f1a\u9677\u5165\u4e00\u573a\u6df7\u6218.....",
+  "is_douban_intro": true,
+  "is_released": true,
+  "is_restrictive": false,
+  "is_show": false,
+  "is_tv": true,
+  "languages": ["\u82f1\u8bed", "\u591a\u65af\u62c9\u514b\u8bed"],
+  "last_episode_number": null,
+  "lineticket_url": "",
+  "linewatches": [
+    {
+      "free": false,
+      "source": {
+        "literal": "qq",
+        "name": "\u817e\u8baf\u89c6\u9891",
+        "pic": "https://img2.doubanio.com\/img\/files\/file-1432869201.png"
+      },
+      "source_uri": "txvideo:\/\/v.qq.com\/VideoDetailActivity?universalStyle=true&cid=sfn1vjnjkmzedna&vid=k0047syxmho&from=newdouban.tv2000024-sfn1vjnjkmzedna-",
+      "url": "douban:\/\/douban.com\/goToWXMiniProgram?path=preload_play\/play\/index?cid=sfn1vjnjkmzedna&vid=k0047syxmho&type=0&id=gh_fce17bb0518f&ptag=douban"
+    }
+  ],
+  "null_rating_reason": "",
+  "original_title": "Game of Thrones Season 1",
+  "pic": {
+    "large": "https://img1.doubanio.com\/view\/photo\/m_ratio_poster\/public\/p896064368.jpg",
+    "normal": "https://img1.doubanio.com\/view\/photo\/s_ratio_poster\/public\/p896064368.jpg"
+  },
+  "pre_playable_date": null,
+  "pre_release_desc": "",
+  "pubdate": ["2011-04-17(\u7f8e\u56fd)"],
+  "rate_info": "",
+  "rating": { "count": 505366, "max": 10, "star_count": 5.0, "value": 9.5 },
+  "realtime_hot_honor_infos": [],
+  "release_date": null,
+  "restrictive_icon_url": "",
+  "review_count": 679,
+  "share_activities": [],
+  "sharing_url": "https:\/\/www.douban.com\/doubanapp\/dispatch\/movie\/3016187",
+  "subject_collections": [
+    {
+      "id": "ECHU473PI",
+      "is_follow": false,
+      "title": "\u5947\u5e7b\u7c7b\u7f8e\u5267\u699c",
+      "uri": "douban:\/\/douban.com\/subject_collection\/ECHU473PI?type=rank&category=movie&rank_type=tv_genre"
+    },
+    {
+      "id": "EC2UJ76XI",
+      "is_follow": false,
+      "title": "\u7b2c12\u5c4a\u7f8e\u56fd\u7535\u5f71\u5b66\u4f1a\u5956\u83b7\u5956\u540d\u5355",
+      "uri": "douban:\/\/douban.com\/subject_collection\/EC2UJ76XI?type=rank&category=movie&rank_type=award_movie"
+    },
+    {
+      "id": "ECGEIY3YY",
+      "is_follow": false,
+      "title": "\u7b2c69\u5c4a\u91d1\u7403\u5956\u83b7\u5956\u540d\u5355",
+      "uri": "douban:\/\/douban.com\/subject_collection\/ECGEIY3YY?type=rank&category=movie&rank_type=award_movie"
+    }
+  ],
+  "subtype": "tv",
+  "tags": [],
+  "ticket_price_info": "",
+  "ticket_promo_text": "",
+  "ticket_vendor_icons": [
+    "https:\/\/img9.doubanio.com\/view\/dale-online\/dale_ad\/public\/0589a62f2f2d7c2.jpg"
+  ],
+  "title": "\u6743\u529b\u7684\u6e38\u620f \u7b2c\u4e00\u5b63",
+  "trailers": [
+    {
+      "cover_url": "https://img3.doubanio.com\/img\/trailer\/medium\/2638879912.jpg",
+      "create_time": "2021-04-06",
+      "desc": "",
+      "file_size": 36609238,
+      "id": "274178",
+      "n_comments": 6,
+      "runtime": "02:36",
+      "sharing_url": "https:\/\/www.douban.com\/doubanapp\/dispatch?uri=\/tv\/3016187\/trailer%3Ftrailer_id%3D274178%26trailer_type%3DA",
+      "term_num": 0,
+      "title": "\u9884\u544a\u7247",
+      "type": "A",
+      "type_name": "\u9884\u544a\u7247",
+      "uri": "douban:\/\/douban.com\/tv\/3016187\/trailer?trailer_id=274178&trailer_type=A",
+      "video_url": "https:\/\/vt1.doubanio.com\/202609120002\/53443d696fd84f0b253e80cb62af6e26\/view\/movie\/M\/402740178.mp4"
+    }
+  ],
+  "type": "tv",
+  "uri": "douban:\/\/douban.com\/tv\/3016187",
+  "url": "https:\/\/movie.douban.com\/subject\/3016187\/",
+  "variable_modules": [
+    { "id": "rating", "sub_modules": [] },
+    { "id": "other_interests", "sub_modules": [] },
+    { "id": "tags", "sub_modules": [] },
+    { "id": "episode_discussions", "sub_modules": [] },
+    { "id": "video_photos", "sub_modules": [] },
+    {
+      "id": "share",
+      "sub_modules": [
+        { "id": "screenshot" },
+        { "id": "doulist" },
+        { "id": "status" },
+        { "id": "other_channels" }
+      ]
+    },
+    { "id": "honor_infos", "sub_modules": [] },
+    {
+      "id": "comments",
+      "sub_modules": [
+        { "id": "count" },
+        {
+          "data": [
+            { "name": "\u70ed\u95e8", "id": "hot" },
+            { "name": "\u6700\u65b0", "id": "latest" },
+            { "name": "\u53cb\u90bb", "id": "friend" }
+          ],
+          "id": "sort_by",
+          "data_type": "sort_by"
+        },
+        { "id": "rating_scope" }
+      ]
+    },
+    { "id": "related_items", "sub_modules": [] },
+    { "id": "interest", "sub_modules": [] },
+    { "id": "related_subjects", "sub_modules": [] },
+    {
+      "id": "ugc_tabs",
+      "sub_modules": [
+        {
+          "id": "ugc_tab",
+          "data_type": "ugc_tab",
+          "data": {
+            "type": "mixed_suggestion",
+            "title": "\u7efc\u5408",
+            "id": "mixed_suggestion",
+            "uri": "douban:\/\/partial.douban.com\/subject\/3016187\/suggest",
+            "source": "\u7efc\u5408",
+            "count": 10000
+          }
+        },
+        {
+          "id": "ugc_tab",
+          "data_type": "ugc_tab",
+          "data": {
+            "type": "review",
+            "title": "\u5267\u8bc4",
+            "source": "reviews",
+            "sort_by": [
+              { "name": "\u70ed\u95e8", "id": "hot" },
+              { "name": "\u6700\u65b0", "id": "latest" },
+              { "name": "\u53cb\u90bb", "id": "friend" }
+            ]
+          }
+        },
+        {
+          "id": "ugc_tab",
+          "data_type": "ugc_tab",
+          "data": {
+            "type": "custom",
+            "title": "\u5c0f\u7ec4\u8ba8\u8bba",
+            "id": "group",
+            "uri": "douban:\/\/partial.douban.com\/subject\/3016187\/group_topic\/_content?group_id=653616",
+            "source": "\u5c0f\u7ec4\u8ba8\u8bba",
+            "count": 15201
+          }
+        }
+      ]
+    }
+  ],
+  "vendor_count": 2,
+  "vendor_desc": "",
+  "vendor_icons": [
+    "https://img9.doubanio.com\/f\/frodo\/fbc90f355fc45d5d2056e0d88c697f9414b56b44\/pics\/vendors\/tencent.png",
+    "https://img9.doubanio.com\/f\/frodo\/88a62f5e0cf9981c910e60f4421c3e66aac2c9bc\/pics\/vendors\/bilibili.png"
+  ],
+  "vendors": [
+    {
+      "accessible": true,
+      "app_bundle_id": "com.tencent.qqlive",
+      "app_uri": "txvideo:\/\/skynet.douban.com",
+      "bg_image": "https:\/\/img1.doubanio.com\/view\/dale-online\/dale_ad\/public\/eea698a314eaf3c.jpg?company_token=kX69T8w1wyOE-dale",
+      "book_type": "",
+      "book_type_cn": "",
+      "click_tracking": "",
+      "click_trackings": [
+        "https:\/\/frodo.douban.com\/rohirrim\/video_tracking\/click?subject_id=3016187&video_type=movie&video_id=800769&source=qq&user_id=None&douban_udid=&platform=&location=vendor_section"
+      ],
+      "episodes_info": "10\u96c6\u5168",
+      "grey_icon": "https://img2.doubanio.com\/f\/frodo\/8200258235dae64145f57e3fd17f0c7cfff0b06c\/pics\/vendors\/tencent_grey.png",
+      "icon": "https://img9.doubanio.com\/f\/frodo\/fbc90f355fc45d5d2056e0d88c697f9414b56b44\/pics\/vendors\/tencent.png",
+      "id": "qq",
+      "impression_tracking": "",
+      "impression_trackings": [
+        "https:\/\/frodo.douban.com\/rohirrim\/video_tracking\/impression?subject_id=3016187&video_type=movie&video_id=800769&source=qq&user_id=None&douban_udid=&platform=&location=vendor_section"
+      ],
+      "is_ad": false,
+      "is_in_whitelist": false,
+      "is_paid": true,
+      "labels": [],
+      "payment_desc": "VIP\u514d\u8d39\u89c2\u770b",
+      "payments": [
+        {
+          "description": "",
+          "method": "VIP\u514d\u8d39\u89c2\u770b",
+          "price": ""
+        }
+      ],
+      "pre_release_desc": "",
+      "promote_desc": "",
+      "style": "large",
+      "subject_id": "3016187",
+      "title": "\u817e\u8baf\u89c6\u9891",
+      "uri": "txvideo:\/\/v.qq.com\/VideoDetailActivity?universalStyle=true&cid=sfn1vjnjkmzedna&vid=k0047syxmho&from=newdouban.tv2000024-sfn1vjnjkmzedna-",
+      "url": "douban:\/\/douban.com\/goToWXMiniProgram?path=preload_play\/play\/index?cid=sfn1vjnjkmzedna&vid=k0047syxmho&type=0&id=gh_fce17bb0518f&ptag=douban"
+    },
+    {
+      "accessible": true,
+      "app_bundle_id": "tv.danmaku.bili",
+      "app_uri": "bilibili:\/\/skynet.douban.com",
+      "bg_image": "",
+      "book_type": "",
+      "book_type_cn": "",
+      "click_tracking": "",
+      "click_trackings": [
+        "https:\/\/frodo.douban.com\/rohirrim\/video_tracking\/click?subject_id=3016187&video_type=movie&video_id=983500&source=bilibili&user_id=None&douban_udid=&platform=&location=vendor_section"
+      ],
+      "episodes_info": "10\u96c6\u5168",
+      "grey_icon": "https://img2.doubanio.com\/f\/frodo\/306bfa7ea3d607e3525063ac6aea156b2ca163f5\/pics\/vendors\/bilibili_grey.png",
+      "icon": "https://img9.doubanio.com\/f\/frodo\/88a62f5e0cf9981c910e60f4421c3e66aac2c9bc\/pics\/vendors\/bilibili.png",
+      "id": "bilibili",
+      "impression_tracking": "",
+      "impression_trackings": [
+        "https:\/\/frodo.douban.com\/rohirrim\/video_tracking\/impression?subject_id=3016187&video_type=movie&video_id=983500&source=bilibili&user_id=None&douban_udid=&platform=&location=vendor_section"
+      ],
+      "is_ad": false,
+      "is_in_whitelist": false,
+      "is_paid": true,
+      "labels": [],
+      "payment_desc": "VIP\u514d\u8d39\u89c2\u770b",
+      "payments": [
+        {
+          "description": "",
+          "method": "VIP\u514d\u8d39\u89c2\u770b",
+          "price": ""
+        }
+      ],
+      "pre_release_desc": "",
+      "promote_desc": "",
+      "style": "large",
+      "subject_id": "3016187",
+      "title": "\u54d4\u54e9\u54d4\u54e9",
+      "uri": "bilibili:\/\/pgc\/season\/46681?h5awaken=b3Blbl9hcHBfZnJvbV90eXBlPWg1Jm9wZW5fYXBwX2FkZGl0aW9uPSU3QiUyMmJzb3VyY2UlMjIlM0ElMjJkb3ViYW5kcSUyMiUyQyUyMml2a19mcm9tJTIyJTNBJTIyZG91YmFuZHElMjIlN0Q=",
+      "url": "https:\/\/m.bilibili.com\/bangumi\/play\/ep791287?bsource=doubanh5"
+    }
+  ],
+  "video": null,
+  "webisode": null,
+  "webisode_count": 0,
+  "webview_info": {},
+  "wechat_timeline_share": "screenshot",
+  "year": "2011"
+}

@@ -1,0 +1,680 @@
+{
+  "data": [
+    {
+      "date": "2023-07-02",
+      "platform": "TV",
+      "images": {
+        "small": "https://lain.bgm.tv/r/200/pic/cover/l/90/01/402128_ppPaA.jpg",
+        "grid": "https://lain.bgm.tv/r/100/pic/cover/l/90/01/402128_ppPaA.jpg",
+        "large": "https://lain.bgm.tv/pic/cover/l/90/01/402128_ppPaA.jpg",
+        "medium": "https://lain.bgm.tv/r/800/pic/cover/l/90/01/402128_ppPaA.jpg",
+        "common": "https://lain.bgm.tv/r/400/pic/cover/l/90/01/402128_ppPaA.jpg"
+      },
+      "image": "https://lain.bgm.tv/pic/cover/l/90/01/402128_ppPaA.jpg",
+      "summary": "“圣杯战争”是由魔术师（御主）和英灵（从者），围绕着能够实现一切愿望的许愿机“圣杯”进行的战斗。日本的第五次圣杯战争结束之后，又过去了数年。在美国西部的城市“雪原市”，观测到了新圣杯的征兆。于是，魔术师（御主）和英灵（从者）集结到了一起。欠缺的职阶。本不可能被选中的从者。暗中活动的国家机构。为战争而打造的城市。——各种例外和违规，让圣杯战争陷入混乱，变得越发扭曲。在虚假圣杯的舞台上，人类与英灵（从者）的狂宴就此拉开序幕……",
+      "name": "Fate/strange Fake -Whispers of Dawn-",
+      "name_cn": "命运-奇异赝品 黎明低语",
+      "tags": [
+        { "name": "A-1Pictures", "count": 1725, "total_count": 146310 },
+        { "name": "Fate", "count": 1584, "total_count": 47276 },
+        { "name": "Type-Moon", "count": 1254, "total_count": 67894 },
+        { "name": "战斗", "count": 1109, "total_count": 475362 },
+        { "name": "奇幻", "count": 1051, "total_count": 475727 },
+        { "name": "轻小说改", "count": 1030, "total_count": 498472 },
+        { "name": "2023年7月", "count": 897, "total_count": 28167 },
+        { "name": "2023", "count": 701, "total_count": 81841 },
+        { "name": "TV", "count": 623, "total_count": 1412569 },
+        { "name": "成田良悟", "count": 521, "total_count": 9072 },
+        { "name": "小说改", "count": 358, "total_count": 161259 },
+        { "name": "轻改", "count": 321, "total_count": 153092 },
+        { "name": "OVA", "count": 267, "total_count": 366912 },
+        { "name": "日本", "count": 222, "total_count": 300991 },
+        { "name": "榎户骏", "count": 183, "total_count": 343 },
+        { "name": "坂诘嵩仁", "count": 118, "total_count": 185 },
+        { "name": "剧场版", "count": 60, "total_count": 728216 },
+        { "name": "2022", "count": 47, "total_count": 80789 },
+        { "name": "TVSP", "count": 38, "total_count": 1975 },
+        { "name": "群像", "count": 36, "total_count": 12955 },
+        { "name": "泽野弘之", "count": 27, "total_count": 27154 },
+        { "name": "坂詰嵩仁", "count": 24, "total_count": 101 },
+        { "name": "榎戸駿", "count": 23, "total_count": 105 },
+        { "name": "2023年", "count": 22, "total_count": 3652 },
+        { "name": "热血", "count": 21, "total_count": 214348 },
+        { "name": "澤野弘之", "count": 10, "total_count": 3101 },
+        { "name": "大東大介", "count": 10, "total_count": 24 },
+        { "name": "SP", "count": 9, "total_count": 5930 },
+        { "name": "A-1_Pictures", "count": 7, "total_count": 1509 },
+        { "name": "日本动画", "count": 7, "total_count": 34982 }
+      ],
+      "infobox": [
+        { "key": "中文名", "value": "命运-奇异赝品 黎明低语" },
+        {
+          "key": "别名",
+          "value": [
+            { "v": "FSF" },
+            { "v": "Fate/Strange Fake: Whispers of Dawn" }
+          ]
+        },
+        { "key": "话数", "value": "1" },
+        { "key": "放送开始", "value": "2023年7月2日" },
+        { "key": "放送星期", "value": "星期日" },
+        { "key": "官方网站", "value": "https://fate-strange-fake.com/" },
+        { "key": "播放电视台", "value": "TOKYO MX / BS11" },
+        { "key": "导演", "value": "榎戸駿・坂詰嵩仁" },
+        { "key": "Copyright", "value": "©成田良悟・TYPE-MOON/KADOKAWA/FSFPC" },
+        { "key": "片长", "value": "55分钟" },
+        {
+          "key": "原作",
+          "value": "成田良悟・TYPE-MOON『Fate/strange Fake』（電撃文庫刊）"
+        },
+        { "key": "人物设定", "value": "山田有慶" },
+        { "key": "企画", "value": "岩上敦宏、竹内友崇（武内崇）" },
+        { "key": "製作", "value": "Aniplex、ノーツ" },
+        { "key": "制片人", "value": "黒崎静佳" },
+        { "key": "副制片人", "value": "片岡裕貴" },
+        { "key": "助理制片人", "value": "長田久仁子、伊藤源希" },
+        {
+          "key": "监修",
+          "value": "奈須きのこ、三田誠、虚淵玄、東出祐一郎、桜井光"
+        },
+        {
+          "key": "协力",
+          "value": "设定协力：奈須きのこ、三田誠、虚淵玄、東出祐一郎、桜井光"
+        },
+        {
+          "key": "制作协力",
+          "value": "松永康佑、丘夏楠；スタジオコロリド(長谷川東、黄雨舟)；MAPPA(横田真広)；WIT STUDIO(佐藤慧介、白石大也)"
+        },
+        { "key": "脚本", "value": "大東大介" },
+        { "key": "分镜", "value": "榎戸駿、坂詰嵩仁" },
+        { "key": "演出", "value": "榎戸駿、坂詰嵩仁" },
+        { "key": "总作画监督", "value": "山田有慶" },
+        {
+          "key": "作画监督助理",
+          "value": "伊藤美奈、杉生祐一、林子皓、楊鵬、楊鋭、李睿杰"
+        },
+        { "key": "制作统括", "value": "清水暁、加藤淳" }
+      ],
+      "rating": {
+        "rank": 1566,
+        "total": 7323,
+        "count": {
+          "1": 8,
+          "2": 7,
+          "3": 10,
+          "4": 26,
+          "5": 139,
+          "6": 768,
+          "7": 3583,
+          "8": 2474,
+          "9": 213,
+          "10": 95
+        },
+        "score": 7.3
+      },
+      "collection": {
+        "on_hold": 163,
+        "dropped": 44,
+        "wish": 1530,
+        "collect": 12914,
+        "doing": 824
+      },
+      "id": 402128,
+      "eps": 1,
+      "total_episodes": 1,
+      "meta_tags": ["TV", "日本", "奇幻", "战斗", "小说改"],
+      "volumes": 0,
+      "series": false,
+      "locked": false,
+      "nsfw": false,
+      "type": 2
+    },
+    {
+      "date": "2026-01-03",
+      "platform": "TV",
+      "images": {
+        "small": "https://lain.bgm.tv/r/200/pic/cover/l/f0/51/443831_84ZQs.jpg",
+        "grid": "https://lain.bgm.tv/r/100/pic/cover/l/f0/51/443831_84ZQs.jpg",
+        "large": "https://lain.bgm.tv/pic/cover/l/f0/51/443831_84ZQs.jpg",
+        "medium": "https://lain.bgm.tv/r/800/pic/cover/l/f0/51/443831_84ZQs.jpg",
+        "common": "https://lain.bgm.tv/r/400/pic/cover/l/f0/51/443831_84ZQs.jpg"
+      },
+      "image": "https://lain.bgm.tv/pic/cover/l/f0/51/443831_84ZQs.jpg",
+      "summary": "魔术师〈Master〉与英灵〈Servant〉为了争夺能实现一切愿望的愿望机「圣杯」，而彼此厮杀——这便是「圣杯战争」。\r\n\r\n在日本进行的第五次圣杯战争落下帷幕的几年之后。\r\n在美利坚合众国西部的城市——雪原市（Snowfield），观测到了新圣杯即将出现的征兆。\r\n于是魔术师〈Master〉与英灵〈Servant〉们纷纷集结于此地——\r\n\r\n缺失的职阶。\r\n本不该被选中的从者。\r\n在暗处操盘的国家势力。\r\n为战争而建造的城市。\r\n——由于无数的异常状况（Irregular），「圣杯战争」逐渐走向失控，局势愈发混沌扭曲。\r\n\r\n在伪圣杯的祭坛之上共舞，人类与英灵〈Servant〉的饗宴就此拉开帷幕。",
+      "name": "Fate/strange Fake",
+      "name_cn": "Fate/strange Fake",
+      "tags": [
+        { "name": "Fate", "count": 2270, "total_count": 47276 },
+        { "name": "A-1Pictures", "count": 2036, "total_count": 146311 },
+        { "name": "战斗", "count": 1840, "total_count": 475366 },
+        { "name": "奇幻", "count": 1779, "total_count": 475737 },
+        { "name": "TV", "count": 1692, "total_count": 1412599 },
+        { "name": "Type-Moon", "count": 1571, "total_count": 67894 },
+        { "name": "2026年1月", "count": 1249, "total_count": 27877 },
+        { "name": "轻小说改", "count": 1180, "total_count": 498477 },
+        { "name": "小说改", "count": 1043, "total_count": 161276 },
+        { "name": "日本", "count": 882, "total_count": 301020 },
+        { "name": "成田良悟", "count": 793, "total_count": 9072 },
+        { "name": "2026", "count": 562, "total_count": 44436 },
+        { "name": "轻改", "count": 375, "total_count": 153096 },
+        { "name": "2025", "count": 164, "total_count": 73321 },
+        { "name": "2025年1月", "count": 120, "total_count": 27080 },
+        { "name": "榎户骏", "count": 118, "total_count": 343 },
+        { "name": "群像", "count": 59, "total_count": 12955 },
+        { "name": "坂诘嵩仁", "count": 54, "total_count": 185 },
+        { "name": "热血", "count": 51, "total_count": 214348 },
+        { "name": "坂詰嵩仁", "count": 38, "total_count": 101 },
+        { "name": "榎戸駿", "count": 35, "total_count": 105 },
+        { "name": "2024", "count": 22, "total_count": 71896 },
+        { "name": "泽野弘之", "count": 21, "total_count": 27154 },
+        { "name": "未定档", "count": 16, "total_count": 4179 },
+        { "name": "2026年", "count": 15, "total_count": 1867 },
+        { "name": "音乐", "count": 15, "total_count": 103913 },
+        { "name": "型月", "count": 13, "total_count": 876 },
+        { "name": "日本动画", "count": 10, "total_count": 34982 },
+        { "name": "大東大介", "count": 9, "total_count": 24 },
+        { "name": "花泽香菜", "count": 8, "total_count": 43376 }
+      ],
+      "infobox": [
+        { "key": "中文名", "value": "Fate/strange Fake" },
+        { "key": "别名", "value": [{ "v": "命运-奇异赝品" }, { "v": "FSF" }] },
+        { "key": "话数", "value": "13" },
+        { "key": "放送开始", "value": "2026年1月3日" },
+        { "key": "放送星期", "value": "星期六" },
+        { "key": "官方网站", "value": "https://fate-strange-fake.com/" },
+        { "key": "播放电视台", "value": "TOKYO MX / BS11" },
+        { "key": "导演", "value": "榎戸駿・坂詰嵩仁" },
+        { "key": "音乐", "value": "澤野弘之" },
+        { "key": "Copyright", "value": "©成田良悟・TYPE-MOON/KADOKAWA/FSFPC" },
+        {
+          "key": "原作",
+          "value": "成田良悟・TYPE-MOON『Fate/strange Fake』（電撃文庫刊）"
+        },
+        { "key": "人物原案", "value": "森井しづき；协力：坂本みねぢ(3)" },
+        { "key": "系列构成", "value": "大東大介" },
+        { "key": "人物设定", "value": "山田有慶" },
+        {
+          "key": "副人物设定",
+          "value": "滝山真哲、相音光、浜友里恵、おかざきおか"
+        },
+        { "key": "道具设计", "value": "田中一真" },
+        { "key": "怪物设计", "value": "和田慎平、楫野裕翔" },
+        { "key": "印象板", "value": "有原慧悟" },
+        { "key": "设定", "value": "宝具演出设定：伍柏諭" },
+        { "key": "主动画师", "value": "遠山友賀" },
+        {
+          "key": "美术监督",
+          "value": "清木亜夕(草薙)、畠山佑貴(草薙)、岡本綾乃(草薙)、権瓶岳斗(グーフィー)"
+        },
+        {
+          "key": "美术板",
+          "value": "小倉一男(草薙)、岡本綾乃(草薙)、吉原俊一郎(美峰)、辻秀一(美峰)"
+        },
+        {
+          "key": "美术设计",
+          "value": "成田偉保(草薙)、板橋紗綾香(グラフィニク)、杉本あゆみ・新妻雅行(千住工房)、平義樹弥(A-1 Pictures)"
+        },
+        { "key": "色彩设计", "value": "茂木孝浩" },
+        { "key": "CG 导演", "value": "宮風慎一(グラフィニカ)" },
+        { "key": "2D 设计", "value": "松田陵平" },
+        { "key": "摄影监督", "value": "宮脇洋平" },
+        { "key": "剪辑", "value": "近藤勇二(REAL-T)" },
+        { "key": "音响监督", "value": "土屋雅紀" },
+        { "key": "音效", "value": "小山恭正" },
+        { "key": "音响", "value": "INSPIONエッジ" },
+        { "key": "动画制作", "value": "A-1 Pictures" },
+        {
+          "key": "监修",
+          "value": "奈須きのこ、三田誠、虚淵玄、東出祐一郎、桜井光"
+        },
+        {
+          "key": "设定协力",
+          "value": "奈須きのこ、三田誠、虚淵玄、東出祐一郎、桜井光"
+        },
+        {
+          "key": "制片人",
+          "value": "黒崎静佳→片岡裕貴、長嶺利江子→買場道雄、大和田智之、新倉俊哉"
+        },
+        { "key": "制作统括", "value": "清水暁、佐藤成俊" },
+        { "key": "动画制片人", "value": "藤田祥雄" },
+        { "key": "副制片人", "value": "尾堂太朗、照井健、橋本京佳、東真央" },
+        { "key": "宣传制片人", "value": "山下花子" },
+        {
+          "key": "企画",
+          "value": "岩上敦宏、竹内友崇(武内崇)、佐藤真紀、羽川寛、大塚則和"
+        },
+        {
+          "key": "企画协力",
+          "value": "阿南浩志、渡部竜平、関根龍二、太田真由"
+        },
+        {
+          "key": "协力",
+          "value": "黒﨑静佳、小野木航、中山智之、岡田武士、松﨑由美子、谷池侑美、佐藤茂薫、月岡佑紀、佐藤顕、石橋杏果"
+        },
+        {
+          "key": "製作",
+          "value": "Aniplex、ノーツ、TOKYO MX、BS11(日本BS放送)、コンテンツシード"
+        },
+        { "key": "主题歌作曲", "value": "澤野弘之" },
+        { "key": "主题歌编曲", "value": "澤野弘之" },
+        {
+          "key": "主题歌演出",
+          "value": "SawanoHiroyuki[nZk]:Jean-Ken Johnny & TAKUMA / 13.3g"
+        },
+        {
+          "key": "脚本",
+          "value": "大東大介(1-4,8,12-13)、佐藤亜美(5,9)、枦山大(6,11)、窪山阿佐子(7,10)"
+        },
+        {
+          "key": "分镜",
+          "value": "榎戸駿(1,4,9,13)、坂詰嵩仁(2-3,13)、大川貴大(5)、宮川駿(6)、小原正和(7)、仲野良(8)、黒沢守(9)、北村翔太郎(10)、益山亮司(11)、朝岡卓矢(12)"
+        },
+        {
+          "key": "演出",
+          "value": "榎戸駿(1,13)、坂詰嵩仁(2,13)、國本一穂(3)、川岸和樹(4)、大川貴大(5)、迫井政行(5)、森大貴(6,13)、宮川駿(6)、小原正和(7)、仲野良(8,12)、粂田佳之(9,12)、北村翔太郎(10)、益山亮司(11)"
+        },
+        {
+          "key": "OP・ED 分镜",
+          "value": "榎戸駿・坂詰嵩仁(OP) / tkg[髙木麻穂](ED1)、山本健(ED2)"
+        },
+        {
+          "key": "OP・ED 演出",
+          "value": "岩澤亨(OP) / tkg[髙木麻穂](ED1)、山本健(ED2)"
+        },
+        { "key": "插画", "value": "吉成鋼(肖像画#5)" },
+        { "key": "插入歌演出", "value": "SawanoHiroyuki[nZk]:Yosh" }
+      ],
+      "rating": {
+        "rank": 1391,
+        "total": 9912,
+        "count": {
+          "1": 18,
+          "2": 9,
+          "3": 25,
+          "4": 73,
+          "5": 228,
+          "6": 1060,
+          "7": 4204,
+          "8": 3651,
+          "9": 458,
+          "10": 186
+        },
+        "score": 7.3
+      },
+      "collection": {
+        "on_hold": 446,
+        "dropped": 223,
+        "wish": 3968,
+        "collect": 14502,
+        "doing": 6162
+      },
+      "id": 443831,
+      "eps": 13,
+      "total_episodes": 13,
+      "meta_tags": ["TV", "日本", "奇幻", "战斗", "小说改"],
+      "volumes": 0,
+      "series": false,
+      "locked": false,
+      "nsfw": false,
+      "type": 2
+    },
+    {
+      "date": "2024-04-09",
+      "platform": "日剧",
+      "images": {
+        "small": "https://lain.bgm.tv/r/200/pic/cover/l/b3/ab/467345_XJ9G4.jpg",
+        "grid": "https://lain.bgm.tv/r/100/pic/cover/l/b3/ab/467345_XJ9G4.jpg",
+        "large": "https://lain.bgm.tv/pic/cover/l/b3/ab/467345_XJ9G4.jpg",
+        "medium": "https://lain.bgm.tv/r/800/pic/cover/l/b3/ab/467345_XJ9G4.jpg",
+        "common": "https://lain.bgm.tv/r/400/pic/cover/l/b3/ab/467345_XJ9G4.jpg"
+      },
+      "image": "https://lain.bgm.tv/pic/cover/l/b3/ab/467345_XJ9G4.jpg",
+      "summary": "石原さとみ３年ぶりの連続ドラマ復帰作！初の検事役で新たな時代のヒロインへ！\r\n\r\n　　2024年４月期、テレビ朝日の火曜よる９時枠は、３年ぶりの連続ドラマ復帰となる石原さとみを主演に迎え、オリジナルドラマ『Destiny』を放送することが決定しました。3年ぶりの連続ドラマ復帰作に加え、石原がテレビ朝日のドラマに出演するのは、『霊能力者 小田霧響子の嘘』（2010年）以来、なんと14年ぶり！　そのうえ、これまでさまざまな作品で輝きを放ってきた石原が今回挑むのは、守られることに甘んじるのではなく、“愛する人は私がこの手で守り抜く”という強さと覚悟をもった女性。コロナ禍を経て、私たちの想像を超えた未曽有の出来事が次々と降りかかる現代社会においても、その環境に屈することなく自らの意志で人生を切り開いていく、新時代のヒロインが誕生します！\r\n　　主人公は「横浜地方検察庁」中央支部の検事・西村奏。中学生の時、検事の父を亡くしたことをきっかけに、母の故郷・長野県に移り住み、そのまま地元大学の法学部に進学。そして、そこで出逢った４人の仲間と共に、司法試験に向け苦楽を共にする一方、恋に、喧嘩に、友情に…と、キャンパスがある長野の雄大な自然に包まれながら、生まれて初めての「青春」を謳歌し、その絆を深めていました。しかし、司法試験資格のためのロースクール入試を間近に控えたある日、事件は起こります。\r\n　　ある人物の死―。それが彼らの運命を大きく狂わせていったのです。\r\n\r\n舞台は長野から横浜へ。12年の時を経て「運命」の事件が再び動き出す…！\r\n\r\n　　「私たち友だちでいようね、永遠に」という仲間との約束を一瞬にして打ち砕いた運命の事件。それから12年の月日が流れ、舞台は長野から横浜へ―。35歳、念願の検事になって6年。そんな奏の前に、「あの」事件以来、消息不明だった同級生が現れ、再び“過去”と向き合うことに…。　\r\n　　数多くの疑惑に包まれた「大学時代の事件」と対峙したことをきっかけに、新たに見えてくる20年前の「父の死の真相」、そして仲間たちの秘密の顔と、恋人との再会…と、一見バラバラに見える出来事が、やがて一本の線でつながった時、物語は思いがけない方向へ突き進んでいき…。\r\n　　主人公が封印したはずだった青春時代の「光と影」。抗えない運命の中でも自分の意志を貫いて突き進む奏の姿を描く、《20年の時をかけたサスペンスラブストーリー》が幕を開けます。\r\n　　出産を経て新たなステージに進んだ石原が、３年ぶりの連ドラ復帰作で一体どんなヒロインを体現してくれるのか―2024年春、“現代を生きる等身大のヒロイン”として、新風を吹かせる石原の演技に、ご期待ください。\r\n\r\n人間ドラマの名手・吉田紀子氏が、脚本家人生初となる“検事”の世界を描く！\r\n\r\n　　本作の脚本を手掛けるのは、ドラマ『Dr.コトー診療所』シリーズ（2003年ほか／映画は2022年）、「友情～平尾誠二と山中伸弥『最後の一年』～」(2023年)、映画『涙そうそう』（2006年）、『ハナミズキ』（2010年）などで数多くのヒット作を生んできた脚本家・吉田紀子。意外にも脚本家人生初となる“検事”の世界を舞台にした今作。人間ドラマの名手である吉田が紡ぐ完全オリジナルサスペンスラブストーリーに期待が高まります。\r\n　　さらに演出は、映画『僕の初恋をキミに捧ぐ』（2009年）、『潔く柔く』（2013年）、ドラマ『君の手がささやいている』シリーズ（1997-2001年）など、多数の作品を手掛ける監督・新城毅彦氏が担当。光と影のコントラストが美しい映像世界、そして30代になっても、青春の痛みを抱えながら生きる主人公達の繊細でせつない心情描写にも、どうぞご注目ください。",
+      "name": "Destiny",
+      "name_cn": "命运",
+      "tags": [
+        { "name": "日剧", "count": 9, "total_count": 56254 },
+        { "name": "2024春", "count": 6, "total_count": 58 },
+        { "name": "ドラマ", "count": 5, "total_count": 5895 },
+        { "name": "石原さとみ", "count": 3, "total_count": 159 },
+        { "name": "2024", "count": 2, "total_count": 1940 },
+        { "name": "朝日", "count": 2, "total_count": 47 },
+        { "name": "石原里美", "count": 1, "total_count": 1289 },
+        { "name": "剧情", "count": 1, "total_count": 7777 },
+        { "name": "电视剧", "count": 1, "total_count": 30374 },
+        { "name": "日本", "count": 1, "total_count": 23045 },
+        { "name": "四星", "count": 1, "total_count": 10 },
+        { "name": "龟梨和也", "count": 1, "total_count": 504 }
+      ],
+      "infobox": [
+        { "key": "中文名", "value": "命运" },
+        { "key": "集数", "value": "9" },
+        { "key": "放送星期", "value": "火曜日" },
+        { "key": "开始", "value": "2024-04-09" },
+        { "key": "结束", "value": "2024-06-04" },
+        { "key": "类型", "value": "剧情" },
+        { "key": "国家/地区", "value": "日本" },
+        { "key": "语言", "value": "日本语" },
+        { "key": "频道", "value": "火曜9時枠の連続ドラマ" },
+        { "key": "电视台", "value": "テレビ朝日" },
+        { "key": "首播国家", "value": "日本" },
+        { "key": "官方网站", "value": "https://www.tv-asahi.co.jp/destiny/" },
+        { "key": "导演", "value": "新城毅彦、星野和成、中村圭良" },
+        { "key": "编剧", "value": "吉田紀子" },
+        { "key": "音乐", "value": "得田真裕" },
+        {
+          "key": "制片人",
+          "value": "中川慎子（GP）、浜田壮瑛、森田美桜、大古場栄一"
+        },
+        { "key": "主演", "value": "石原さとみ" },
+        {
+          "key": "配角",
+          "value": "亀梨和也、安藤政信、宮澤エマ、矢本悠馬、曽田陵介、田中みな実、高畑淳子、佐々木蔵之介、仲村トオル"
+        },
+        { "key": "制作协力", "value": "AOI Pro." },
+        { "key": "制作著作", "value": "テレビ朝日" },
+        { "key": "主题歌", "value": "椎名林檎「人間として」" }
+      ],
+      "rating": {
+        "rank": 3391,
+        "total": 23,
+        "count": {
+          "1": 1,
+          "2": 0,
+          "3": 3,
+          "4": 8,
+          "5": 2,
+          "6": 7,
+          "7": 2,
+          "8": 0,
+          "9": 0,
+          "10": 0
+        },
+        "score": 4.7
+      },
+      "collection": {
+        "on_hold": 2,
+        "dropped": 9,
+        "wish": 5,
+        "collect": 25,
+        "doing": 4
+      },
+      "id": 467345,
+      "eps": 9,
+      "total_episodes": 9,
+      "meta_tags": ["剧情", "日本", "电视剧"],
+      "volumes": 0,
+      "series": false,
+      "locked": false,
+      "nsfw": false,
+      "type": 6
+    },
+    {
+      "date": null,
+      "platform": "华语剧",
+      "images": {
+        "small": "https://lain.bgm.tv/r/200/pic/cover/l/9f/c3/128335_izWuL.jpg",
+        "grid": "https://lain.bgm.tv/r/100/pic/cover/l/9f/c3/128335_izWuL.jpg",
+        "large": "https://lain.bgm.tv/pic/cover/l/9f/c3/128335_izWuL.jpg",
+        "medium": "https://lain.bgm.tv/r/800/pic/cover/l/9f/c3/128335_izWuL.jpg",
+        "common": "https://lain.bgm.tv/r/400/pic/cover/l/9f/c3/128335_izWuL.jpg"
+      },
+      "image": "https://lain.bgm.tv/pic/cover/l/9f/c3/128335_izWuL.jpg",
+      "summary": "　　故事发生在暑假期间，马林（殷宗杰 饰）和他的伙伴们在街上见义勇为，搭救了被歹徒打劫的于老师（吴越 饰）。康老师（傅彪 饰）偶遇当年下乡时的恋人（沈丹萍 饰），她正为女儿张玲（周莹 饰）高考的事奔波，康老师为弥补当初愧疚，热心跑腿帮忙。开学后，同学们步入高中最后一年，俗称“高考集中营”，老师、学生与家长加入了分班大混战。暑假被马林等人搭救的于老师做了他们的班主任，这令他们非常开心，早熟的孟凡（孙波 饰）竟然爱上了于老师，细心的于老师发现后，帮情窦初开的孟凡化解了纠结的情关。高考的巨大压力不但考验着学生，同样考验着老师和家长.....",
+      "name": "命运的承诺",
+      "name_cn": "命运的承诺",
+      "tags": [],
+      "infobox": [
+        { "key": "中文名", "value": "命运的承诺" },
+        { "key": "集数", "value": "22" },
+        { "key": "类型", "value": "剧情" },
+        { "key": "国家/地区", "value": "中国大陆" },
+        { "key": "每集长", "value": "46min" },
+        { "key": "导演", "value": "余淳 / 张弘" },
+        { "key": "编剧", "value": "高大勇" },
+        {
+          "key": "主演",
+          "value": "傅彪 / 吴越 / 杨青 / 周国治 / 廖学秋 / 张秋芳 / 殷宗杰"
+        }
+      ],
+      "rating": {
+        "rank": 0,
+        "total": 0,
+        "count": {
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0,
+          "7": 0,
+          "8": 0,
+          "9": 0,
+          "10": 0
+        },
+        "score": 0
+      },
+      "collection": {
+        "on_hold": 0,
+        "dropped": 0,
+        "wish": 0,
+        "collect": 0,
+        "doing": 0
+      },
+      "id": 128335,
+      "eps": 22,
+      "total_episodes": 22,
+      "meta_tags": ["中国", "剧情", "华语", "电视剧"],
+      "volumes": 0,
+      "series": false,
+      "locked": false,
+      "nsfw": false,
+      "type": 6
+    },
+    {
+      "date": "2023-12-22",
+      "platform": "WEB",
+      "images": {
+        "small": "https://lain.bgm.tv/r/200/pic/cover/l/0b/aa/358565_iCKzs.jpg",
+        "grid": "https://lain.bgm.tv/r/100/pic/cover/l/0b/aa/358565_iCKzs.jpg",
+        "large": "https://lain.bgm.tv/pic/cover/l/0b/aa/358565_iCKzs.jpg",
+        "medium": "https://lain.bgm.tv/r/800/pic/cover/l/0b/aa/358565_iCKzs.jpg",
+        "common": "https://lain.bgm.tv/r/400/pic/cover/l/0b/aa/358565_iCKzs.jpg"
+      },
+      "image": "https://lain.bgm.tv/pic/cover/l/0b/aa/358565_iCKzs.jpg",
+      "summary": "少女阿肝为了找回失去的记忆，毅然参加了神秘的“命运拳台”，但由于在阴差阳错下使用了禁忌的机甲，因此引发出一系列风暴……",
+      "name": "命运拳台",
+      "name_cn": "命运拳台",
+      "tags": [
+        { "name": "国创", "count": 92, "total_count": 4193 },
+        { "name": "原创", "count": 85, "total_count": 623682 },
+        { "name": "机甲", "count": 70, "total_count": 2892 },
+        { "name": "国产", "count": 68, "total_count": 161843 },
+        { "name": "战斗", "count": 59, "total_count": 475172 },
+        { "name": "2023", "count": 55, "total_count": 81816 },
+        { "name": "萌系", "count": 48, "total_count": 9558 },
+        { "name": "李豪凌", "count": 36, "total_count": 670 },
+        { "name": "中国", "count": 35, "total_count": 31990 },
+        { "name": "3D", "count": 32, "total_count": 51287 },
+        { "name": "WEB", "count": 29, "total_count": 72446 },
+        { "name": "奇幻", "count": 25, "total_count": 475348 },
+        { "name": "搞笑", "count": 22, "total_count": 642309 },
+        { "name": "动画", "count": 14, "total_count": 35804 },
+        { "name": "阿梓", "count": 13, "total_count": 13 },
+        { "name": "2023年12月", "count": 9, "total_count": 373 },
+        { "name": "治愈", "count": 6, "total_count": 303321 },
+        { "name": "TV", "count": 6, "total_count": 1411457 },
+        { "name": "国漫", "count": 4, "total_count": 15991 },
+        { "name": "元气蛙动漫", "count": 3, "total_count": 21 },
+        { "name": "2024年1月", "count": 3, "total_count": 25243 },
+        { "name": "MOJO动画", "count": 2, "total_count": 2 },
+        { "name": "科幻", "count": 2, "total_count": 254268 },
+        { "name": "好看", "count": 2, "total_count": 1531 },
+        { "name": "机战", "count": 2, "total_count": 50593 },
+        { "name": "Q版", "count": 1, "total_count": 1079 },
+        { "name": "3？", "count": 1, "total_count": 977 },
+        { "name": "超现实", "count": 1, "total_count": 1909 },
+        { "name": "萌", "count": 1, "total_count": 71468 },
+        { "name": "黑深残", "count": 1, "total_count": 288 }
+      ],
+      "infobox": [
+        { "key": "中文名", "value": "命运拳台" },
+        { "key": "别名", "value": [{ "v": "RINGING FATE" }] },
+        { "key": "话数", "value": "12" },
+        { "key": "放送开始", "value": "2023年12月22日" },
+        { "key": "放送星期", "value": "星期五" },
+        { "key": "官方网站", "value": "https://b8station.tv/ringingfate/" },
+        { "key": "在线播放平台", "value": "bilibili" },
+        { "key": "导演", "value": "李豪凌" },
+        {
+          "key": "音乐",
+          "value": "作曲：林友树(林ゆうき)、高木亮志、古橋勇紀"
+        },
+        { "key": "製作", "value": "bilibili、哔梦；出品人：李旎" },
+        { "key": "总制片人", "value": "张圣晏、李豪凌" },
+        { "key": "制片人", "value": "康君，李鹏、熊自华、唐礼" },
+        { "key": "制片", "value": "林芷薇" },
+        {
+          "key": "人物原案",
+          "value": "HAKURO（人设原案设计）；角色概念设计：阿厘、颜笑、口阿koua、警惕田雞、成都八爪鱼网络科技有限公司"
+        },
+        { "key": "音乐监督", "value": "林友树(林ゆうき)" },
+        { "key": "配音监督", "value": "边江，锦鲤、王婧儿" },
+        { "key": "联合导演", "value": "执行导演：李林柯、沈远韬" },
+        { "key": "IP管理与合作总负责", "value": "茶仙" },
+        { "key": "IP运营管理", "value": "金程、范绮雯、杭晓瑜、闻罡、李珮瑶" },
+        { "key": "内容运营总策划", "value": "王蓉、乔理文" },
+        { "key": "内容运营", "value": "张天闻、林姿含" },
+        { "key": "市场中心总策划", "value": "杨亮" },
+        { "key": "市场推广", "value": "李周惠子、邹文亮" },
+        { "key": "总编审", "value": "邓博仁、周奕" },
+        { "key": "原作", "value": "李豪凌" },
+        { "key": "录音工作室", "value": "配音团队：边江工作室" },
+        { "key": "录音", "value": "赵跃、聂丽乐、马晓燕" },
+        {
+          "key": "分镜",
+          "value": "贺德州（元气蛙）、徐倩、鳗鱼（绘之刃）；打斗分镜：爆裂社、苏泽华（澜映画）"
+        },
+        { "key": "脚本", "value": "执行编剧：袁也" },
+        { "key": "设定", "value": "UI设计：黄艳妮" },
+        { "key": "特效", "value": "特效设计：MV8" },
+        {
+          "key": "剪辑",
+          "value": "后期支持：谢志豪；剪辑组长：李竞宇、剪辑师助理：邓丹；阿司匹琳[阿斯匹琳](OP)"
+        },
+        {
+          "key": "制作协力",
+          "value": "株式会社緋和、东京绘梦、景亿（上海）网络科技有限公司；二维辅助：成都比格熊动漫科技有限公司、铅元素动画；角色模型团队：丁达尔科技、四里信息科技（上海）有限公司、成都八爪鱼网络科技有限公司；场景模型团队：青空动漫；OP制作：SeenVision；ED制作：澜映画(STUDIO.LAN！)；美术协力：景亿（上海）网络科技有限公司"
+        },
+        { "key": "色彩设计", "value": "Nobori Haruko(のぼりはるこ)" },
+        { "key": "上色", "value": "钟绮琦(ED)" },
+        {
+          "key": "美术监督",
+          "value": "美术总监：刘明超、李林柯；美术指导：全脂舅(OP)；MG美术指导(OP)：钟钟、哲子"
+        },
+        {
+          "key": "概念设计",
+          "value": "荀诗盈、芦珊、范松涛、徐宁远、孟一鸣、贺钰洋、叶帆、岳子云、罗文东、李家乐、王婧涵、卢燕"
+        },
+        {
+          "key": "美术",
+          "value": "美术协力：刘彪、张凯雯、杨元超；3D美术制作(OP)：全脂舅、许在鹏、孙逸镕、张耀城、富哲人、羽墨"
+        },
+        {
+          "key": "原画",
+          "value": "二维支持：DEnpE、杨鑫军、齐星宇、廖妤、郝宝宝、卿少、Rosa、曹勇剑、冯麒麟、孟冬冬；方案/第一原画(ED)：王琳锋、梁志业、林宇铭、阮凝禧、李继盛、樊杰、谭逸云、张可莹、翟沁童、黄睿婷、李天仪"
+        },
+        {
+          "key": "人物设定",
+          "value": "角色三视图：阿墨、警惕田雞、口阿koua、成都八爪鱼网络科技有限公司"
+        },
+        { "key": "作画监修", "value": "二维修型指导：魏博勋" },
+        {
+          "key": "作画监督",
+          "value": "二维修型画师：沈一卓、李紫怡、陈茜、孙亚丽、吕文琦；ED：王杰锋、严苑菁"
+        },
+        { "key": "摄影", "value": "二维后期：程靖；光学核心" },
+        {
+          "key": "合作高校",
+          "value": "四川师范大学、成都东软学院（数字艺术与设计学院）、西南科技大学、西华大学、成都职业技术学院（动漫制作技术）、绵阳职业技术学院、重庆机电职业技术大学"
+        },
+        { "key": "音乐制作人", "value": "島津真太郎" },
+        { "key": "音乐制作", "value": "Kay Production" },
+        { "key": "主题歌演出", "value": "Zach Sorgen / Fiji Blue" },
+        {
+          "key": "主题歌作词",
+          "value": "Koil Preample、Zach Sorgen、Darryl Gervais / Trevor Dering、Valentin Fritz"
+        },
+        {
+          "key": "主题歌作曲",
+          "value": "Koil Preample、Zach Sorgen、Darryl Gervais、Eren Cannata / Trevor Dering、Valentin Fritz"
+        },
+        {
+          "key": "主题歌编曲",
+          "value": "Koil Preample、Zach Sorgen、Darryl Gervais、Eren Cannata / Trevor Dering、Valentin Fritz"
+        },
+        { "key": "创意总监", "value": "创意指导：阿司匹琳[阿斯匹琳](OP)" },
+        { "key": "CG 导演", "value": "CG执行导演：全脂舅(OP)" },
+        { "key": "OP・ED 分镜", "value": "哲子(OP)" },
+        {
+          "key": "美术设计",
+          "value": "MG美术设计(OP)：钟钟、开开、李婧贤、小梅、Yuki"
+        },
+        { "key": "总作画监督", "value": "严苑菁(ED)" },
+        { "key": "色彩指定", "value": "人物色指定：虾虾(ED)" },
+        {
+          "key": "第二原画",
+          "value": "ED：罗京京、阮凝禧、孙雨虹、谭逸云、钱柏霖、刘健怡、梁志业"
+        },
+        {
+          "key": "补间动画",
+          "value": "ED：罗京京、孙雨虹、林美婷、梁永烨、钱柏霖、穭语涵、罗铮、刘健怡、刘晓娟"
+        },
+        { "key": "动画检查", "value": "陈志威(ED)" },
+        { "key": "背景美术", "value": "耗子(ED)" },
+        { "key": "色彩检查", "value": "虾虾(ED)" },
+        { "key": "印象板", "value": "美术氛围：徐宁远、郭迎彬" },
+        { "key": "特别鸣谢", "value": "鸣谢：HERO" },
+        { "key": "音响", "value": "音频制作团队：音熊联萌" },
+        { "key": "音响监督", "value": "薛晨" },
+        { "key": "音效", "value": "朱建东、薛晨" }
+      ],
+      "rating": {
+        "rank": 5388,
+        "total": 314,
+        "count": {
+          "1": 6,
+          "2": 2,
+          "3": 4,
+          "4": 12,
+          "5": 35,
+          "6": 92,
+          "7": 110,
+          "8": 40,
+          "9": 3,
+          "10": 10
+        },
+        "score": 6.4
+      },
+      "collection": {
+        "on_hold": 47,
+        "dropped": 58,
+        "wish": 184,
+        "collect": 457,
+        "doing": 100
+      },
+      "id": 358565,
+      "eps": 12,
+      "total_episodes": 12,
+      "meta_tags": ["奇幻", "原创", "战斗", "中国", "WEB"],
+      "volumes": 0,
+      "series": false,
+      "locked": false,
+      "nsfw": false,
+      "type": 2
+    }
+  ],
+  "total": 76,
+  "limit": 5,
+  "offset": 0
+}

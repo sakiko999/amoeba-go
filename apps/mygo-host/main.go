@@ -17,6 +17,9 @@ import (
 	"github.com/egoist/mygo/ui"
 
 	"mygo-host/components"
+	"mygo-host/jsrunner"
+	"mygo-host/platform"
+	"mygo-host/services"
 	"mygo-host/tabs"
 )
 
@@ -37,6 +40,23 @@ func main() {
 	comps := components.NewManager(*pagesDir, filepath.Join(userData, "pages"))
 	comps.Logf = log.Printf
 	comps.Scan()
+
+	// 内置 Go 服务:平台运行时 + api-gateway(自检日志与 TS 宿主 smoke 同面)
+	cache, err := platform.NewCache(filepath.Join(userData, "provider-cache"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	js := jsrunner.New()
+	sc := &platform.ServiceContext{
+		Logf:  log.Printf,
+		HTTP:  platform.NewHostClient(),
+		Cache: cache,
+		Creds: platform.NewCredentials(filepath.Join(userData, "credentials.json")),
+		JS:    js,
+	}
+	if _, err := services.Activate(sc); err != nil {
+		log.Fatal(err)
+	}
 
 	// 自定义 scheme 必须在创建窗口之前注册（mygo 约定：Run 之前完成）
 	if err := mygo.Protocol.Handle("page", comps.PageHandler()); err != nil {
@@ -69,6 +89,7 @@ func main() {
 			Content:         ui.View(mgr.View),
 		})
 		mgr.Attach(win)
+		js.Init()
 		if err := mgr.Start(); err != nil {
 			log.Fatal(err)
 		}
