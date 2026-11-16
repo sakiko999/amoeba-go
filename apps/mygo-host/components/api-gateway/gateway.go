@@ -68,6 +68,7 @@ func New(logf func(format string, args ...any)) *Gateway {
 }
 
 // Manifest 根服务声明(对齐 TS api-gateway component.json)。
+//
 //go:embed component.json
 var manifestRaw []byte
 

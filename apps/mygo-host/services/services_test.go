@@ -8,8 +8,8 @@ import (
 	"errors"
 	"testing"
 
-	"mygo-host/components"
 	"mygo-host/platform"
+	"mygo-host/registry"
 )
 
 func testContext(t *testing.T) *platform.ServiceContext {
@@ -27,9 +27,9 @@ func testContext(t *testing.T) *platform.ServiceContext {
 	}
 }
 
-func testManager(t *testing.T) *components.Manager {
+func testManager(t *testing.T) *registry.Manager {
 	t.Helper()
-	return components.NewManager(t.TempDir(), t.TempDir())
+	return registry.NewManager(t.TempDir(), t.TempDir())
 }
 
 func TestActivateRegistersAllPlatforms(t *testing.T) {

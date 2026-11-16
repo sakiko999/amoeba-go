@@ -12,7 +12,7 @@ import (
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 
-	"mygo-host/components"
+	"mygo-host/registry"
 )
 
 // ChromeHeight 与 chrome 页面（tab 条）和 WindowOptions.TitleBarHeight 保持一致。
@@ -72,7 +72,7 @@ type ThemeSource interface {
 }
 
 type Manager struct {
-	comps   *components.Manager
+	comps   *registry.Manager
 	theme   ThemeSource
 	win     *mygo.Window
 	chrome  *mygo.WebView
@@ -88,7 +88,7 @@ type Manager struct {
 	Logf func(format string, args ...any)
 }
 
-func NewManager(comps *components.Manager, theme ThemeSource) *Manager {
+func NewManager(comps *registry.Manager, theme ThemeSource) *Manager {
 	return &Manager{
 		comps:   comps,
 		theme:   theme,

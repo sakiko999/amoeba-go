@@ -1,8 +1,11 @@
-// Package components 实现宿主的组件管理器（mygo 版 v1）：
+// Package registry 实现宿主的组件注册表（mygo 版 v1）：
 // 只管理 kind=page 的静态页面包（component.json + renderer/）；service 组件按
-// 2026-11-13 决策全部为宿主内置 Go 实现，不参与目录扫描与安装。
+// 2026-11-13 决策全部为宿主内置 Go 实现，不参与目录扫描与安装，激活后由
+// 装配层登记进本注册表（与 page 平级）。源码组织上，components/ 目录收纳
+// 全部内置 service 组件（子目录名 = 组件 id，component.json 经 go:embed 进
+// 二进制）——那是源码集合，不是运行时扫描对象；运行时扫描与安装仍只针对 page。
 // 校验规则移植自 apps/desktop/src/main/pages/manifest.ts（Electron 版）。
-package components
+package registry
 
 import (
 	"encoding/json"

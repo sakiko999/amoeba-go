@@ -1,0 +1,11 @@
+{
+  "id": "jsrunner",
+  "kind": "service",
+  "name": "签名 JS 执行面",
+  "version": "0.1.0",
+  "provides": [
+    {
+      "name": "host.js"
+    }
+  ]
+}

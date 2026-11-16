@@ -1,6 +1,6 @@
 // mygo-host —— Electron 宿主的 mygo 重写原型（阶段 1：外壳 + 组件管理器）。
 // 结构：native UI 窗口（Content）+ 顶部 44px chrome webview（tab 条，React）
-// + 每个 tab 一个 WebView；页面包由 components 管理，经 page:// 协议服务。
+// + 每个 tab 一个 WebView；页面包由 registry 管理，经 page:// 协议服务。
 // service 组件暂不实现（按决策为宿主内置 Go 包，后续阶段落地）。
 //
 // 运行：先构建 chrome（bun run --cwd apps/mygo-host/chrome build），再 go run .
@@ -16,9 +16,9 @@ import (
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 
-	"mygo-host/components"
-	"mygo-host/jsrunner"
+	"mygo-host/components/jsrunner"
 	"mygo-host/platform"
+	"mygo-host/registry"
 	"mygo-host/services"
 	"mygo-host/tabs"
 )
@@ -37,7 +37,7 @@ func main() {
 	}
 	theme := newThemeStore(filepath.Join(userData, "host-state.json"))
 
-	comps := components.NewManager(*pagesDir, filepath.Join(userData, "pages"))
+	comps := registry.NewManager(*pagesDir, filepath.Join(userData, "pages"))
 	comps.Logf = log.Printf
 	comps.Scan()
 
@@ -47,6 +47,10 @@ func main() {
 		log.Fatal(err)
 	}
 	js := jsrunner.New()
+	jsSvc, err := jsrunner.NewService(js)
+	if err != nil {
+		log.Fatal(err)
+	}
 	sc := &platform.ServiceContext{
 		Logf:  log.Printf,
 		HTTP:  platform.NewHostClient(),
@@ -54,7 +58,7 @@ func main() {
 		Creds: platform.NewCredentials(filepath.Join(userData, "credentials.json")),
 		JS:    js,
 	}
-	if _, err := services.Activate(sc, comps); err != nil {
+	if _, err := services.Activate(sc, comps, jsSvc); err != nil {
 		log.Fatal(err)
 	}
 
@@ -62,7 +66,7 @@ func main() {
 	if err := mygo.Protocol.Handle("page", comps.PageHandler()); err != nil {
 		log.Fatal(err)
 	}
-	if err := mygo.Protocol.Handle("vendor", components.VendorHandler(*vendorDir)); err != nil {
+	if err := mygo.Protocol.Handle("vendor", registry.VendorHandler(*vendorDir)); err != nil {
 		log.Fatal(err)
 	}
 

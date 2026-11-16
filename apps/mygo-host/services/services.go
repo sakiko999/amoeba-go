@@ -6,24 +6,26 @@
 package services
 
 import (
-	"mygo-host/components"
-	"mygo-host/gateway"
+	gateway "mygo-host/components/api-gateway"
 	"mygo-host/platform"
+	"mygo-host/registry"
 
-	"mygo-host/platforms/apple"
-	"mygo-host/platforms/bangumi"
-	"mygo-host/platforms/bili"
-	"mygo-host/platforms/douban"
-	"mygo-host/platforms/douyu"
-	"mygo-host/platforms/huya"
-	"mygo-host/platforms/tmdb"
-	"mygo-host/platforms/twitch"
-	"mygo-host/platforms/youtube"
+	"mygo-host/components/platform-apple"
+	"mygo-host/components/platform-bangumi"
+	"mygo-host/components/platform-bili"
+	"mygo-host/components/platform-douban"
+	"mygo-host/components/platform-douyu"
+	"mygo-host/components/platform-huya"
+	"mygo-host/components/platform-tmdb"
+	"mygo-host/components/platform-twitch"
+	"mygo-host/components/platform-youtube"
 )
 
 // Activate 建网关并按拓扑序激活全部内置服务;每项服务的 manifest 平级登记
-// 进组件管理器(组件清单/依赖图的数据源)。comps 必传(激活清单是装配契约)。
-func Activate(sc *platform.ServiceContext, comps *components.Manager) (*gateway.Gateway, error) {
+// 进组件管理器(组件清单/依赖图的数据源)。comps 必传(激活清单是装配契约);
+// extra 是由宿主构造的额外服务组件(如 jsrunner——实现对象经 ServiceContext
+// 供给平台,这里只做拓扑参与与清单登记)。
+func Activate(sc *platform.ServiceContext, comps *registry.Manager, extra ...platform.Service) (*gateway.Gateway, error) {
 	gw := gateway.New(sc.Logf)
 	root, err := gateway.NewService(gw)
 	if err != nil {
@@ -35,7 +37,7 @@ func Activate(sc *platform.ServiceContext, comps *components.Manager) (*gateway.
 		tmdb.NewService, douban.NewService, bangumi.NewService, apple.NewService,
 		youtube.NewService, bili.NewService, douyu.NewService, huya.NewService, twitch.NewService,
 	}
-	list := []platform.Service{root}
+	list := append([]platform.Service{root}, extra...)
 	for _, newService := range factories {
 		svc, err := newService(sc)
 		if err != nil {
