@@ -185,16 +185,17 @@ func (l *liveCreds) set(c danmuCred) {
 }
 
 func (c *client) getDanmuInfo(ctx context.Context, roomID string, cookie *string) (danmuCred, error) {
-	// 本地判定用已解析 cookie(uid 探测/buvid3 提取);下游请求透传原指针
-	// (signWeb/getJSON 内部各自走三档解析)。
-	resolved := c.resolveCookie(cookie)
+	// 认证帧身份只用调用方显式 cookie（TS 同：未传/空串 = 匿名 uid=0 +
+	// 匿名指纹 buvid3，不掺 provider 登录态）；HTTP 链由 signWeb/getJSON
+	// 内部各自三档解析，登录 cookie 可用。
 	uid := 0
-	if resolved != "" {
-		if v, err := c.navMid(ctx, &resolved); err == nil {
+	if cookie != nil && *cookie != "" {
+		explicit := *cookie
+		if v, err := c.navMid(ctx, &explicit); err == nil {
 			uid = v
 		}
 	}
-	buvid3 := extractCookie(resolved, "buvid3")
+	buvid3 := extractCookie(deref(cookie), "buvid3")
 	if buvid3 == "" {
 		if v, err := c.anonBuvid3(ctx); err == nil {
 			buvid3 = v

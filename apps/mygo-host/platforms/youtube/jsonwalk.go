@@ -1,6 +1,8 @@
 // 有序 JSON 树:InnerTube 响应里列表顺序与键顺序有语义(频道视频序、首个
 // continuation 令牌),encoding/json 的 map 会丢顺序,故用 Decoder 逐 token 建
 // 有序树。只覆盖 youtube 解析所需的只读能力,缺失/类型不符一律给空值。
+// nullish 语义对齐 JS:显式 null 视同缺失(get 折叠),空数组与缺失区分
+// (items 返回非 nil 空切片,供调用方做 ?? 式回退判断)。
 
 package youtube
 
@@ -108,6 +110,11 @@ func (v *jsonValue) get(key string) *jsonValue {
 	}
 	for _, pair := range v.obj {
 		if pair.key == key {
+			// TS `?.`/真值判断下 JSON null 等同键缺失,折叠为 nil
+			// (否则 `!= nil` 判断会把 `{key: null}` 当存在)。
+			if pair.val != nil && pair.val.kind == jsonNull {
+				return nil
+			}
 			return pair.val
 		}
 	}
@@ -127,6 +134,11 @@ func (v *jsonValue) path(keys ...string) *jsonValue {
 func (v *jsonValue) items() []*jsonValue {
 	if v == nil || v.kind != jsonArray {
 		return nil
+	}
+	if v.arr == nil {
+		// Array.isArray([]) 为真:空数组返回非 nil 空切片,与缺失/非数组
+		// (nil)区分——调用方的 `== nil` 回退对应 TS `??`,空数组不回退。
+		return []*jsonValue{}
 	}
 	return v.arr
 }

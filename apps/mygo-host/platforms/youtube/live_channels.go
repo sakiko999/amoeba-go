@@ -224,8 +224,10 @@ func newLiveCategoriesChannel(sc *platform.ServiceContext) platform.DataChannel 
 				if shelf.Slug == "hot" || len(shelf.Hits) == 0 {
 					continue
 				}
+				// TS `s.hits[0]?.thumb`:首个命中存在即输出其 thumb(空串也
+				// 输出),hits 为空才省略。
 				var thumbnail *string
-				if shelf.Hits[0].Thumb != "" {
+				if len(shelf.Hits) > 0 {
 					thumbnail = platform.Str(shelf.Hits[0].Thumb)
 				}
 				items = append(items, platform.Item{

@@ -99,7 +99,7 @@ func (c *client) getJSON(ctx context.Context, url string, opts reqOptions) (plat
 	}
 	if code, ok := data["code"]; ok {
 		n := jnum(code)
-		if n == -352 || n == -509 {
+		if (n == -352 || n == -509) && !opts.NoRiskSignal {
 			c.reportRisk(jsNum(n))
 		}
 		if n != 0 && !opts.AllowCodeError {

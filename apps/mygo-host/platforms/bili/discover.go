@@ -139,8 +139,10 @@ func (c *client) fetchBiliAreaRooms(ctx context.Context, parentAreaID, areaID st
 			return biliAreaRooms{}, err
 		}
 	}
-	if code := jnum(res["code"]); code != 0 {
-		return biliAreaRooms{}, fmt.Errorf("bilibili API %s: %s", jsNum(code), jstrOr(res["message"], "unknown error"))
+	// TS `res?.code !== 0` 抛错：code 键缺失（2xx 空 body）也走错误路径，
+	// 避免消费方把「抓取失败」当「没有更多」。
+	if codeRaw, ok := res["code"]; !ok || jnum(codeRaw) != 0 {
+		return biliAreaRooms{}, fmt.Errorf("bilibili API %s: %s", jsNum(jnum(codeRaw)), jstrOr(res["message"], "unknown error"))
 	}
 	data := jobj(res["data"])
 	var list []any

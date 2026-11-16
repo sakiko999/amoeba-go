@@ -84,9 +84,10 @@ func youtubeDashStreams(ctx context.Context, sc *platform.ServiceContext, adapti
 			InitRange:  item.format.InitRange.spec(),
 			IndexRange: item.format.IndexRange.spec(),
 		}
-		quality := item.format.qualityLabel()
-		if quality == "" {
-			quality = fmt.Sprintf("%dp", height)
+		// TS `f.qualityLabel ?? \`${height}p\``:空串标签原样输出,不回退。
+		quality := fmt.Sprintf("%dp", height)
+		if item.format.QualityLabel != nil {
+			quality = *item.format.QualityLabel
 		}
 		streams = append(streams, platform.Stream{
 			URL:          "",

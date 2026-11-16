@@ -84,7 +84,7 @@ var cvRe = regexp.MustCompile(`cv\d+`)
 
 // parseDynModule 单个动态模块 → 可渲染字段（按 major 结构分支，major.type 只是形态标签）。
 func parseDynModule(d *dynModule) parsedDyn {
-	parsed := parsedDyn{}
+	parsed := parsedDyn{likes: dynLikeCount(d)}
 	if d == nil || d.ModuleDynamic == nil {
 		parsed.content = "(无正文)"
 		return parsed
@@ -130,7 +130,6 @@ func parseDynModule(d *dynModule) parsedDyn {
 			content = deref(archive.Desc)
 		}
 	}
-	parsed.likes = dynLikeCount(d)
 	parsed.content = content
 	if parsed.content == "" {
 		parsed.content = title

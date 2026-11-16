@@ -223,7 +223,7 @@ func chatContinuation(liveChat *jsonValue) (string, int, error) {
 		return "", 0, errors.New("youtube live chat: 直播结束(无下一 continuation)")
 	}
 	timeoutMs := defaultTimeoutMs
-	if timeout := cont.get("timeoutMs"); timeout != nil && timeout.kind != jsonNull {
+	if timeout := cont.get("timeoutMs"); timeout != nil {
 		timeoutMs = int(timeout.asNumber())
 	}
 	return token, timeoutMs, nil

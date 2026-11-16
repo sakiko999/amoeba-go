@@ -218,9 +218,11 @@ func entryToVideo(entry parsedItem, now int64, sourceID string) platform.Item {
 	}
 	mediaGroup := raw.child("group")
 	summary := mediaGroup.child("description").textValue()
-	thumbnail := ""
+	// TS asString:@_url 为空串时输出 ""(非 undefined),故属性存在即输出
+	// (含空串),缺失才省略。
+	thumbnail := (*string)(nil)
 	if url, ok := mediaGroup.child("thumbnail").attr("url"); ok {
-		thumbnail = url
+		thumbnail = platform.Str(url)
 	}
 	var duration *float64
 	if value, ok := mediaGroup.child("content").attr("duration"); ok {
@@ -243,8 +245,8 @@ func entryToVideo(entry parsedItem, now int64, sourceID string) platform.Item {
 		Title:       title,
 		URL:         platform.Str(watchURL),
 		Summary:     summary,
-		Thumbnail:   platform.StrOmit(thumbnail),
-		Poster:      platform.StrOmit(thumbnail),
+		Thumbnail:   thumbnail,
+		Poster:      thumbnail,
 		Author:      author,
 		PublishedAt: publishedAt,
 		FetchedAt:   now,

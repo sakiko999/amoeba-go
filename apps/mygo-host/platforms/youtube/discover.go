@@ -121,8 +121,10 @@ func videoRendererToHit(videoRenderer *jsonValue) (youtubeLiveHit, bool) {
 	if text, ok := ytText(videoRenderer.get("title")); ok {
 		title = text
 	}
-	channelTitle, _ := ytText(videoRenderer.get("ownerText"))
-	if channelTitle == "" {
+	// TS `textOf(ownerText) ?? textOf(longBylineText)`:?? 只对 undefined
+	// 回退,ownerText 解析为空串时保留空串(ok=true)不回退。
+	channelTitle, ok := ytText(videoRenderer.get("ownerText"))
+	if !ok {
 		channelTitle, _ = ytText(videoRenderer.get("longBylineText"))
 	}
 	viewersText, _ := ytText(videoRenderer.get("viewCountText"))

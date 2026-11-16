@@ -198,18 +198,23 @@ func isPlayableProgressive(format playerFormat) bool {
 func resolveFormatURL(ctx context.Context, sc *platform.ServiceContext, format playerFormat, videoID string) (string, bool) {
 	streamURL := format.url()
 	if streamURL == "" {
-		cipherStr := derefString(format.Cipher)
-		if cipherStr == "" {
-			cipherStr = derefString(format.SignatureCipher)
+		// TS `format.cipher ?? format.signatureCipher`:?? 只对 nullish 回退,
+		// cipher 为空串时不回退、由下方空判直接放弃该流。
+		cipherStr := ""
+		if format.Cipher != nil {
+			cipherStr = *format.Cipher
+		} else if format.SignatureCipher != nil {
+			cipherStr = *format.SignatureCipher
 		}
 		if cipherStr == "" {
 			return "", false
 		}
 		cipher := parseCipher(cipherStr)
 		streamURL = cipher["url"]
-		signatureParam := cipher["sp"]
-		if signatureParam == "" {
-			signatureParam = "sig"
+		// TS `cipher.sp ?? "sig"`:键存在(即使空串)即用其值。
+		signatureParam := "sig"
+		if sp, ok := cipher["sp"]; ok {
+			signatureParam = sp
 		}
 		if cipher["s"] != "" && !strings.Contains(streamURL, "&"+signatureParam+"=") {
 			return "", false

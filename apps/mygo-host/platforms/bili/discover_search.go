@@ -107,7 +107,8 @@ func (c *client) searchBiliAnchors(ctx context.Context, keyword string, page int
 		}
 		it.Thumbnail = coverURL(item["uface"])
 		author := &platform.Author{Name: stripEm(uname)}
-		if uid := jstr(item["uid"]); uid != "" {
+		// TS `item.uid ?` 真值判断：数字 0（上游 uid 恒为数字）不输出 handle。
+		if uid := jstr(item["uid"]); uid != "" && uid != "0" {
 			author.Handle = platform.Str(uid)
 		}
 		it.Author = author
