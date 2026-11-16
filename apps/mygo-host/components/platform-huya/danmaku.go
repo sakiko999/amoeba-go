@@ -1,29 +1,21 @@
 // 虎牙弹幕:进房参数取自 m.huya.com 房间页 HTML(HNF_GLOBAL_INIT 常把 lYyid 置 0,
 // 用正则取真实值);wss://cdnws.api.huya.com + Tars 进房帧;60s 固定心跳;
-// 断线按指数退避重连(±15% 抖动,连续 10 次放弃,成功连接清零计数)。
-// 组合语义对齐 TS deferredStream + createWsStream:订阅即异步 setup + 建连,
-// 退订断开且不再建流(连接零泄漏)。
+// 断线重连/熔断由共享 platform.CreateWSStream 统一(对齐 TS 组合语义)。
 
 package huya
 
 import (
 	"context"
 	"fmt"
-	"math"
-	"math/rand"
 	"regexp"
 	"strconv"
-	"sync"
-	"time"
 
 	"mygo-host/platform"
 )
 
 const (
-	danmakuWSURL   = "wss://cdnws.api.huya.com"
-	heartbeatMs    = 60000
-	maxAttempts    = 10
-	maxReconnectMs = 30000
+	danmakuWSURL = "wss://cdnws.api.huya.com"
+	heartbeatMs  = 60000
 )
 
 var (
@@ -98,149 +90,23 @@ func encodeJoin(args danmakuArgs) []byte {
 	return command.bytes()
 }
 
-// danmakuStream 订阅即开始,返回退订函数。
+// danmakuStream 订阅即异步 setup(房间页提进房参数)→ 建 WS;生命周期走共享
+// platform.DeferredStream + CreateWSStream(退订零泄漏/重连/心跳/熔断)。
 func danmakuStream(sc *platform.ServiceContext, roomID string) platform.DanmakuStream {
-	return func(onItems func([]platform.DanmakuItem)) func() {
-		session := &danmakuSession{
-			sc:      sc,
-			roomID:  roomID,
-			onItems: onItems,
-			stopCh:  make(chan struct{}),
-		}
-		go session.run(context.Background())
-		return session.stop
-	}
-}
-
-type danmakuSession struct {
-	sc       *platform.ServiceContext
-	roomID   string
-	onItems  func([]platform.DanmakuItem)
-	stopCh   chan struct{}
-	stopOnce sync.Once
-	mu       sync.Mutex
-	conn     *platform.WSConn
-}
-
-func (s *danmakuSession) stop() {
-	s.stopOnce.Do(func() {
-		close(s.stopCh)
-		s.mu.Lock()
-		conn := s.conn
-		s.mu.Unlock()
-		if conn != nil {
-			_ = conn.Close()
-		}
-	})
-}
-
-func (s *danmakuSession) stopped() bool {
-	select {
-	case <-s.stopCh:
-		return true
-	default:
-		return false
-	}
-}
-
-func (s *danmakuSession) setConn(conn *platform.WSConn) {
-	s.mu.Lock()
-	s.conn = conn
-	s.mu.Unlock()
-}
-
-// run 异步 setup → 连接循环;返回即流结束(退订/初始化失败/重连熔断)。
-func (s *danmakuSession) run(ctx context.Context) {
-	args, err := fetchDanmakuArgs(ctx, s.sc, s.roomID)
-	if err != nil {
-		if !s.stopped() {
-			s.sc.Log("huya danmaku 初始化失败: %v", err)
-		}
-		return
-	}
-	attempts := 0
-	for !s.stopped() {
-		conn, err := platform.Dial(ctx, danmakuWSURL, nil)
-		if err != nil {
-			s.sc.Log("huya danmaku 连接失败: %v", err)
-			if !s.waitReconnect(attempts) {
-				return
-			}
-			attempts++
-			continue
-		}
-		s.setConn(conn)
-		if s.stopped() {
-			_ = conn.Close()
-			return
-		}
-		attempts = 0
-		_ = conn.Write(encodeJoin(args))
-		heartbeatStop := make(chan struct{})
-		go s.heartbeat(conn, heartbeatStop)
-		s.readLoop(conn)
-		close(heartbeatStop)
-		_ = conn.Close()
-		s.setConn(nil)
-		if s.stopped() || !s.waitReconnect(attempts) {
-			return
-		}
-		attempts++
-	}
-}
-
-func (s *danmakuSession) readLoop(conn *platform.WSConn) {
-	for {
-		_, data, err := conn.Read()
-		if err != nil || s.stopped() {
-			return
-		}
-		if items := decodeDanmakuFrame(data); len(items) > 0 {
-			s.onItems(items)
-		}
-	}
-}
-
-// heartbeat 连上即发一帧,之后每 60s 一帧(TS onReady 的 hb() + setInterval)。
-func (s *danmakuSession) heartbeat(conn *platform.WSConn, stop <-chan struct{}) {
-	send := func() {
-		if !s.stopped() {
-			_ = conn.Write(heartbeatFrame)
-		}
-	}
-	send()
-	ticker := time.NewTicker(heartbeatMs * time.Millisecond)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-stop:
-			return
-		case <-s.stopCh:
-			return
-		case <-ticker.C:
-			send()
-		}
-	}
-}
-
-// waitReconnect TS scheduleReconnect:attempts 达上限放弃,否则按
-// min(1000*2^attempts, 30s) × [0.85,1.15] 抖动等待;false = 放弃。
-func (s *danmakuSession) waitReconnect(attempts int) bool {
-	if attempts >= maxAttempts {
-		s.sc.Log("huya danmaku 重连 %d 次后放弃", attempts)
-		return false
-	}
-	base := 1000 * (1 << attempts)
-	if base > maxReconnectMs {
-		base = maxReconnectMs
-	}
-	delay := time.Duration(math.Round(float64(base)*(0.85+rand.Float64()*0.3))) * time.Millisecond
-	timer := time.NewTimer(delay)
-	defer timer.Stop()
-	select {
-	case <-s.stopCh:
-		return false
-	case <-timer.C:
-		return true
-	}
+	logf := func(format string, args ...any) { sc.Log("huya danmaku "+format, args...) }
+	return platform.DeferredStream(
+		func() (danmakuArgs, error) {
+			return fetchDanmakuArgs(context.Background(), sc, roomID)
+		},
+		func(args danmakuArgs, onItems func([]platform.DanmakuItem)) func() {
+			return platform.CreateWSStream(context.Background(), platform.WSStreamOptions{
+				URL:         func() string { return danmakuWSURL },
+				OnOpen:      func(conn *platform.WSConn) { _ = conn.Write(encodeJoin(args)) },
+				OnMessage:   func(data []byte, _ *platform.WSConn) ([]platform.DanmakuItem, error) { return decodeDanmakuFrame(data), nil },
+				Heartbeat:   func() []byte { return heartbeatFrame },
+				HeartbeatMs: heartbeatMs,
+			}, logf)(onItems)
+		},
+		func(err error) { logf("初始化失败: %v", err) },
+	)
 }

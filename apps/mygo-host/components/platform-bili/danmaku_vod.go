@@ -76,7 +76,7 @@ func (c *client) resolveBiliDanmaku(ctx context.Context, itemID string, cookie *
 // vodDanmakuStream 订阅时一次性解析全量并推送（首轮失败只记日志）。
 // cookie 三态(nil=默认解析 / 空串=强制匿名 / 非空=显式)透传给解析层。
 func (c *client) vodDanmakuStream(itemID string, cookie *string) platform.DanmakuStream {
-	return deferredStream(
+	return platform.DeferredStream(
 		func() ([]platform.DanmakuItem, error) {
 			return c.resolveBiliDanmaku(context.Background(), itemID, cookie)
 		},

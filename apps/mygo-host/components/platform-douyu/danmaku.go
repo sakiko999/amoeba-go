@@ -11,19 +11,15 @@ import (
 	"context"
 	"encoding/binary"
 	"math"
-	"math/rand"
 	"strings"
-	"sync"
 	"time"
 
 	"mygo-host/platform"
 )
 
 const (
-	wsURL                = "wss://danmuproxy.douyu.com:8506"
-	heartbeatInterval    = 45 * time.Second
-	maxReconnectAttempts = 10
-	maxReconnectDelay    = 30 * time.Second
+	wsURL             = "wss://danmuproxy.douyu.com:8506"
+	heartbeatInterval = 45 * time.Second
 )
 
 // douyuColors 斗鱼专属 6 色索引(1红 2蓝 3绿 4橙 5紫 6粉),非真 hex。
@@ -108,160 +104,19 @@ func douyuColorOf(col string) *string {
 	return platform.Str(hex)
 }
 
-// danmakuStream 订阅即建连(进房 + 心跳),退订断开。
+// danmakuStream 订阅即建连(进房 + 心跳),退订断开;生命周期走共享
+// platform.CreateWSStream(重连/心跳/熔断),平台差异只剩协议帧。
 func danmakuStream(sc *platform.ServiceContext, roomID string) platform.DanmakuStream {
-	return func(onItems func([]platform.DanmakuItem)) func() {
-		session := &wsSession{
-			sc:      sc,
-			roomID:  roomID,
-			onItems: onItems,
-			done:    make(chan struct{}),
-		}
-		go session.connect()
-		return session.stop
-	}
-}
-
-// wsSession 单次订阅的 WS 生命周期:读循环 + 心跳 + 指数退避重连。
-type wsSession struct {
-	sc      *platform.ServiceContext
-	roomID  string
-	onItems func([]platform.DanmakuItem)
-	done    chan struct{}
-
-	mu             sync.Mutex
-	stopped        bool
-	conn           *platform.WSConn
-	reconnectTimer *time.Timer
-	attempts       int
-}
-
-func (s *wsSession) connect() {
-	conn, err := platform.Dial(context.Background(), wsURL, nil)
-	if err != nil {
-		s.log("弹幕握手失败: %v", err)
-		s.scheduleReconnect()
-		return
-	}
-	s.mu.Lock()
-	if s.stopped {
-		s.mu.Unlock()
-		_ = conn.Close()
-		return
-	}
-	s.conn = conn
-	s.attempts = 0
-	s.mu.Unlock()
-
-	s.run(conn)
-	_ = conn.Close()
-	s.mu.Lock()
-	if s.conn == conn {
-		s.conn = nil
-	}
-	stopped := s.stopped
-	s.mu.Unlock()
-	if !stopped {
-		s.scheduleReconnect()
-	}
-}
-
-func (s *wsSession) run(conn *platform.WSConn) {
-	s.write(conn, douyuFrame("type@=loginreq/roomid@"+s.roomID+"/"))
-	s.write(conn, douyuFrame("type@=joingroup/rid@"+s.roomID+"/gid@=-9999/"))
-	heartbeatDone := make(chan struct{})
-	defer close(heartbeatDone)
-	go s.heartbeat(conn, heartbeatDone)
-	for {
-		_, data, err := conn.Read()
-		if err != nil {
-			return
-		}
-		if items := parseDouyuFrame(data); len(items) > 0 {
-			s.deliver(items)
-		}
-	}
-}
-
-func (s *wsSession) heartbeat(conn *platform.WSConn, done <-chan struct{}) {
-	s.write(conn, douyuFrame("type@=mrkl/"))
-	ticker := time.NewTicker(heartbeatInterval)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-done:
-			return
-		case <-s.done:
-			return
-		case <-ticker.C:
-			s.write(conn, douyuFrame("type@=mrkl/"))
-		}
-	}
-}
-
-func (s *wsSession) write(conn *platform.WSConn, frame []byte) {
-	if s.isStopped() {
-		return
-	}
-	_ = conn.Write(frame)
-}
-
-func (s *wsSession) deliver(items []platform.DanmakuItem) {
-	if s.isStopped() {
-		return
-	}
-	s.onItems(items)
-}
-
-func (s *wsSession) isStopped() bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return s.stopped
-}
-
-// scheduleReconnect 指数退避 1s→2s→4s…(上限 30s)+ ±15% full jitter。
-func (s *wsSession) scheduleReconnect() {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if s.stopped {
-		return
-	}
-	if s.attempts >= maxReconnectAttempts {
-		s.log("弹幕重连 %d 次后放弃", s.attempts)
-		return
-	}
-	base := float64(time.Second) * math.Pow(2, float64(s.attempts))
-	if base > float64(maxReconnectDelay) {
-		base = float64(maxReconnectDelay)
-	}
-	delay := time.Duration(base * (0.85 + rand.Float64()*0.3))
-	s.attempts++
-	s.log("弹幕重连第 %d 次,%v 后", s.attempts, delay)
-	s.reconnectTimer = time.AfterFunc(delay, s.connect)
-}
-
-// stop 退订:断开 WS + 清心跳/重连定时器(幂等)。
-func (s *wsSession) stop() {
-	s.mu.Lock()
-	if s.stopped {
-		s.mu.Unlock()
-		return
-	}
-	s.stopped = true
-	close(s.done)
-	timer := s.reconnectTimer
-	conn := s.conn
-	s.mu.Unlock()
-	if timer != nil {
-		timer.Stop()
-	}
-	if conn != nil {
-		_ = conn.Close()
-	}
-}
-
-func (s *wsSession) log(format string, args ...any) {
-	if s.sc != nil {
-		s.sc.Log("douyu: "+format, args...)
-	}
+	return platform.CreateWSStream(context.Background(), platform.WSStreamOptions{
+		URL: func() string { return wsURL },
+		OnOpen: func(conn *platform.WSConn) {
+			_ = conn.Write(douyuFrame("type@=loginreq/roomid@" + roomID + "/"))
+			_ = conn.Write(douyuFrame("type@=joingroup/rid@" + roomID + "/gid@=-9999/"))
+		},
+		OnMessage: func(data []byte, _ *platform.WSConn) ([]platform.DanmakuItem, error) {
+			return parseDouyuFrame(data), nil
+		},
+		Heartbeat:   func() []byte { return douyuFrame("type@=mrkl/") },
+		HeartbeatMs: int(heartbeatInterval / time.Millisecond),
+	}, func(format string, args ...any) { sc.Log("douyu: 弹幕"+format, args...) })
 }

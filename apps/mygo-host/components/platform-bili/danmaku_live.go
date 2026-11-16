@@ -238,7 +238,7 @@ func (c *client) getDanmuInfo(ctx context.Context, roomID string, cookie *string
 
 // liveDanmakuStream 订阅时 getDanmuInfo → 建 WS（认证 → 心跳 → 收弹幕），退订断开。
 func (c *client) liveDanmakuStream(roomID string, cookie *string) platform.DanmakuStream {
-	return deferredStream(
+	return platform.DeferredStream(
 		func() (danmuCred, error) {
 			return c.getDanmuInfo(context.Background(), roomID, cookie)
 		},
@@ -257,7 +257,7 @@ func (c *client) liveDanmakuStream(roomID string, cookie *string) platform.Danma
 				creds.set(next)
 				return true, nil
 			}
-			return createWSStream(context.Background(), wsStreamOptions{
+			return platform.CreateWSStream(context.Background(), platform.WSStreamOptions{
 				URL: func() string {
 					cur := creds.get()
 					return fmt.Sprintf("wss://%s:%d/sub", cur.host, cur.wssPort)
@@ -281,7 +281,7 @@ func (c *client) liveDanmakuStream(roomID string, cookie *string) platform.Danma
 					_ = code
 					_ = reason
 				},
-			}, c.log)(onItems)
+			}, func(format string, args ...any) { c.log("bili: "+format, args...) })(onItems)
 		},
 		func(err error) { c.log("bili-live: 弹幕初始化失败: %v", err) },
 	)

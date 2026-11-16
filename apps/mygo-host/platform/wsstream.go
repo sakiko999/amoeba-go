@@ -1,8 +1,10 @@
-// WS 弹幕连接生命周期（对齐 platform-kit createWsStream）：订阅即建连、退订即断开、
-// 指数退避重连（±15% jitter）、心跳、认证帧 onOpen 发送、refresh 钩子（bili token 有寿命）。
-// 运行时差异：platform.WSConn 不暴露 close code/reason，onClose 只拿到 0 + 错误文案。
+// WS 弹幕流原语(对齐 platform-kit runtime/danmaku/stream.ts):订阅即建连、
+// 退订即断开、指数退避重连(±15% full jitter)、心跳、认证帧 OnOpen 发送、
+// refresh 钩子(bili token 有寿命);DeferredStream 组合异步 setup(退订发生在
+// setup 完成前则不再建流,连接零泄漏)。平台差异全部经选项注入。
+// 运行时差异:WSConn 不暴露 close code/reason,OnClose 只拿到 0 + 错误文案。
 
-package bili
+package platform
 
 import (
 	"context"
@@ -10,16 +12,14 @@ import (
 	"math/rand"
 	"sync"
 	"time"
-
-	"mygo-host/platform"
 )
 
-// wsStreamOptions createWsStream 的 Go 版选项。
-type wsStreamOptions struct {
+// WSStreamOptions WS 流选项(对齐 TS WsStreamOptions)。
+type WSStreamOptions struct {
 	URL            func() string
 	Refresh        func() (bool, error)
-	OnOpen         func(*platform.WSConn)
-	OnMessage      func([]byte, *platform.WSConn) ([]platform.DanmakuItem, error)
+	OnOpen         func(*WSConn)
+	OnMessage      func([]byte, *WSConn) ([]DanmakuItem, error)
 	Heartbeat      func() []byte
 	HeartbeatMs    int
 	MaxReconnectMs int
@@ -29,22 +29,22 @@ type wsStreamOptions struct {
 
 type wsStream struct {
 	ctx     context.Context
-	opts    wsStreamOptions
+	opts    WSStreamOptions
 	logf    func(string, ...any)
-	onItems func([]platform.DanmakuItem)
+	onItems func([]DanmakuItem)
 
 	mu       sync.Mutex
 	stopped  bool
 	closed   bool // 用户主动退订
-	conn     *platform.WSConn
+	conn     *WSConn
 	hbStop   chan struct{}
 	reconn   *time.Timer
 	attempts int
 }
 
-// createWSStream 返回订阅函数（onItems 收批次；返回值是取消函数）。
-func createWSStream(ctx context.Context, opts wsStreamOptions, logf func(string, ...any)) platform.DanmakuStream {
-	return func(onItems func([]platform.DanmakuItem)) func() {
+// CreateWSStream 返回订阅函数(onItems 收批次;返回值是取消函数)。
+func CreateWSStream(ctx context.Context, opts WSStreamOptions, logf func(string, ...any)) DanmakuStream {
+	return func(onItems func([]DanmakuItem)) func() {
 		s := &wsStream{ctx: ctx, opts: opts, logf: logf, onItems: onItems}
 		s.connect()
 		return s.stop
@@ -66,7 +66,7 @@ func (s *wsStream) stop() {
 	safeClose(conn)
 }
 
-// send 仅在连接就绪时发送（心跳/回执共用）。
+// send 仅在连接就绪时发送(心跳/回执共用)。
 func (s *wsStream) send(data []byte) {
 	s.mu.Lock()
 	conn := s.conn
@@ -76,7 +76,7 @@ func (s *wsStream) send(data []byte) {
 	}
 }
 
-func safeClose(conn *platform.WSConn) {
+func safeClose(conn *WSConn) {
 	if conn != nil {
 		_ = conn.Close()
 	}
@@ -90,17 +90,17 @@ func closeHeartbeat(stop chan struct{}) {
 	close(stop)
 }
 
-// connect 建连（异步；失败进入重连）。
+// connect 建连(异步;失败进入重连)。
 func (s *wsStream) connect() {
 	if s.isStopped() {
 		return
 	}
 	url := s.opts.URL()
 	go func() {
-		conn, err := platform.Dial(s.ctx, url, nil)
+		conn, err := Dial(s.ctx, url, nil)
 		if err != nil {
 			if !s.isStopped() {
-				s.logf("bili: ws 握手失败: %v", err)
+				s.logf("ws 握手失败: %v", err)
 				s.beforeReconnect()
 			}
 			return
@@ -109,7 +109,7 @@ func (s *wsStream) connect() {
 	}()
 }
 
-func (s *wsStream) handleOpen(conn *platform.WSConn) {
+func (s *wsStream) handleOpen(conn *WSConn) {
 	if s.isStopped() {
 		safeClose(conn)
 		return
@@ -127,7 +127,7 @@ func (s *wsStream) handleOpen(conn *platform.WSConn) {
 	go s.readLoop(conn)
 }
 
-func (s *wsStream) readLoop(conn *platform.WSConn) {
+func (s *wsStream) readLoop(conn *WSConn) {
 	for {
 		_, data, err := conn.Read()
 		if err != nil {
@@ -138,12 +138,12 @@ func (s *wsStream) readLoop(conn *platform.WSConn) {
 	}
 }
 
-// deliver 帧解码 → 过滤已退订/空 → 上报；解码错误视为连接不可用（close 触发重连）。
-func (s *wsStream) deliver(conn *platform.WSConn, data []byte) {
+// deliver 帧解码 → 过滤已退订/空 → 上报;解码错误视为连接不可用(close 触发重连)。
+func (s *wsStream) deliver(conn *WSConn, data []byte) {
 	items, err := s.opts.OnMessage(data, conn)
 	if err != nil {
 		if !s.isStopped() && !s.isUserClosed() {
-			s.logf("bili: ws frame error: %v", err)
+			s.logf("ws frame error: %v", err)
 			safeClose(conn)
 		}
 		return
@@ -153,7 +153,7 @@ func (s *wsStream) deliver(conn *platform.WSConn, data []byte) {
 	}
 }
 
-func (s *wsStream) handleClose(conn *platform.WSConn, err error) {
+func (s *wsStream) handleClose(conn *WSConn, err error) {
 	s.mu.Lock()
 	hbStop := s.hbStop
 	s.hbStop = nil
@@ -165,7 +165,7 @@ func (s *wsStream) handleClose(conn *platform.WSConn, err error) {
 	s.mu.Unlock()
 	closeHeartbeat(hbStop)
 	if !userClosed {
-		s.logf("bili: ws closed: %v", err)
+		s.logf("ws closed: %v", err)
 	}
 	if s.opts.OnClose != nil {
 		s.opts.OnClose(0, err.Error())
@@ -175,7 +175,7 @@ func (s *wsStream) handleClose(conn *platform.WSConn, err error) {
 	}
 }
 
-// beforeReconnect 先刷新凭证（token 有寿命），再排重连；refresh 失败/超限即放弃。
+// beforeReconnect 先刷新凭证(token 有寿命),再排重连;refresh 失败/超限即放弃。
 func (s *wsStream) beforeReconnect() {
 	if s.isStopped() {
 		return
@@ -183,7 +183,7 @@ func (s *wsStream) beforeReconnect() {
 	if s.opts.Refresh != nil {
 		ok, err := s.opts.Refresh()
 		if err != nil {
-			s.logf("bili: 刷新凭证失败: %v", err)
+			s.logf("刷新凭证失败: %v", err)
 			return
 		}
 		if s.isStopped() || !ok {
@@ -205,7 +205,7 @@ func (s *wsStream) scheduleReconnect() {
 	attempts := s.attempts
 	s.mu.Unlock()
 	if attempts >= maxAttempts {
-		s.logf("bili: ws 重连放弃(已尝试 %d 次)", attempts)
+		s.logf("ws 重连放弃(已尝试 %d 次)", attempts)
 		return
 	}
 	maxDelay := s.opts.MaxReconnectMs
@@ -218,7 +218,7 @@ func (s *wsStream) scheduleReconnect() {
 	s.attempts++
 	s.reconn = time.AfterFunc(delay*time.Millisecond, s.connect)
 	s.mu.Unlock()
-	s.logf("bili: ws 重连 #%d（%dms）", attempts+1, delay)
+	s.logf("ws 重连 #%d(%dms)", attempts+1, delay)
 }
 
 func (s *wsStream) startHeartbeat() {
@@ -258,4 +258,55 @@ func (s *wsStream) isUserClosed() bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.closed
+}
+
+// DeferredStream 异步 setup + build 组合成 DanmakuStream:退订发生在 setup 完成
+// 前则不再建流(连接零泄漏);setup 失败经 onError 上报(不传则静默)。
+func DeferredStream[T any](
+	setup func() (T, error),
+	build func(T, func([]DanmakuItem)) func(),
+	onError func(error),
+) DanmakuStream {
+	return func(onItems func([]DanmakuItem)) func() {
+		var (
+			mu      sync.Mutex
+			stopped bool
+			unsub   func()
+		)
+		go func() {
+			value, err := setup()
+			if err != nil {
+				if !deferredStopped(&mu, &stopped) && onError != nil {
+					onError(err)
+				}
+				return
+			}
+			if deferredStopped(&mu, &stopped) {
+				return
+			}
+			u := build(value, onItems)
+			mu.Lock()
+			unsub = u
+			s := stopped
+			mu.Unlock()
+			if s && u != nil {
+				u()
+			}
+		}()
+		return func() {
+			mu.Lock()
+			stopped = true
+			u := unsub
+			mu.Unlock()
+			if u != nil {
+				u()
+			}
+		}
+	}
+}
+
+func deferredStopped(mu *sync.Mutex, stopped *bool) bool {
+	mu.Lock()
+	defer mu.Unlock()
+	return *stopped
 }
