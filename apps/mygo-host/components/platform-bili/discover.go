@@ -44,14 +44,14 @@ func (c *client) fetchBiliCategories(ctx context.Context) ([]biliCategory, error
 	}
 	categories := []biliCategory{}
 	for _, parent := range resp.Data {
-		id := jstr(parent["id"])
+		id := platform.JSString(parent["id"])
 		if id == "" {
 			continue
 		}
-		cat := biliCategory{ID: id, Name: jstr(parent["name"])}
+		cat := biliCategory{ID: id, Name: platform.JSString(parent["name"])}
 		for _, sub := range jlist(parent["list"]) {
 			child := jobj(sub)
-			cat.Children = append(cat.Children, biliCategoryChild{ID: jstr(child["id"]), Name: jstr(child["name"])})
+			cat.Children = append(cat.Children, biliCategoryChild{ID: platform.JSString(child["id"]), Name: platform.JSString(child["name"])})
 		}
 		categories = append(categories, cat)
 	}

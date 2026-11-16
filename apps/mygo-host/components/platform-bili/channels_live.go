@@ -91,25 +91,25 @@ func (c *client) fetchBiliRoom(ctx context.Context, roomID string, cookie *strin
 
 	realRoomID := roomID
 	if v := ri["room_id"]; v != nil {
-		realRoomID = jstr(v)
+		realRoomID = platform.JSString(v)
 	}
 	item := platform.Item{
 		ID:         "bilibili:" + realRoomID,
 		SourceID:   "bili:live",
 		Kind:       platform.KindLive,
-		Title:      jstr(ri["title"]),
+		Title:      platform.JSString(ri["title"]),
 		URL:        platform.Str(liveBase + "/" + realRoomID),
-		Thumbnail:  platform.Str(jstr(ri["cover"])),
-		Author:     &platform.Author{Name: jstr(baseInfo["uname"])},
+		Thumbnail:  platform.Str(platform.JSString(ri["cover"])),
+		Author:     &platform.Author{Name: platform.JSString(baseInfo["uname"])},
 		Platform:   "bilibili",
 		RoomID:     platform.Str(realRoomID),
 		LiveStatus: liveStatusPtr(jnum(ri["live_status"]) == 1),
 		Online:     platform.Int(jint(ri["online"])),
 	}
-	if jtruthy(ri["description"]) {
-		item.Introduction = platform.Str(jstr(ri["description"]))
+	if platform.JSTruthy(ri["description"]) {
+		item.Introduction = platform.Str(platform.JSString(ri["description"]))
 	}
-	if jtruthy(ri["live_start_time"]) {
+	if platform.JSTruthy(ri["live_start_time"]) {
 		sec := jnum(ri["live_start_time"])
 		if !finite(sec) {
 			return nil, fmt.Errorf("bili:live 房间 %s 的 live_start_time 非法", roomID)
@@ -242,16 +242,16 @@ func liveRowsFromList(list []any, sourceID string, t int64) []platform.Item {
 		if row == nil {
 			continue
 		}
-		roomID := jstr(row["roomid"])
+		roomID := platform.JSString(row["roomid"])
 		cover := ""
-		if jtruthy(row["cover"]) {
-			cover = jstr(row["cover"])
+		if platform.JSTruthy(row["cover"]) {
+			cover = platform.JSString(row["cover"])
 		}
 		item := platform.Item{
 			ID:         "bilibili:" + roomID,
 			SourceID:   sourceID,
 			Kind:       platform.KindLive,
-			Title:      jstr(row["title"]),
+			Title:      platform.JSString(row["title"]),
 			URL:        platform.Str(liveBase + "/" + roomID),
 			FetchedAt:  t,
 			Platform:   "bilibili",
@@ -262,8 +262,8 @@ func liveRowsFromList(list []any, sourceID string, t int64) []platform.Item {
 		if cover != "" {
 			item.Thumbnail = platform.Str(cover)
 		}
-		if jtruthy(row["uname"]) {
-			item.Author = &platform.Author{Name: jstr(row["uname"])}
+		if platform.JSTruthy(row["uname"]) {
+			item.Author = &platform.Author{Name: platform.JSString(row["uname"])}
 		}
 		items = append(items, item)
 	}

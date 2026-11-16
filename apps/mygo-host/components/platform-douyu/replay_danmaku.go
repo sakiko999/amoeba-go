@@ -40,16 +40,16 @@ func vodColorOf(n float64) *string {
 func mapBarrage(list []map[string]any) []platform.DanmakuItem {
 	items := make([]platform.DanmakuItem, 0, len(list))
 	for _, row := range list {
-		text := jsString(row["ctt"])
+		text := platform.JSString(row["ctt"])
 		if text == "" {
 			continue
 		}
-		item := platform.DanmakuItem{Text: text, User: platform.Str(jsString(row["nn"]))}
-		if tl, ok := toInt(row["tl"]); ok {
+		item := platform.DanmakuItem{Text: text, User: platform.Str(platform.JSString(row["nn"]))}
+		if tl, ok := platform.ToInt(row["tl"]); ok {
 			ms := int64(tl)
 			item.TimeMs = &ms
 		}
-		if col, ok := toInt(row["col"]); ok {
+		if col, ok := platform.ToInt(row["col"]); ok {
 			item.Color = vodColorOf(col)
 		}
 		items = append(items, item)
@@ -93,9 +93,9 @@ func fetchBarragePage(ctx context.Context, sc *platform.ServiceContext, hashID s
 	if err := vodGetJSON(ctx, sc, url, &res); err != nil {
 		return nil, 0, err
 	}
-	if n, ok := toInt(res.Error); ok && n != 0 {
-		return nil, 0, fmt.Errorf("error %s", jsString(res.Error))
+	if n, ok := platform.ToInt(res.Error); ok && n != 0 {
+		return nil, 0, fmt.Errorf("error %s", platform.JSString(res.Error))
 	}
-	end, _ := toInt(res.Data.EndTime)
+	end, _ := platform.ToInt(res.Data.EndTime)
 	return res.Data.List, int64(end), nil
 }

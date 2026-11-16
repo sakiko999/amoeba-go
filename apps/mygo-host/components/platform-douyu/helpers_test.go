@@ -1,36 +1,8 @@
-// JS 语义 helper 的黄金用例(对齐 TS utils 的 toInt / parseCount / String 行为)。
+// douyu 特有 helper 的黄金用例(parseCount 的「万/w/k」归一,对齐 TS parseCount)。
 
 package douyu
 
-import (
-	"math"
-	"testing"
-)
-
-func TestToInt(t *testing.T) {
-	cases := []struct {
-		in   any
-		want float64
-		ok   bool
-	}{
-		{nil, 0, false},
-		{"", 0, false},
-		{"1", 1, true},
-		{"1.5", 1.5, true},
-		{float64(0), 0, true},
-		{true, 1, true},
-		{false, 0, true},
-		{"abc", 0, false},
-		{" 12 ", 12, true},
-		{math.Inf(1), 0, false},
-	}
-	for _, c := range cases {
-		got, ok := toInt(c.in)
-		if got != c.want || ok != c.ok {
-			t.Errorf("toInt(%v) = %v/%v, want %v/%v", c.in, got, ok, c.want, c.ok)
-		}
-	}
-}
+import "testing"
 
 func TestParseCount(t *testing.T) {
 	cases := []struct {
@@ -56,39 +28,6 @@ func TestParseCount(t *testing.T) {
 		got := parseCount(c.in)
 		if (got != nil) != c.ok || (got != nil && *got != c.want) {
 			t.Errorf("parseCount(%v) = %v, want %d/%v", c.in, got, c.want, c.ok)
-		}
-	}
-}
-
-func TestJSStringNumbers(t *testing.T) {
-	cases := []struct {
-		in   any
-		want string
-	}{
-		{float64(9527), "9527"},
-		{float64(1000000), "1000000"},
-		{float64(1.5), "1.5"},
-		{float64(0), "0"},
-		{nil, ""},
-		{true, "true"},
-		{"x", "x"},
-	}
-	for _, c := range cases {
-		if got := jsString(c.in); got != c.want {
-			t.Errorf("jsString(%v) = %q, want %q", c.in, got, c.want)
-		}
-	}
-}
-
-func TestTruthy(t *testing.T) {
-	for _, v := range []any{nil, "", float64(0), false} {
-		if truthy(v) {
-			t.Errorf("truthy(%v) = true", v)
-		}
-	}
-	for _, v := range []any{"0", float64(1), true, map[string]any{}} {
-		if !truthy(v) {
-			t.Errorf("truthy(%v) = false", v)
 		}
 	}
 }

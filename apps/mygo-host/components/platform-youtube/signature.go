@@ -272,7 +272,7 @@ func deobfuscateNParam(ctx context.Context, sc *platform.ServiceContext, rawURL,
 	if err != nil {
 		return "", err
 	}
-	decoded := jsString(result)
+	decoded := platform.JSString(result)
 	if decoded == "" {
 		return "", errors.New("YouTube n 参数解密返回空")
 	}

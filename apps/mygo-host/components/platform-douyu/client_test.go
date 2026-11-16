@@ -238,7 +238,7 @@ func TestRoomInfoDoubleEncoded(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if jsString(room.RoomName) != "加密房" || jsString(room.RoomID) != "9527" {
+	if platform.JSString(room.RoomName) != "加密房" || platform.JSString(room.RoomID) != "9527" {
 		t.Errorf("room = %+v", room)
 	}
 	item := mapRoomItem("123", room, testNow)

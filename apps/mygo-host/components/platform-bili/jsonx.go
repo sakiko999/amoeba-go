@@ -1,15 +1,15 @@
-// JS 值语义的 JSON 辅助：B 站上游响应大量 optional 字段，映射层统一经这里取值，
-// 行为对齐 TS 的 String() / Number() / 真值判断（数字格式化不能走 fmt.Sprint，
-// 否则 24022841 会变成 2.4022841e+07）。
+// bili 特有 JSON 辅助:数值语义(nil→0 的 jnum 族、指针 deref 族)与容器取值。
+// JS String()/truthiness 归一在 platform/jsvalue.go 共享(原 jstr/jtruthy)。
 
 package bili
 
 import (
 	"encoding/json"
-	"fmt"
 	"math"
 	"strconv"
 	"strings"
+
+	"mygo-host/platform"
 )
 
 // jobj 取对象（类型不符返回 nil）。
@@ -28,35 +28,15 @@ func jlist(v any) []any {
 	return nil
 }
 
-// jstr 等价 JS String(v ?? "")：nil → ""，数字按 JS 十进制形态输出。
-func jstr(v any) string {
-	switch x := v.(type) {
-	case nil:
-		return ""
-	case string:
-		return x
-	case float64:
-		return jsNum(x)
-	case json.Number:
-		return x.String()
-	case bool:
-		if x {
-			return "true"
-		}
-		return "false"
-	}
-	return fmt.Sprint(v)
-}
-
 // jstrOr 等价 String(v ?? fallback)（仅 null/undefined 回落）。
 func jstrOr(v any, fallback string) string {
 	if v == nil {
 		return fallback
 	}
-	return jstr(v)
+	return platform.JSString(v)
 }
 
-// jsNum 按 JS Number→String 规则格式化（普通十进制，不用科学计数法）。
+// jsNum 普通十进制格式化（不用科学计数法；NaN/Infinity 按 JS 输出）。
 func jsNum(f float64) string {
 	if math.IsNaN(f) {
 		return "NaN"
@@ -114,25 +94,6 @@ func jintPtr(p *float64) int { return int(jnumPtr(p)) }
 
 // finite 对应 Number.isFinite。
 func finite(f float64) bool { return !math.IsNaN(f) && !math.IsInf(f, 0) }
-
-// jtruthy 对应 JS 真值判断（nil / "" / 0 / false 为假）。
-func jtruthy(v any) bool {
-	switch x := v.(type) {
-	case nil:
-		return false
-	case string:
-		return x != ""
-	case float64:
-		return x != 0
-	case int:
-		return x != 0
-	case int64:
-		return x != 0
-	case bool:
-		return x
-	}
-	return true
-}
 
 // deref 指针字符串取值（nil → ""）。
 func deref(p *string) string {

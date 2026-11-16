@@ -106,9 +106,9 @@ func durlQualities(data *playurlData) []durlQuality {
 		if !finite(qn) || qn <= 0 {
 			continue
 		}
-		name := "档位" + jstr(raw)
+		name := "档位" + platform.JSString(raw)
 		if i < len(data.AcceptDescription) && data.AcceptDescription[i] != nil {
-			name = jstr(data.AcceptDescription[i])
+			name = platform.JSString(data.AcceptDescription[i])
 		}
 		out = append(out, durlQuality{qn: int(qn), name: name})
 	}
@@ -192,7 +192,7 @@ func dashName(data *playurlData, qn int) string {
 			continue
 		}
 		if i < len(data.AcceptDescription) && data.AcceptDescription[i] != nil {
-			return jstr(data.AcceptDescription[i])
+			return platform.JSString(data.AcceptDescription[i])
 		}
 		return fmt.Sprintf("档位%d", qn)
 	}
@@ -202,7 +202,7 @@ func dashName(data *playurlData, qn int) string {
 // toVideoRep DASH 轨道 → MPD Representation(ID/Bandwidth 十进制字符串化)。
 func toVideoRep(v dashVideo) platform.MpdVideoRep {
 	return platform.MpdVideoRep{
-		ID:         jstr(derefFloat(v.ID)),
+		ID:         platform.JSString(derefFloat(v.ID)),
 		BaseURL:    deref(v.BaseURL),
 		Width:      jintPtr(v.Width),
 		Height:     jintPtr(v.Height),
@@ -215,7 +215,7 @@ func toVideoRep(v dashVideo) platform.MpdVideoRep {
 
 func toAudioRep(a dashAudio) platform.MpdAudioRep {
 	return platform.MpdAudioRep{
-		ID:         jstr(derefFloat(a.ID)),
+		ID:         platform.JSString(derefFloat(a.ID)),
 		BaseURL:    deref(a.BaseURL),
 		Codecs:     derefOr(a.Codecs, "mp4a.40.2"),
 		Bandwidth:  strconv.Itoa(jintPtr(a.Bandwidth)),

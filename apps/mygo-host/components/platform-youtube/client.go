@@ -212,7 +212,7 @@ func isLiveContent(res *playerResponse) bool {
 	if res == nil {
 		return false
 	}
-	if res.PlayabilityStatus != nil && jsTruthy(res.PlayabilityStatus.LiveStreamability) {
+	if res.PlayabilityStatus != nil && platform.JSTruthy(res.PlayabilityStatus.LiveStreamability) {
 		return true
 	}
 	vd := res.VideoDetails
@@ -236,49 +236,18 @@ func getYoutubeLiveMeta(ctx context.Context, sc *platform.ServiceContext, videoI
 	if vd == nil {
 		return nil
 	}
-	title := strings.TrimSpace(jsString(vd.Title))
-	author := strings.TrimSpace(jsString(vd.Author))
+	title := strings.TrimSpace(platform.JSString(vd.Title))
+	author := strings.TrimSpace(platform.JSString(vd.Author))
 	if title == "" && author == "" {
 		return nil
 	}
 	var online *int
-	if digits := digitsOnly(jsString(vd.ViewCount)); digits != "" {
+	if digits := digitsOnly(platform.JSString(vd.ViewCount)); digits != "" {
 		if value, err := strconv.Atoi(digits); err == nil && value > 0 {
 			online = &value
 		}
 	}
 	return &liveMeta{Title: title, Author: author, IsLive: isLiveContent(res), Online: online}
-}
-
-// jsString JS String(value) 的近似(主要处理字符串/数字/布尔/null)。
-func jsString(value any) string {
-	switch v := value.(type) {
-	case nil:
-		return ""
-	case string:
-		return v
-	case float64:
-		return strconv.FormatFloat(v, 'f', -1, 64)
-	case bool:
-		return strconv.FormatBool(v)
-	default:
-		return fmt.Sprint(v)
-	}
-}
-
-func jsTruthy(value any) bool {
-	switch v := value.(type) {
-	case nil:
-		return false
-	case bool:
-		return v
-	case string:
-		return v != ""
-	case float64:
-		return v != 0
-	default:
-		return true
-	}
 }
 
 func digitsOnly(s string) string {

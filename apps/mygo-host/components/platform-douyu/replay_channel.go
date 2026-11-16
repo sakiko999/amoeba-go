@@ -24,7 +24,7 @@ func newReplayChannel(sc *platform.ServiceContext) platform.DataChannel {
 		}},
 		Pageable: &platform.PageableSpec{First: 2, Step: 1},
 		FetchPage: func(ctx context.Context, info platform.SourceInfo, page int) (platform.PageItems, error) {
-			roomID := strings.TrimSpace(jsString(info["roomId"]))
+			roomID := strings.TrimSpace(platform.JSString(info["roomId"]))
 			if roomID == "" {
 				return platform.PageItems{}, errors.New("douyu:replay 需要 roomId 参数")
 			}
@@ -55,9 +55,9 @@ func expandReplayShows(ctx context.Context, sc *platform.ServiceContext, shows [
 	t := sc.NowMs()
 	for _, show := range shows {
 		parts := showPartList(show)
-		reNum, _ := toInt(show["re_num"])
+		reNum, _ := platform.ToInt(show["re_num"])
 		if reNum > 1 && len(parts) > 0 {
-			expanded, err := fetchShowParts(ctx, sc, jsString(parts[0]["hash_id"]), upID)
+			expanded, err := fetchShowParts(ctx, sc, platform.JSString(parts[0]["hash_id"]), upID)
 			if err != nil {
 				sc.Log("douyu: 分P展开失败,降级仅第 1 分P: %v", err)
 			} else {
@@ -89,14 +89,14 @@ func showPartList(show map[string]any) []map[string]any {
 // replayItem 场次 + 分P → item。列表条目时长在 video_str_duration,分P条目在
 // video_duration(两者都是格式化串);多分P时标题带 Pn/N 后缀区分。
 func replayItem(show, part map[string]any, index, total int, t int64) platform.Item {
-	hashID := jsString(part["hash_id"])
-	title := htmlUnescape(jsString(show["title"]))
+	hashID := platform.JSString(part["hash_id"])
+	title := htmlUnescape(platform.JSString(show["title"]))
 	if total > 1 {
 		title = fmt.Sprintf("%s(P%d/%d)", title, index+1, total)
 	}
-	duration := parseVideoDuration(jsString(part["video_str_duration"]))
+	duration := parseVideoDuration(platform.JSString(part["video_str_duration"]))
 	if duration == nil {
-		duration = parseVideoDuration(jsString(part["video_duration"]))
+		duration = parseVideoDuration(platform.JSString(part["video_duration"]))
 	}
 	item := platform.Item{
 		ID:        "douyu:vod:" + hashID,
@@ -109,7 +109,7 @@ func replayItem(show, part map[string]any, index, total int, t int64) platform.I
 		Duration:  duration,
 		// stream 留空:VOD 直链带短时 token,play 时懒解析。
 	}
-	if start, ok := toInt(show["start_time"]); ok && start > 0 {
+	if start, ok := platform.ToInt(show["start_time"]); ok && start > 0 {
 		ms := int64(start * 1000)
 		item.PublishedAt = &ms
 	}

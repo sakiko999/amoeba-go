@@ -40,12 +40,12 @@ func squareItems(list []any, t int64) []platform.Item {
 		if entry == nil {
 			continue
 		}
-		keyword := jstr(entry["keyword"])
+		keyword := platform.JSString(entry["keyword"])
 		link := ""
 		if entry["link"] != nil {
-			link = jstr(entry["link"])
+			link = platform.JSString(entry["link"])
 		} else {
-			link = jstr(entry["goto"])
+			link = platform.JSString(entry["goto"])
 		}
 		if link == "" {
 			query := encodePairs([][2]string{{"keyword", keyword}})

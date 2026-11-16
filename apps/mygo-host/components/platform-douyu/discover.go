@@ -51,15 +51,15 @@ func fetchCategories(ctx context.Context, sc *platform.ServiceContext) ([]douyuC
 	}
 	tree := make([]douyuCategory, 0, len(res.Data.Cate1Info))
 	for _, c1 := range res.Data.Cate1Info {
-		id := jsString(c1["cate1Id"])
-		category := douyuCategory{ID: id, Name: jsString(c1["cate1Name"])}
+		id := platform.JSString(c1["cate1Id"])
+		category := douyuCategory{ID: id, Name: platform.JSString(c1["cate1Name"])}
 		for _, c2 := range res.Data.Cate2Info {
-			if jsString(c2["cate1Id"]) != id {
+			if platform.JSString(c2["cate1Id"]) != id {
 				continue
 			}
 			category.Children = append(category.Children, douyuChild{
-				ID:   jsString(c2["cate2Id"]),
-				Name: jsString(c2["cate2Name"]),
+				ID:   platform.JSString(c2["cate2Id"]),
+				Name: platform.JSString(c2["cate2Name"]),
 			})
 		}
 		if id == "" {
@@ -83,7 +83,7 @@ func fetchCategoryRooms(ctx context.Context, sc *platform.ServiceContext, areaID
 	}
 	list := res.Data.Rl
 	items := mapCategoryRoomItems(list, sc.NowMs())
-	pgcnt, pgOK := jsNumber(res.Data.Pgcnt)
+	pgcnt, pgOK := platform.JSNumber(res.Data.Pgcnt)
 	hasMore := len(list) > 0
 	if pgOK && pgcnt > 0 {
 		hasMore = float64(page) < pgcnt

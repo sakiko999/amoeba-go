@@ -90,7 +90,7 @@ func parseDouyuFrame(data []byte) []platform.DanmakuItem {
 
 // douyuColorOf 等价 DOUYU_COLORS[Number(col) || 0];未命中省略 color。
 func douyuColorOf(col string) *string {
-	n, ok := jsNumber(col)
+	n, ok := platform.JSNumber(col)
 	if !ok {
 		n = 0
 	}

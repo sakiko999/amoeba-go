@@ -125,7 +125,7 @@ func initChat(ctx context.Context, sc *platform.ServiceContext, liveID string) (
 	if err := json.Unmarshal([]byte(cfgRaw), &cfg); err != nil {
 		return nil, err
 	}
-	apiKey := jsString(cfg.APIKey)
+	apiKey := platform.JSString(cfg.APIKey)
 	initialRaw, err := extractInlineJSON(html, "ytInitialData", "YouTube ytInitialData")
 	if err != nil {
 		return nil, err

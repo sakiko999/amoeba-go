@@ -42,7 +42,7 @@ func fetchUpID(ctx context.Context, sc *platform.ServiceContext, roomID string) 
 	if err != nil {
 		return "", err
 	}
-	upID := jsString(room.UpID)
+	upID := platform.JSString(room.UpID)
 	if upID == "" {
 		return "", fmt.Errorf("douyu: 房间 %s 无 up_id,无法列回放", roomID)
 	}
@@ -57,10 +57,10 @@ func fetchReplayShows(ctx context.Context, sc *platform.ServiceContext, upID str
 	if err := vodGetJSON(ctx, sc, url, &res); err != nil {
 		return nil, 0, err
 	}
-	if n, ok := toInt(res.Error); ok && n != 0 {
-		return nil, 0, fmt.Errorf("douyu: 回放列表 error %s: %s", jsString(res.Error), jsString(res.Msg))
+	if n, ok := platform.ToInt(res.Error); ok && n != 0 {
+		return nil, 0, fmt.Errorf("douyu: 回放列表 error %s: %s", platform.JSString(res.Error), platform.JSString(res.Msg))
 	}
-	count, _ := toInt(res.Data.Count)
+	count, _ := platform.ToInt(res.Data.Count)
 	return res.Data.List, int(count), nil
 }
 
@@ -118,8 +118,8 @@ func vodStreamData(ctx context.Context, sc *platform.ServiceContext, signed, has
 	if err := json.Unmarshal([]byte(res.Body), &payload); err != nil {
 		return nil, err
 	}
-	if n, ok := toInt(payload.Error); ok && n != 0 {
-		return nil, fmt.Errorf("douyu: 回放取流失败(%s): %s", jsString(payload.Error), jsString(payload.Msg))
+	if n, ok := platform.ToInt(payload.Error); ok && n != 0 {
+		return nil, fmt.Errorf("douyu: 回放取流失败(%s): %s", platform.JSString(payload.Error), platform.JSString(payload.Msg))
 	}
 	return payload.Data.ThumbVideo, nil
 }
@@ -134,12 +134,12 @@ func thumbVideoStreams(thumb map[string]map[string]any, hashID string) []platfor
 	}
 	list := make([]entry, 0, len(thumb))
 	for _, item := range thumb {
-		url := jsString(item["url"])
+		url := platform.JSString(item["url"])
 		if url == "" {
 			continue
 		}
-		rate, _ := toInt(item["bit_rate"])
-		list = append(list, entry{quality: jsString(item["name"]), rate: rate, url: url})
+		rate, _ := platform.ToInt(item["bit_rate"])
+		list = append(list, entry{quality: platform.JSString(item["name"]), rate: rate, url: url})
 	}
 	sort.SliceStable(list, func(i, j int) bool { return list[i].rate > list[j].rate })
 	streams := make([]platform.Stream, 0, len(list))

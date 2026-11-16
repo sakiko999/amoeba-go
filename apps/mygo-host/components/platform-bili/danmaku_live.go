@@ -141,12 +141,12 @@ func parseBiliDanmakuFrame(data []byte) ([]platform.DanmakuItem, error) {
 func danmuFields(info []any) (string, string, int) {
 	text := ""
 	if len(info) > 1 {
-		text = jstr(info[1])
+		text = platform.JSString(info[1])
 	}
 	user := ""
 	if len(info) > 2 {
 		if arr := jlist(info[2]); len(arr) > 1 {
-			user = jstr(arr[1])
+			user = platform.JSString(arr[1])
 		}
 	}
 	color := 0xffffff

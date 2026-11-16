@@ -41,7 +41,7 @@ func (c *client) searchBiliRooms(ctx context.Context, keyword string, page, page
 		return items, nil
 	}
 	for _, item := range resp.Data.Result.LiveRoom {
-		roomID := jstr(item["roomid"])
+		roomID := platform.JSString(item["roomid"])
 		if roomID == "" {
 			continue
 		}
@@ -49,7 +49,7 @@ func (c *client) searchBiliRooms(ctx context.Context, keyword string, page, page
 			ID:         "bilibili:" + roomID,
 			SourceID:   "bili:search",
 			Kind:       platform.KindLive,
-			Title:      stripEm(jstr(item["title"])),
+			Title:      stripEm(platform.JSString(item["title"])),
 			URL:        platform.Str(liveBase + "/" + roomID),
 			FetchedAt:  t,
 			Platform:   "bilibili",
@@ -62,7 +62,7 @@ func (c *client) searchBiliRooms(ctx context.Context, keyword string, page, page
 		} else if thumb := coverURL(item["user_cover"]); thumb != nil {
 			it.Thumbnail = thumb
 		}
-		if uname := jstr(item["uname"]); uname != "" {
+		if uname := platform.JSString(item["uname"]); uname != "" {
 			it.Author = &platform.Author{Name: stripEm(uname)}
 		}
 		items = append(items, it)
@@ -89,11 +89,11 @@ func (c *client) searchBiliAnchors(ctx context.Context, keyword string, page int
 		return items, nil
 	}
 	for _, item := range resp.Data.Result {
-		roomID := jstr(item["roomid"])
+		roomID := platform.JSString(item["roomid"])
 		if roomID == "" {
 			continue
 		}
-		uname := jstr(item["uname"])
+		uname := platform.JSString(item["uname"])
 		it := platform.Item{
 			ID:         "bilibili:" + roomID,
 			SourceID:   "bili:anchor",
@@ -108,7 +108,7 @@ func (c *client) searchBiliAnchors(ctx context.Context, keyword string, page int
 		it.Thumbnail = coverURL(item["uface"])
 		author := &platform.Author{Name: stripEm(uname)}
 		// TS `item.uid ?` 真值判断：数字 0（上游 uid 恒为数字）不输出 handle。
-		if uid := jstr(item["uid"]); uid != "" && uid != "0" {
+		if uid := platform.JSString(item["uid"]); uid != "" && uid != "0" {
 			author.Handle = platform.Str(uid)
 		}
 		it.Author = author
@@ -144,18 +144,18 @@ func (c *client) searchBiliUsers(ctx context.Context, keyword string, page int) 
 		return hits, nil
 	}
 	for _, item := range resp.Data.Result {
-		mid := jstr(item["mid"])
+		mid := platform.JSString(item["mid"])
 		if mid == "" {
 			continue
 		}
-		hit := biliUserHit{Mid: mid, Uname: stripEm(jstr(item["uname"]))}
+		hit := biliUserHit{Mid: mid, Uname: stripEm(platform.JSString(item["uname"]))}
 		if fans := jnum(item["fans"]); fans != 0 && finite(fans) {
 			hit.Fans = platform.Int(int(fans))
 		}
 		if videos := jnum(item["videos"]); videos != 0 && finite(videos) {
 			hit.Videos = platform.Int(int(videos))
 		}
-		hit.Upic = httpsPrefix(jstr(item["upic"]))
+		hit.Upic = httpsPrefix(platform.JSString(item["upic"]))
 		hits = append(hits, hit)
 	}
 	return hits, nil
@@ -178,7 +178,7 @@ func stripEm(raw string) string { return emTagRe.ReplaceAllString(raw, "") }
 
 // coverURL 封面补尺寸后缀（// 开头补 https:；已带 @ 参数不重复加）。
 func coverURL(raw any) *string {
-	s := jstr(raw)
+	s := platform.JSString(raw)
 	if s == "" {
 		return nil
 	}

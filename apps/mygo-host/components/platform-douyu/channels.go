@@ -146,7 +146,7 @@ func newCategoryChannel(sc *platform.ServiceContext) platform.DataChannel {
 		}},
 		Pageable: &platform.PageableSpec{First: 2, Step: 1},
 		FetchPage: func(ctx context.Context, info platform.SourceInfo, page int) (platform.PageItems, error) {
-			areaID := strings.TrimSpace(jsString(info["areaId"]))
+			areaID := strings.TrimSpace(platform.JSString(info["areaId"]))
 			if areaID == "" {
 				return platform.PageItems{}, errors.New("douyu:category 需要 areaId 参数")
 			}
@@ -188,7 +188,7 @@ func newAnchorChannel(sc *platform.ServiceContext) platform.DataChannel {
 		}},
 		Pageable: &platform.PageableSpec{First: 2, Step: 1},
 		FetchPage: func(ctx context.Context, info platform.SourceInfo, page int) (platform.PageItems, error) {
-			keyword := strings.TrimSpace(jsString(info["keyword"]))
+			keyword := strings.TrimSpace(platform.JSString(info["keyword"]))
 			if keyword == "" {
 				return platform.PageItems{}, errors.New("douyu:anchor 需要 keyword 参数")
 			}

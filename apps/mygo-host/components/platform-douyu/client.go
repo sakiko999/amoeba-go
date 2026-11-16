@@ -50,7 +50,7 @@ func signPayload(ctx context.Context, sc *platform.ServiceContext, roomID string
 	if res.Data == nil {
 		return "", nil
 	}
-	return jsString(res.Data["room"+roomID]), nil
+	return platform.JSString(res.Data["room"+roomID]), nil
 }
 
 // sign 运行 CryptoJS + crptext,调用 ub98484234(roomId, did, time) 得签名串。
@@ -70,7 +70,7 @@ func sign(ctx context.Context, sc *platform.ServiceContext, crptext, roomID stri
 	if s, ok := result.(string); ok {
 		return s, nil
 	}
-	return jsString(result), nil
+	return platform.JSString(result), nil
 }
 
 // roomInfo 房间信息(betard/{roomId});HTML 风控页报清晰错误,双编码 JSON 解一层。
@@ -154,8 +154,8 @@ func resolveH5Play(ctx context.Context, sc *platform.ServiceContext, roomID, sig
 			sc.Log("douyu: cdn=%s rate=%d 失败,换下一个: %v", cdn, rate, err)
 			continue
 		}
-		base := jsString(data["rtmp_url"])
-		live := htmlUnescape(jsString(data["rtmp_live"]))
+		base := platform.JSString(data["rtmp_url"])
+		live := htmlUnescape(platform.JSString(data["rtmp_live"]))
 		if base == "" || live == "" {
 			lastErr = errors.New("no stream")
 			continue
@@ -186,8 +186,8 @@ func parseQualities(data map[string]any) []quality {
 		if !ok {
 			continue
 		}
-		rate, rateOK := toInt(m["rate"])
-		name := jsString(m["name"])
+		rate, rateOK := platform.ToInt(m["rate"])
+		name := platform.JSString(m["name"])
 		if !rateOK || name == "" {
 			continue
 		}
@@ -202,7 +202,7 @@ func parseCDNs(data map[string]any) []string {
 	cdns := make([]string, 0, len(arr))
 	for _, entry := range arr {
 		m, _ := entry.(map[string]any)
-		cdn := jsString(m["cdn"])
+		cdn := platform.JSString(m["cdn"])
 		if cdn != "" {
 			cdns = append(cdns, cdn)
 		}

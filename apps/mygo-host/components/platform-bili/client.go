@@ -96,7 +96,7 @@ func (c *client) getJSON(ctx context.Context, url string, opts reqOptions) (plat
 		return raw, nil, err
 	}
 	if n := jnum(data["code"]); n != 0 && !opts.AllowCodeError {
-		message := jstr(data["message"])
+		message := platform.JSString(data["message"])
 		if message == "" {
 			message = "unknown error"
 		}

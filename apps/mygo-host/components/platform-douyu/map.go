@@ -13,17 +13,17 @@ import (
 func mapRoomItem(roomID string, room *roomPayload, t int64) platform.Item {
 	roomIDValue := roomID
 	if room.RoomID != nil {
-		roomIDValue = jsString(room.RoomID)
+		roomIDValue = platform.JSString(room.RoomID)
 	}
-	showStatus, showOK := toInt(room.ShowStatus)
-	videoLoop, loopOK := toInt(room.VideoLoop)
+	showStatus, showOK := platform.ToInt(room.ShowStatus)
+	videoLoop, loopOK := platform.ToInt(room.VideoLoop)
 	status := platform.LiveStatusOffline
 	if showOK && showStatus == 1 && !(loopOK && videoLoop == 1) {
 		status = platform.LiveStatusLive
 	}
 	var online *int
 	if room.RoomBizAll != nil {
-		if n, ok := toInt(room.RoomBizAll.Hot); ok {
+		if n, ok := platform.ToInt(room.RoomBizAll.Hot); ok {
 			online = platform.Int(int(n))
 		}
 	}
@@ -31,17 +31,17 @@ func mapRoomItem(roomID string, room *roomPayload, t int64) platform.Item {
 		ID:           "douyu:" + roomID,
 		SourceID:     "live:douyu",
 		Kind:         platform.KindLive,
-		Title:        jsString(room.RoomName),
+		Title:        platform.JSString(room.RoomName),
 		URL:          platform.Str(baseURL + "/" + roomID),
-		Thumbnail:    platform.Str(jsString(room.RoomPic)),
-		Author:       &platform.Author{Name: jsString(room.OwnerName), Avatar: strOr(room.OwnerAvatar)},
+		Thumbnail:    platform.Str(platform.JSString(room.RoomPic)),
+		Author:       &platform.Author{Name: platform.JSString(room.OwnerName), Avatar: platform.StrOr(room.OwnerAvatar)},
 		FetchedAt:    t,
 		Platform:     "douyu",
 		RoomID:       platform.Str(roomIDValue),
 		LiveStatus:   liveStatusPtr(status),
 		Online:       online,
 		IsRecord:     platform.Bool(loopOK && videoLoop == 1),
-		Introduction: strOr(room.ShowDetails),
+		Introduction: platform.StrOr(room.ShowDetails),
 	}
 }
 
@@ -52,12 +52,12 @@ func mapHotItems(list []map[string]any, t int64) []platform.Item {
 		if !isRoomType(raw["type"]) {
 			continue
 		}
-		rid := jsString(raw["rid"])
+		rid := platform.JSString(raw["rid"])
 		items = append(items, platform.Item{
 			ID:         "douyu:" + rid,
 			SourceID:   "live:douyu:hot",
 			Kind:       platform.KindLive,
-			Title:      jsString(raw["rn"]),
+			Title:      platform.JSString(raw["rn"]),
 			URL:        platform.Str(baseURL + "/" + rid),
 			Thumbnail:  truthyString(raw["rs16"]),
 			Author:     truthyAuthor(raw["nn"]),
@@ -78,12 +78,12 @@ func mapCategoryRoomItems(list []map[string]any, t int64) []platform.Item {
 		if !isRoomType(raw["type"]) {
 			continue
 		}
-		rid := jsString(raw["rid"])
+		rid := platform.JSString(raw["rid"])
 		items = append(items, platform.Item{
 			ID:         "douyu:" + rid,
 			SourceID:   "live:douyu:category",
 			Kind:       platform.KindLive,
-			Title:      jsString(raw["rn"]),
+			Title:      platform.JSString(raw["rn"]),
 			URL:        platform.Str(baseURL + "/" + rid),
 			Thumbnail:  truthyString(raw["rs16"]),
 			Author:     truthyAuthor(raw["nn"]),
@@ -105,7 +105,7 @@ func mapAnchorItems(list []map[string]any, t int64) []platform.Item {
 		if anchor == nil {
 			anchor = map[string]any{}
 		}
-		rid := jsString(anchor["rid"])
+		rid := platform.JSString(anchor["rid"])
 		if rid == "" {
 			continue
 		}
@@ -113,7 +113,7 @@ func mapAnchorItems(list []map[string]any, t int64) []platform.Item {
 			ID:         "douyu:" + rid,
 			SourceID:   "live:douyu:anchor",
 			Kind:       platform.KindLive,
-			Title:      jsString(anchor["nickName"]),
+			Title:      platform.JSString(anchor["nickName"]),
 			URL:        platform.Str(baseURL + "/" + rid),
 			Thumbnail:  truthyString(anchor["avatar"]),
 			Author:     truthyAuthor(anchor["nickName"]),
@@ -130,7 +130,7 @@ func mapAnchorItems(list []map[string]any, t int64) []platform.Item {
 func mapSearchRoomItems(list []map[string]any, t int64) []platform.Item {
 	items := make([]platform.Item, 0, len(list))
 	for _, raw := range list {
-		rid := jsString(raw["rid"])
+		rid := platform.JSString(raw["rid"])
 		if rid == "" {
 			continue
 		}
@@ -138,7 +138,7 @@ func mapSearchRoomItems(list []map[string]any, t int64) []platform.Item {
 			ID:         "douyu:" + rid,
 			SourceID:   "live:douyu:search",
 			Kind:       platform.KindLive,
-			Title:      jsString(raw["roomName"]),
+			Title:      platform.JSString(raw["roomName"]),
 			URL:        platform.Str(baseURL + "/" + rid),
 			Thumbnail:  truthyString(raw["roomSrc"]),
 			Author:     truthyAuthor(raw["nickName"]),
@@ -177,7 +177,7 @@ func isRoomType(v any) bool {
 	if v == nil {
 		return true
 	}
-	n, ok := jsNumber(v)
+	n, ok := platform.JSNumber(v)
 	return ok && n == 1
 }
 
@@ -199,17 +199,17 @@ func numberOrNil(v any) *int {
 }
 
 func truthyString(v any) *string {
-	if !truthy(v) {
+	if !platform.JSTruthy(v) {
 		return nil
 	}
-	return platform.Str(jsString(v))
+	return platform.Str(platform.JSString(v))
 }
 
 func truthyAuthor(v any) *platform.Author {
-	if !truthy(v) {
+	if !platform.JSTruthy(v) {
 		return nil
 	}
-	return &platform.Author{Name: jsString(v)}
+	return &platform.Author{Name: platform.JSString(v)}
 }
 
 func liveStatusPtr(status platform.LiveStatus) *platform.LiveStatus {
