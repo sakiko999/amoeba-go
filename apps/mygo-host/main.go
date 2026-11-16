@@ -54,7 +54,7 @@ func main() {
 		Creds: platform.NewCredentials(filepath.Join(userData, "credentials.json")),
 		JS:    js,
 	}
-	if _, err := services.Activate(sc); err != nil {
+	if _, err := services.Activate(sc, comps); err != nil {
 		log.Fatal(err)
 	}
 

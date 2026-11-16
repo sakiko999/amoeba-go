@@ -1,13 +1,12 @@
-// services —— 内置 Go 服务的装配层:构建 ServiceContext(宿主能力注入),
-// 解析各平台 Spec(需要宿主能力的平台走 OpsFn),注册进网关并自检。
-// 服务组件 = 编译进宿主的 Go 包(§5.2 决策);不再支持外部安装 kind=service。
+// services —— 内置服务组件的装配层:api-gateway 为根服务,各平台服务
+// inject api.gateway;按 provides/inject 拓扑序激活(Activate = 经网关
+// 注册 ops),并把服务清单登记进组件管理器(与 page 组件平级)。
+// 服务组件 = 编译进宿主的 Go 包(§5.2 决策);不支持外部安装 kind=service。
 
 package services
 
 import (
-	"sort"
-	"strings"
-
+	"mygo-host/components"
 	"mygo-host/gateway"
 	"mygo-host/platform"
 
@@ -22,35 +21,33 @@ import (
 	"mygo-host/platforms/youtube"
 )
 
-// Activate 建网关并注册全部内置平台;logf 记注册与自检(对齐 TS 侧
-// "api registered: <ns> (ops)" / "self-check ok" 日志面)。
-func Activate(sc *platform.ServiceContext) (*gateway.Gateway, error) {
+// Activate 建网关并按拓扑序激活全部内置服务;每项服务的 manifest 平级登记
+// 进组件管理器(组件清单/依赖图的数据源)。comps 必传(激活清单是装配契约)。
+func Activate(sc *platform.ServiceContext, comps *components.Manager) (*gateway.Gateway, error) {
 	gw := gateway.New(sc.Logf)
-	specs := []platform.Spec{
-		tmdb.New(sc),
-		douban.New(sc),
-		bangumi.New(sc),
-		apple.New(sc),
-		youtube.New(sc),
-		bili.New(sc),
-		douyu.New(sc),
-		huya.New(sc),
-		twitch.New(sc),
+	list := []platform.Service{
+		gw,
+		tmdb.NewService(sc),
+		douban.NewService(sc),
+		bangumi.NewService(sc),
+		apple.NewService(sc),
+		youtube.NewService(sc),
+		bili.NewService(sc),
+		douyu.NewService(sc),
+		huya.NewService(sc),
+		twitch.NewService(sc),
 	}
-	for _, spec := range specs {
-		if err := gw.Register(spec); err != nil {
+	ordered, err := topoSort(list)
+	if err != nil {
+		return nil, err
+	}
+	for _, svc := range ordered {
+		if err := svc.Activate(gw); err != nil {
 			return nil, err
 		}
-		sc.Log("api registered: %s (%s)", spec.Namespace, opNames(spec))
+		m := svc.Manifest()
+		sc.Log("service activated: %s", m.ID)
+		comps.RegisterService(m)
 	}
 	return gw, nil
-}
-
-func opNames(spec platform.Spec) string {
-	names := make([]string, 0, len(spec.Ops))
-	for name := range spec.Ops {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-	return strings.Join(names, ", ")
 }

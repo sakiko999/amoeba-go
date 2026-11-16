@@ -32,11 +32,13 @@ type ApiInfo struct {
 	Ops       []OpDesc `json:"ops"`
 }
 
-// Gateway 平台 API 注册中心(并发安全)。
+// Gateway 平台 API 注册中心(并发安全);自身也是根服务组件
+// (provides api.gateway,Manifest/Activate 见文件尾)。
 type Gateway struct {
 	mu   sync.RWMutex
 	apis map[string]platform.Ops
 	meta map[string]ApiInfo
+	logf func(format string, args ...any)
 }
 
 var (
@@ -44,10 +46,10 @@ var (
 	opRe        = regexp.MustCompile(`^[a-z][a-zA-Z0-9-]*$`)
 )
 
-// New 建网关。自环自检(gateway.ping)随构造注册(绕过 Register 的保留字
-// 校验,与 TS 侧直接 apis.set 同语义);logf 非空时立即自检并落日志。
+// New 建网关。自环自检面(gateway.ping)随构造注册(绕过 Register 的保留字
+// 校验,与 TS 侧直接 apis.set 同语义);自检执行移入 Activate(根服务激活)。
 func New(logf func(format string, args ...any)) *Gateway {
-	g := &Gateway{apis: map[string]platform.Ops{}, meta: map[string]ApiInfo{}}
+	g := &Gateway{apis: map[string]platform.Ops{}, meta: map[string]ApiInfo{}, logf: logf}
 	g.apis["gateway"] = platform.GuardOps("gateway", platform.Ops{
 		"ping": {
 			Description: "回显参数,验证注册与分发链路",
@@ -61,14 +63,30 @@ func New(logf func(format string, args ...any)) *Gateway {
 		},
 	})
 	g.meta["gateway"] = ApiInfo{Namespace: "gateway", Label: "网关自检", Ops: []OpDesc{{Name: "ping", Description: "回显参数,验证注册与分发链路"}}}
-	if logf != nil {
-		if _, err := g.Call(context.Background(), "gateway.ping", json.RawMessage(`{"check":1}`)); err != nil {
-			logf("self-check FAILED: %v", err)
-		} else {
-			logf("self-check ok")
-		}
-	}
 	return g
+}
+
+// Manifest 根服务声明(对齐 TS api-gateway component.json)。
+func (g *Gateway) Manifest() platform.ServiceManifest {
+	return platform.ServiceManifest{
+		ID:      "api-gateway",
+		Name:    "平台 API 网关",
+		Version: "0.1.0",
+		Provides: []platform.ProvideDecl{
+			{Name: "api.gateway", Expose: []string{"register", "call", "list"}},
+		},
+	}
+}
+
+// Activate 根服务自检:注册/分发链路可用才算激活成功(无依赖,忽略 r)。
+func (g *Gateway) Activate(platform.Registrar) error {
+	if _, err := g.Call(context.Background(), "gateway.ping", json.RawMessage(`{"check":1}`)); err != nil {
+		return fmt.Errorf("gateway self-check FAILED: %w", err)
+	}
+	if g.logf != nil {
+		g.logf("self-check ok")
+	}
+	return nil
 }
 
 // Register 注册一个平台扩展(ops 会被 GuardOps 统一包装 PlatformOpError)。
@@ -100,6 +118,9 @@ func (g *Gateway) Register(spec platform.Spec) error {
 	defer g.mu.Unlock()
 	g.apis[spec.Namespace] = platform.GuardOps(spec.Namespace, ops)
 	g.meta[spec.Namespace] = info
+	if g.logf != nil {
+		g.logf("api registered: %s (%d ops)", spec.Namespace, len(ops))
+	}
 	return nil
 }
 

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"testing"
 
+	"mygo-host/components"
 	"mygo-host/platform"
 )
 
@@ -26,8 +27,13 @@ func testContext(t *testing.T) *platform.ServiceContext {
 	}
 }
 
+func testManager(t *testing.T) *components.Manager {
+	t.Helper()
+	return components.NewManager(t.TempDir(), t.TempDir())
+}
+
 func TestActivateRegistersAllPlatforms(t *testing.T) {
-	gw, err := Activate(testContext(t))
+	gw, err := Activate(testContext(t), testManager(t))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,8 +55,32 @@ func TestActivateRegistersAllPlatforms(t *testing.T) {
 	}
 }
 
+// 服务与 page 平级登记:网关(根)先激活,平台服务依次入表。
+func TestActivateRegistersServicesAsComponents(t *testing.T) {
+	comps := testManager(t)
+	if _, err := Activate(testContext(t), comps); err != nil {
+		t.Fatal(err)
+	}
+	services := comps.Services()
+	if len(services) != 10 {
+		t.Fatalf("内置服务应为 10 个(api-gateway + 9 平台),got %d", len(services))
+	}
+	if services[0].Manifest.ID != "api-gateway" {
+		t.Errorf("根服务应为 api-gateway,got %s", services[0].Manifest.ID)
+	}
+	ids := map[string]bool{}
+	for _, s := range services {
+		ids[s.Manifest.ID] = true
+	}
+	for _, want := range []string{"platform-bili", "platform-youtube", "platform-tmdb"} {
+		if !ids[want] {
+			t.Errorf("服务 %s 未登记", want)
+		}
+	}
+}
+
 func TestGatewayPing(t *testing.T) {
-	gw, err := Activate(testContext(t))
+	gw, err := Activate(testContext(t), testManager(t))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +95,7 @@ func TestGatewayPing(t *testing.T) {
 }
 
 func TestUnknownOpError(t *testing.T) {
-	gw, _ := Activate(testContext(t))
+	gw, _ := Activate(testContext(t), testManager(t))
 	if _, err := gw.Call(context.Background(), "nope.search", nil); err == nil {
 		t.Error("expected error for unknown op")
 	}

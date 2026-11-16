@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+
+	"mygo-host/platform"
 )
 
 // Source 区分内置（随宿主分发）与外部安装的组件。
@@ -14,19 +16,27 @@ const (
 	SourceExternal Source = "external"
 )
 
-// Component 是扫描后的一份组件记录；v1 只有 active 一种终态（页面包无 main，
+// Component 是扫描后的一份页面组件记录；v1 只有 active 一种终态（页面包无 main，
 // 装载失败只发生在清单校验阶段，校验失败直接不入表）。
 type Component struct {
 	Manifest *Manifest
 	Source   Source
 }
 
-// Manager 负责内置/外置页面包的扫描与目录服务。状态权威源仍在宿主主进程，
-// tab 生命周期由 tabs.Manager 消费 Kinds()。
+// ServiceRecord 已激活的内置服务组件（编译期清单，与 page 平级展示；
+// 供组件清单/依赖图消费）。
+type ServiceRecord struct {
+	Manifest platform.ServiceManifest
+}
+
+// Manager 负责内置/外置页面包的扫描与目录服务,以及内置服务的登记。
+// 状态权威源仍在宿主主进程,tab 生命周期由 tabs.Manager 消费 Kinds();
+// 服务登记发生在启动期(装配层单线程调用),不需要锁。
 type Manager struct {
 	builtinDir  string
 	externalDir string
 	byID        map[string]*Component
+	services    []ServiceRecord
 	// Logf 由宿主注入（缺省丢弃）：记录被跳过的目录与原因
 	Logf func(format string, args ...any)
 }
@@ -38,6 +48,18 @@ func NewManager(builtinDir, externalDir string) *Manager {
 		byID:        make(map[string]*Component),
 		Logf:        func(string, ...any) {},
 	}
+}
+
+// RegisterService 登记一个已激活的内置服务(装配层按拓扑序调用)。
+func (m *Manager) RegisterService(manifest platform.ServiceManifest) {
+	m.services = append(m.services, ServiceRecord{Manifest: manifest})
+}
+
+// Services 返回全部内置服务(激活序,拷贝防调用方改写)。
+func (m *Manager) Services() []ServiceRecord {
+	out := make([]ServiceRecord, len(m.services))
+	copy(out, m.services)
+	return out
 }
 
 // Scan 全量重建组件表：内置目录优先，外部同 id 跳过；非法目录记日志后跳过，
