@@ -8,6 +8,7 @@ package gateway
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"regexp"
@@ -32,8 +33,8 @@ type ApiInfo struct {
 	Ops       []OpDesc `json:"ops"`
 }
 
-// Gateway 平台 API 注册中心(并发安全);自身也是根服务组件
-// (provides api.gateway,Manifest/Activate 见文件尾)。
+// Gateway 平台 API 注册中心(并发安全);NewService 把它包装为根服务
+// 组件(provides api.gateway,manifest 见本目录 component.json)。
 type Gateway struct {
 	mu   sync.RWMutex
 	apis map[string]platform.Ops
@@ -67,24 +68,33 @@ func New(logf func(format string, args ...any)) *Gateway {
 }
 
 // Manifest 根服务声明(对齐 TS api-gateway component.json)。
-func (g *Gateway) Manifest() platform.ServiceManifest {
-	return platform.ServiceManifest{
-		ID:      "api-gateway",
-		Name:    "平台 API 网关",
-		Version: "0.1.0",
-		Provides: []platform.ProvideDecl{
-			{Name: "api.gateway", Expose: []string{"register", "call", "list"}},
-		},
+//go:embed component.json
+var manifestRaw []byte
+
+// NewService 把网关包装为根服务组件:manifest 来自本目录 component.json
+// (与 page/平台组件目录同构);Activate = 注册/分发链路自检。
+func NewService(g *Gateway) (platform.Service, error) {
+	m, err := platform.ParseServiceManifest(manifestRaw)
+	if err != nil {
+		return nil, err
 	}
+	return &rootService{g: g, m: m}, nil
 }
 
+type rootService struct {
+	g *Gateway
+	m platform.ServiceManifest
+}
+
+func (s *rootService) Manifest() platform.ServiceManifest { return s.m }
+
 // Activate 根服务自检:注册/分发链路可用才算激活成功(无依赖,忽略 r)。
-func (g *Gateway) Activate(platform.Registrar) error {
-	if _, err := g.Call(context.Background(), "gateway.ping", json.RawMessage(`{"check":1}`)); err != nil {
+func (s *rootService) Activate(platform.Registrar) error {
+	if _, err := s.g.Call(context.Background(), "gateway.ping", json.RawMessage(`{"check":1}`)); err != nil {
 		return fmt.Errorf("gateway self-check FAILED: %w", err)
 	}
-	if g.logf != nil {
-		g.logf("self-check ok")
+	if s.g.logf != nil {
+		s.g.logf("self-check ok")
 	}
 	return nil
 }

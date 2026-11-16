@@ -1,9 +1,15 @@
-// 内置服务组件的静态清单契约:对齐 TS 侧 component.json(kind=service)的
-// 字段(id/name/version/provides/inject)。Go 服务编译期内置,manifest 是
-// 代码里的声明而非目录文件;服务与 page 组件在组件清单/依赖图平级展示。
-// provides 的 expose 是元数据(进程内直连,方法即接口,运行时不消费)。
+// 内置服务组件的静态清单契约:字段与 TS 侧 component.json(kind=service)
+// 同构(id/kind/name/version/provides/inject)。Go 服务编译期内置,清单文件
+// 经 go:embed 进二进制(目录自描述,无运行时 IO);服务与 page 组件在组件
+// 清单/依赖图平级展示。provides 的 expose 是元数据(进程内直连,方法即
+// 接口,运行时不消费)。
 
 package platform
+
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // ProvideDecl 声明一个提供的服务名(两段 DNS label,如 api.gateway)。
 type ProvideDecl struct {
@@ -12,8 +18,10 @@ type ProvideDecl struct {
 }
 
 // ServiceManifest 服务组件的清单声明(与 page 的 component.json 平级)。
+// 文件形态时 kind 固定 "service"(防把页面清单装进服务管线)。
 type ServiceManifest struct {
 	ID       string        `json:"id"`
+	Kind     string        `json:"kind,omitempty"`
 	Name     string        `json:"name"`
 	Version  string        `json:"version"`
 	Provides []ProvideDecl `json:"provides,omitempty"`
@@ -35,7 +43,6 @@ type Service interface {
 }
 
 // SpecService 把纯 Spec 工厂包装为服务组件(Activate = 经 Registrar 注册)。
-// 各平台包只需声明 manifest,不重复实现接口。
 func SpecService(m ServiceManifest, spec func() Spec) Service {
 	return &specService{m: m, spec: spec}
 }
@@ -48,3 +55,26 @@ type specService struct {
 func (s *specService) Manifest() ServiceManifest { return s.m }
 
 func (s *specService) Activate(r Registrar) error { return r.Register(s.spec()) }
+
+// ParseServiceManifest 解析组件目录嵌入的 component.json(字段与 TS/page
+// 组件同构;main 等多余字段忽略)。
+func ParseServiceManifest(raw []byte) (ServiceManifest, error) {
+	var m ServiceManifest
+	if err := json.Unmarshal(raw, &m); err != nil {
+		return ServiceManifest{}, fmt.Errorf("component.json 解析失败: %w", err)
+	}
+	if m.Kind != "service" {
+		return ServiceManifest{}, fmt.Errorf("component.json kind 应为 service,got %q(id %s)", m.Kind, m.ID)
+	}
+	return m, nil
+}
+
+// FileService 从嵌入的 component.json 解析 manifest 并包装 Spec 工厂
+// (目录形态与 page/TS 组件同构;文件经 go:embed 进二进制,无运行时 IO)。
+func FileService(raw []byte, spec func() Spec) (Service, error) {
+	m, err := ParseServiceManifest(raw)
+	if err != nil {
+		return nil, err
+	}
+	return SpecService(m, spec), nil
+}

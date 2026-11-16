@@ -1,0 +1,9 @@
+{
+  "id": "platform-bili",
+  "kind": "service",
+  "name": "B站",
+  "version": "0.1.0",
+  "inject": [
+    "api.gateway"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "id": "platform-douban",
+  "kind": "service",
+  "name": "豆瓣",
+  "version": "0.1.0",
+  "inject": [
+    "api.gateway"
+  ]
+}

@@ -25,17 +25,23 @@ import (
 // 进组件管理器(组件清单/依赖图的数据源)。comps 必传(激活清单是装配契约)。
 func Activate(sc *platform.ServiceContext, comps *components.Manager) (*gateway.Gateway, error) {
 	gw := gateway.New(sc.Logf)
-	list := []platform.Service{
-		gw,
-		tmdb.NewService(sc),
-		douban.NewService(sc),
-		bangumi.NewService(sc),
-		apple.NewService(sc),
-		youtube.NewService(sc),
-		bili.NewService(sc),
-		douyu.NewService(sc),
-		huya.NewService(sc),
-		twitch.NewService(sc),
+	root, err := gateway.NewService(gw)
+	if err != nil {
+		return nil, err
+	}
+	// 内置服务工厂清单(编译期绑定,§5.2 决策;manifest 由各组件目录的
+	// component.json 自描述)。
+	factories := []func(*platform.ServiceContext) (platform.Service, error){
+		tmdb.NewService, douban.NewService, bangumi.NewService, apple.NewService,
+		youtube.NewService, bili.NewService, douyu.NewService, huya.NewService, twitch.NewService,
+	}
+	list := []platform.Service{root}
+	for _, newService := range factories {
+		svc, err := newService(sc)
+		if err != nil {
+			return nil, err
+		}
+		list = append(list, svc)
 	}
 	ordered, err := topoSort(list)
 	if err != nil {

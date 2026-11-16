@@ -1,0 +1,9 @@
+{
+  "id": "platform-apple",
+  "kind": "service",
+  "name": "Apple Podcasts",
+  "version": "0.1.0",
+  "inject": [
+    "api.gateway"
+  ]
+}

@@ -1,17 +1,18 @@
-// 平台包的服务组件声明:manifest 对齐 TS component.json(inject api.gateway),
-// Activate = 经网关注册 Spec。内置服务由装配层按拓扑序激活。
+// 平台服务组件:manifest 来自本目录 component.json(与 page/TS 组件同构,
+// 经 go:embed 进二进制),Activate = 经网关注册 Spec。
 
 package bangumi
 
-import "mygo-host/platform"
+import (
+	_ "embed"
+
+	"mygo-host/platform"
+)
+
+//go:embed component.json
+var manifestRaw []byte
 
 // NewService 平台服务组件(与 page 组件平级的清单成员)。
-func NewService(sc *platform.ServiceContext) platform.Service {
-	return platform.SpecService(
-		platform.ServiceManifest{
-			ID: "platform-bangumi", Name: label, Version: "0.1.0",
-			Inject: []string{"api.gateway"},
-		},
-		func() platform.Spec { return New(sc) },
-	)
+func NewService(sc *platform.ServiceContext) (platform.Service, error) {
+	return platform.FileService(manifestRaw, func() platform.Spec { return New(sc) })
 }

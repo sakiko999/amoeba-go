@@ -1,0 +1,9 @@
+{
+  "id": "platform-douyu",
+  "kind": "service",
+  "name": "斗鱼",
+  "version": "0.1.0",
+  "inject": [
+    "api.gateway"
+  ]
+}
