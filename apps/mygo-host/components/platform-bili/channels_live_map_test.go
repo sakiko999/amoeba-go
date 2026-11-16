@@ -118,7 +118,7 @@ func TestLiveAreaLoginGate(t *testing.T) {
 		t.Fatalf("未登录 err = %v", err)
 	}
 	if fs.find("second/getList") != nil {
-		t.Error("未登录不应发列房请求（-352 会写平台冷却）")
+		t.Error("未登录不应发列房请求（该端点未登录必 -352）")
 	}
 	if _, err := ch.GetSource(platform.SourceInfo{}).Fetch(context.Background()); err == nil ||
 		err.Error() != "bili:live:area 需要 parentAreaId 参数" {

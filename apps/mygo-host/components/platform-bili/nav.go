@@ -53,7 +53,6 @@ func (c *client) fetchNav(ctx context.Context, cookie string) (navData, error) {
 	}
 	raw, err := c.sc.HTTP.GetJSON(ctx, apiMain+"/x/web-interface/nav", headers)
 	if err != nil {
-		c.reportRiskIf412(err)
 		return navData{}, err
 	}
 	var data navData
@@ -107,7 +106,6 @@ func (c *client) fetchBuvid(ctx context.Context) (string, error) {
 	headers := map[string]string{"user-agent": bilibiliUA, "referer": defaultReferer}
 	raw, err := c.sc.HTTP.GetJSON(ctx, apiMain+"/x/frontend/finger/spi", headers)
 	if err != nil {
-		c.reportRiskIf412(err)
 		return "", err
 	}
 	var resp struct {

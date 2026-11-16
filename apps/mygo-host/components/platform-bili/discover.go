@@ -1,6 +1,6 @@
 // bili 直播发现层：分区树与按分区列房（需登录 + w_webid）。
-// 分区目录匿名可读；second/getList 匿名一律 -352，故先判登录再发请求（-352 会写
-// 平台冷却，一次「未登录」会把用户所有 bili 渠道一起打死）。
+// 分区目录匿名可读；second/getList 匿名一律 -352，故先判登录再发请求，
+// 直接给出登录指引而非裸 API 错误。
 // 搜索端点见 discover_search.go。
 
 package bili
@@ -116,7 +116,7 @@ func (c *client) fetchBiliAreaRooms(ctx context.Context, parentAreaID, areaID st
 		url := "https://api.live.bilibili.com/xlive/web-interface/v1/second/getList?" + signed
 		_, data, err := c.getJSON(ctx, url, reqOptions{
 			Referer: liveBase + "/", Buvid: true, Cookie: &ck,
-			AllowCodeError: true, NoRiskSignal: true,
+			AllowCodeError: true,
 		})
 		return data, err
 	}
@@ -129,7 +129,7 @@ func (c *client) fetchBiliAreaRooms(ctx context.Context, parentAreaID, areaID st
 		return biliAreaRooms{}, err
 	}
 	if jnum(res["code"]) == -352 {
-		// w_webid 过期/被风控 → 逐出缓存重取一次（首个 -352 不写冷却）。
+		// w_webid 过期/失效 → 逐出缓存重取一次再试。
 		c.invalidateWebID()
 		webID, err = c.getWebID(ctx, &ck)
 		if err != nil {

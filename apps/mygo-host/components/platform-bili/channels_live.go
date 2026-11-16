@@ -1,5 +1,5 @@
 // bili 直播渠道：房间详情（多房间聚合）/ 热门 / 分区目录 / 按分区列房。
-// 分区列房必须登录（-352 会写平台冷却，故先判登录再发请求）；其余零登录可用。
+// 分区列房必须登录（未登录必得 -352，提前给出登录指引）；其余零登录可用。
 
 package bili
 
@@ -215,7 +215,7 @@ func liveAreaChannel(c *client) platform.DataChannel {
 			}
 			rooms, err := c.fetchBiliAreaRooms(ctx, parentAreaID, areaID, page, cookiePtr(info))
 			if err != nil {
-				// 只改写上游 API 的 -352；governor 冷却文案含 "-352" 但语义是稍后重试。
+				// 上游 API 的 -352 = 未登录/凭据失效 → 改写为登录指引。
 				if strings.Contains(err.Error(), "bilibili API -352") {
 					return platform.PageItems{}, fmt.Errorf("B站直播分区列房需要登录：请到「账号与凭证」扫码登录")
 				}

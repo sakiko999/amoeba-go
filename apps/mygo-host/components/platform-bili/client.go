@@ -53,17 +53,16 @@ func (c *client) resolveCookie(explicit *string) string {
 	return v
 }
 
-// reqOptions getJson 选项（allowCodeError / buvid / riskSignal:false / referer / cookie）。
+// reqOptions getJson 选项（allowCodeError / buvid / referer / cookie）。
 type reqOptions struct {
 	Cookie         *string
 	Referer        string
 	Buvid          bool
 	AllowCodeError bool
-	NoRiskSignal   bool
 }
 
 // getJSON 统一 GET JSON：UA/referer/cookie 三档/buvid 补齐/code 校验。
-// 返回原始 body 与解码后的对象；code!=0 且未允许时返回错误（-352/-509 另报风控信号）。
+// 返回原始 body 与解码后的对象；code!=0 且未允许时返回错误。
 func (c *client) getJSON(ctx context.Context, url string, opts reqOptions) (platform.RawJSON, map[string]any, error) {
 	headers := map[string]string{
 		"user-agent": bilibiliUA,
@@ -90,37 +89,20 @@ func (c *client) getJSON(ctx context.Context, url string, opts reqOptions) (plat
 	}
 	raw, err := c.sc.HTTP.GetJSON(ctx, url, headers)
 	if err != nil {
-		c.reportRiskIf412(err)
 		return nil, nil, err
 	}
 	var data map[string]any
 	if err := platform.UnmarshalJSON(raw, &data); err != nil {
 		return raw, nil, err
 	}
-	if code, ok := data["code"]; ok {
-		n := jnum(code)
-		if (n == -352 || n == -509) && !opts.NoRiskSignal {
-			c.reportRisk(jsNum(n))
+	if n := jnum(data["code"]); n != 0 && !opts.AllowCodeError {
+		message := jstr(data["message"])
+		if message == "" {
+			message = "unknown error"
 		}
-		if n != 0 && !opts.AllowCodeError {
-			message := jstr(data["message"])
-			if message == "" {
-				message = "unknown error"
-			}
-			return nil, nil, fmt.Errorf("bilibili API %s: %s", jsNum(n), message)
-		}
+		return nil, nil, fmt.Errorf("bilibili API %s: %s", jsNum(n), message)
 	}
 	return raw, data, nil
-}
-
-// reportRisk 对应 appHost.net.reportRisk；Go 运行时未安装治理器，保持 no-op
-// （TS 侧宿主未注入 net 时同样静默）。
-func (c *client) reportRisk(signal string) { _ = signal }
-
-func (c *client) reportRiskIf412(err error) {
-	if strings.Contains(err.Error(), "HTTP 412") {
-		c.reportRisk("412")
-	}
 }
 
 // hasBuvid3 判断 cookie 串是否已带 buvid3（避免重复追加匿名指纹）。
