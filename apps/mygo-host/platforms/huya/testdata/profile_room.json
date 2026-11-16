@@ -1,0 +1,30 @@
+{
+  "status": 200,
+  "message": "",
+  "data": {
+    "liveStatus": "ON",
+    "liveData": {
+      "profileRoom": "11342412",
+      "roomName": "房间名",
+      "introduction": "直播简介",
+      "screenshot": "https://anchorpost.msstatic.com/room.jpg",
+      "nick": "主播甲",
+      "totalCount": 8888,
+      "bitRateInfo": "[{\"iBitRate\":0,\"sDisplayName\":\"蓝光10M\"},{\"iBitRate\":4000,\"sDisplayName\":\"蓝光4M\"},{\"iBitRate\":2000,\"sDisplayName\":\"超清\"},{\"iBitRate\":500,\"sDisplayName\":\"流畅\"},{\"iBitRate\":3000,\"sDisplayName\":\"HDR画质\"}]"
+    },
+    "stream": {
+      "flv": {
+        "multiLine": [
+          { "cdnType": "TX", "url": "https://flv.example/tx.flv?wsSecret=1" },
+          { "cdnType": "HW", "url": "https://flv.example/hw.flv?wsSecret=2" }
+        ]
+      },
+      "hls": {
+        "multiLine": [
+          { "cdnType": "TX", "url": "https://hls.example/tx.m3u8?wsSecret=1&ratio=0" },
+          { "cdnType": "AL", "url": "https://hls.example/al.m3u8" }
+        ]
+      }
+    }
+  }
+}

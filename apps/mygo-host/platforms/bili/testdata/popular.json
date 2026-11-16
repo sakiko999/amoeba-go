@@ -1,0 +1,17 @@
+{
+  "data": {
+    "list": [
+      {
+        "title": "示例视频一",
+        "pic": "https://i0.hdslb.com/cover1.jpg",
+        "desc": "简介一",
+        "pubdate": 1700000000,
+        "aid": 123,
+        "bvid": "BV1xx411c7mD",
+        "duration": 100,
+        "owner": { "name": "UP主甲" }
+      },
+      { "title": "示例视频二", "aid": 789 }
+    ]
+  }
+}

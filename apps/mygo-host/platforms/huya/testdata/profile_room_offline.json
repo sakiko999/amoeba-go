@@ -1,0 +1,16 @@
+{
+  "status": 200,
+  "message": "",
+  "data": {
+    "liveStatus": "OFF",
+    "liveData": {
+      "profileRoom": "660000",
+      "roomName": "离线房间",
+      "introduction": null,
+      "screenshot": "",
+      "nick": "",
+      "totalCount": 0
+    },
+    "stream": null
+  }
+}

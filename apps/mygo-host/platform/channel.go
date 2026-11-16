@@ -97,7 +97,26 @@ func (c *apiChannel) SourceInfoTpl() []SourceInfoField { return c.spec.InfoTpl }
 func (c *apiChannel) DefaultInfo() SourceInfo          { return c.spec.DefaultInfo }
 
 func (c *apiChannel) GetSource(info SourceInfo) DataSource {
+	if c.spec.Pageable == nil {
+		// 单页渠道不实现 PageableSource(消费方带 cursor 请求时,FeedOps 会
+		// 按 TS 语义报「渠道 X 不支持翻页」)。
+		return &apiFetchSource{spec: c.spec, info: info}
+	}
 	return &apiSource{spec: c.spec, info: info}
+}
+
+// apiFetchSource 单页数据源(无翻页能力)。
+type apiFetchSource struct {
+	spec ChannelSpec
+	info SourceInfo
+}
+
+func (s *apiFetchSource) Fetch(ctx context.Context) (FetchResult, error) {
+	page, err := s.spec.FetchPage(ctx, s.info, 1)
+	if err != nil {
+		return FetchResult{}, err
+	}
+	return FetchResult{Items: page.Items, Total: page.Total}, nil
 }
 
 type apiSource struct {
@@ -113,6 +132,7 @@ func (s *apiSource) Fetch(ctx context.Context) (FetchResult, error) {
 	return FetchResult{Items: page.Items, Total: page.Total}, nil
 }
 
+// FetchMore 数值游标翻页(spec.Pageable 非 nil 才会挂到本类型上)。
 func (s *apiSource) FetchMore(ctx context.Context, cursor string, existing int) (FetchPage, error) {
 	p := s.spec.Pageable
 	n := p.First

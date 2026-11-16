@@ -1,0 +1,32 @@
+{
+  "response": {
+    "1": {
+      "docs": [
+        {
+          "room_id": 520000,
+          "uid": 1,
+          "yyid": 2,
+          "game_nick": "主播甲",
+          "game_avatarUrl180": "https://avatar.example/a.jpg",
+          "gameLiveOn": true,
+          "game_total_count": 99999
+        },
+        {
+          "room_id": "",
+          "uid": 3,
+          "yyid": 4,
+          "game_nick": "无人房间",
+          "gameLiveOn": "false"
+        },
+        {
+          "room_id": "520001",
+          "uid": 5,
+          "yyid": 6,
+          "game_nick": "",
+          "gameLiveOn": "true"
+        }
+      ]
+    },
+    "3": { "docs": [] }
+  }
+}

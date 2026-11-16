@@ -1,0 +1,26 @@
+{
+  "status": 200,
+  "message": "",
+  "data": {
+    "page": 1,
+    "total": 2,
+    "datas": [
+      {
+        "profileRoom": 11342412,
+        "introduction": "韩服王者局",
+        "roomName": "房间一",
+        "screenshot": "https://anchorpost.msstatic.com/a.jpg",
+        "nick": "主播甲",
+        "totalCount": 12345
+      },
+      {
+        "profileRoom": "660000",
+        "introduction": "",
+        "roomName": "房间二",
+        "screenshot": "https://anchorpost.msstatic.com/b.jpg?x-oss-process=style/w338_h190",
+        "nick": "",
+        "totalCount": "7"
+      }
+    ]
+  }
+}

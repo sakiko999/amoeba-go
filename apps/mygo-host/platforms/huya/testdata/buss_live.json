@@ -1,0 +1,9 @@
+{
+  "status": 200,
+  "data": [
+    { "gid": "1", "gameFullName": "英雄联盟" },
+    { "gid": 862, "gameFullName": "CS2" },
+    { "gid": "", "gameFullName": "坏数据" },
+    { "gid": "3", "gameFullName": "" }
+  ]
+}

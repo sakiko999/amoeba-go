@@ -1,38 +1,23 @@
-// PLACEHOLDER —— huya 平台 Go 移植占位(由移植任务替换)。
-// 目标:对齐 packages/platform-huya/src 的渠道/播放/弹幕能力,经 platform.FeedOps /
-// platform.MetadataOps 注册;TS 测试(tests/platform.test.ts 或 provider.test.ts)
-// 移植为 _test.go。
+// 虎牙(huya)直播平台:数据渠道 + 直播播放/弹幕能力,经 api.gateway 的 feed
+// 协议暴露(channels / fetch / play / danmaku)。对齐 packages/platform-huya/src:
+// 渠道装配见 channels*.go / discover.go,拉流解析 playback.go,弹幕与 Tars
+// 编解码见 danmaku*.go / tars.go。
 
 package huya
 
-import (
-	"context"
-	"encoding/json"
+import "mygo-host/platform"
 
-	"mygo-host/platform"
+const (
+	label = "虎牙"
+	tag   = "platform.data"
 )
 
-// New 建 huya 平台扩展。
+// New 建 huya 平台扩展(HTTP/时钟由宿主注入;本平台不依赖 JS / cache / cookie)。
 func New(sc *platform.ServiceContext) platform.Spec {
 	return platform.Spec{
 		Namespace: "huya",
-		Label:     "虎牙",
-		Tags:      []string{"platform.data"},
-		Ops: platform.Ops{
-			"pending": {
-				Description: "Go 移植进行中(占位 op)",
-				Invoke: func(ctx context.Context, params json.RawMessage) (any, error) {
-					return nil, errPending
-				},
-			},
-		},
+		Label:     label,
+		Tags:      []string{tag},
+		Ops:       platform.FeedOps(platform.FeedSpec{Channels: channels(sc), Playback: playback(sc)}),
 	}
 }
-
-var errPending = &platform.PlatformOpError{Platform: "huya", Op: "pending", Cause: errNotPorted}
-
-type notPortedError struct{}
-
-func (notPortedError) Error() string { return "huya: Go 移植未完成" }
-
-var errNotPorted = notPortedError{}

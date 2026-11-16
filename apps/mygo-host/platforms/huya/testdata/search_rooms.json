@@ -1,0 +1,33 @@
+{
+  "response": {
+    "1": {
+      "docs": [
+        { "uid": 11, "yyid": 22, "room_id": 777 }
+      ]
+    },
+    "3": {
+      "docs": [
+        {
+          "room_id": 1,
+          "uid": 11,
+          "yyid": 22,
+          "game_introduction": "标题A",
+          "game_roomName": "房间A",
+          "game_screenshot": "https://s.example/a.jpg",
+          "game_nick": "主播甲",
+          "game_total_count": 321
+        },
+        {
+          "room_id": 2,
+          "uid": 99,
+          "yyid": 98,
+          "game_introduction": "",
+          "game_roomName": "房间B",
+          "game_screenshot": "",
+          "game_nick": "",
+          "game_total_count": "5"
+        }
+      ]
+    }
+  }
+}

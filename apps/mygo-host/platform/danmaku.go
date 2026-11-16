@@ -23,8 +23,9 @@ type DanmakuStream func(onItems func(items []DanmakuItem)) (cancel func())
 
 // DanmakuInfo 弹幕请求选项。
 type DanmakuInfo struct {
-	// Cookie 登录 cookie(部分平台握手需带)。
-	Cookie string
+	// Cookie 登录 cookie(部分平台握手需带)。三态:nil=未传(平台走默认解析);
+	// 非nil空串=强制匿名;&"k=v"=显式使用。对齐 credentials.resolveCookie 语义。
+	Cookie *string
 	// Kind vod(带 timeMs 时间轴)或 live(实时聊天);空 = 平台缺省。
 	Kind string
 }

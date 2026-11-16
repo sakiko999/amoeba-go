@@ -1,38 +1,44 @@
-// PLACEHOLDER —— twitch 平台 Go 移植占位(由移植任务替换)。
-// 目标:对齐 packages/platform-twitch/src 的渠道/播放/弹幕能力,经 platform.FeedOps /
-// platform.MetadataOps 注册;TS 测试(tests/platform.test.ts 或 provider.test.ts)
-// 移植为 _test.go。
+// twitch 平台:匿名 GraphQL 元数据渠道(直播订阅/热门/分区/分区列表/搜频道)
+// + 直播 HLS 播放解析,经 feedOps 注册 channels / fetch / play(无弹幕实现)。
+// 对齐 packages/platform-twitch/src;GraphQL Client-ID 与播放 token 查询见 client.go。
 
 package twitch
 
 import (
 	"context"
-	"encoding/json"
 
 	"mygo-host/platform"
 )
 
+const label = "Twitch"
+
 // New 建 twitch 平台扩展。
 func New(sc *platform.ServiceContext) platform.Spec {
+	playback := &platform.Playback{
+		Platform: "twitch",
+		Routes:   twitchRoutes(),
+		ResolveLivePlay: func(ctx context.Context, id string, _ platform.ResolveInfo) ([]platform.Stream, error) {
+			return resolveTwitchLivePlay(ctx, sc, id)
+		},
+	}
 	return platform.Spec{
 		Namespace: "twitch",
-		Label:     "Twitch",
+		Label:     label,
 		Tags:      []string{"platform.data"},
-		Ops: platform.Ops{
-			"pending": {
-				Description: "Go 移植进行中(占位 op)",
-				Invoke: func(ctx context.Context, params json.RawMessage) (any, error) {
-					return nil, errPending
-				},
-			},
-		},
+		Ops: platform.FeedOps(platform.FeedSpec{
+			Channels: twitchChannels(sc),
+			Playback: playback,
+		}),
 	}
 }
 
-var errPending = &platform.PlatformOpError{Platform: "twitch", Op: "pending", Cause: errNotPorted}
-
-type notPortedError struct{}
-
-func (notPortedError) Error() string { return "twitch: Go 移植未完成" }
-
-var errNotPorted = notPortedError{}
+// twitchChannels 渠道清单(顺序与 TS register.ts 一致)。
+func twitchChannels(sc *platform.ServiceContext) []platform.DataChannel {
+	return []platform.DataChannel{
+		&liveChannel{sc: sc},
+		&hotChannel{sc: sc},
+		&categoryChannel{sc: sc},
+		newCategoriesChannel(sc),
+		newUserSearchChannel(sc),
+	}
+}
