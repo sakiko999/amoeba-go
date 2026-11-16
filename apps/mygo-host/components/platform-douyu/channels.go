@@ -47,7 +47,8 @@ func (s *simpleSource) Fetch(ctx context.Context) (platform.FetchResult, error) 
 	return s.fetch(ctx)
 }
 
-// channels 返回 douyu 全部渠道实例(顺序与 TS douyuChannels 一致)。
+// channels 返回 douyu 全部渠道实例(5 个直播渠道与 TS douyuChannels 一致,
+// 回放渠道为 Go 侧追加,docs/douyu-replay-research.md)。
 func channels(sc *platform.ServiceContext) []platform.DataChannel {
 	return []platform.DataChannel{
 		newLiveChannel(sc),
@@ -55,6 +56,7 @@ func channels(sc *platform.ServiceContext) []platform.DataChannel {
 		newCategoryChannel(sc),
 		newCategoriesChannel(sc),
 		newAnchorChannel(sc),
+		newReplayChannel(sc),
 	}
 }
 

@@ -70,7 +70,7 @@ func TestChannelsOpMeta(t *testing.T) {
 		t.Fatal(err)
 	}
 	metas := result.([]platform.ChannelMeta)
-	wantKeys := []string{"live:douyu", "live:douyu:hot", "live:douyu:category", "live:douyu:categories", "live:douyu:anchor"}
+	wantKeys := []string{"live:douyu", "live:douyu:hot", "live:douyu:category", "live:douyu:categories", "live:douyu:anchor", "douyu:replay"}
 	if len(metas) != len(wantKeys) {
 		t.Fatalf("channels = %d", len(metas))
 	}
