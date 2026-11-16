@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"mygo-host/platform"
@@ -140,7 +141,7 @@ func dashStreamsWithMpd(data *playurlData, headers map[string]string) []platform
 	if dash.MinBufferTime != nil {
 		minBuffer = *dash.MinBufferTime
 	}
-	var audioRep *mpdAudioRep
+	var audioRep *platform.MpdAudioRep
 	if audio != nil {
 		rep := toAudioRep(*audio)
 		audioRep = &rep
@@ -156,7 +157,7 @@ func dashStreamsWithMpd(data *playurlData, headers map[string]string) []platform
 		qn := jintPtr(v.ID)
 		quality := dashName(data, qn)
 		rate := qn
-		manifest := buildMpd([]mpdVideoRep{toVideoRep(v)}, audioRep, duration, minBuffer)
+		manifest := platform.BuildMpd([]platform.MpdVideoRep{toVideoRep(v)}, audioRep, duration, minBuffer)
 		streams = append(streams, platform.Stream{
 			URL:          "",
 			Format:       platform.Str("dash"),
@@ -198,25 +199,26 @@ func dashName(data *playurlData, qn int) string {
 	return fmt.Sprintf("档位%d", qn)
 }
 
-func toVideoRep(v dashVideo) mpdVideoRep {
-	return mpdVideoRep{
+// toVideoRep DASH 轨道 → MPD Representation(ID/Bandwidth 十进制字符串化)。
+func toVideoRep(v dashVideo) platform.MpdVideoRep {
+	return platform.MpdVideoRep{
 		ID:         jstr(derefFloat(v.ID)),
 		BaseURL:    deref(v.BaseURL),
 		Width:      jintPtr(v.Width),
 		Height:     jintPtr(v.Height),
 		Codecs:     derefOr(v.Codecs, "avc1.640033"),
-		Bandwidth:  jintPtr(v.Bandwidth),
+		Bandwidth:  strconv.Itoa(jintPtr(v.Bandwidth)),
 		InitRange:  segmentRange(v.SegmentBase, v.SegmentLow, true, "0-915"),
 		IndexRange: segmentRange(v.SegmentBase, v.SegmentLow, false, "916-2503"),
 	}
 }
 
-func toAudioRep(a dashAudio) mpdAudioRep {
-	return mpdAudioRep{
+func toAudioRep(a dashAudio) platform.MpdAudioRep {
+	return platform.MpdAudioRep{
 		ID:         jstr(derefFloat(a.ID)),
 		BaseURL:    deref(a.BaseURL),
 		Codecs:     derefOr(a.Codecs, "mp4a.40.2"),
-		Bandwidth:  jintPtr(a.Bandwidth),
+		Bandwidth:  strconv.Itoa(jintPtr(a.Bandwidth)),
 		InitRange:  segmentRange(a.SegmentBase, a.SegmentLow, true, "0-836"),
 		IndexRange: segmentRange(a.SegmentBase, a.SegmentLow, false, "837-2400"),
 	}

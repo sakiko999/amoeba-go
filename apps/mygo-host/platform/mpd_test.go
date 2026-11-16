@@ -1,18 +1,18 @@
-// MPD 装配黄金值：与 TS buildMpd 的输出逐字节一致（含无 duration 时的双空格）。
+// MPD 装配黄金值:与 TS buildMpd 的输出逐字节一致(含无 duration 时的双空格)。
 
-package bili
+package platform
 
 import "testing"
 
 func TestBuildMpdGolden(t *testing.T) {
-	full := buildMpd(
-		[]mpdVideoRep{{
+	full := BuildMpd(
+		[]MpdVideoRep{{
 			ID: "64", BaseURL: "https://cdn.example.com/v?a=1&b=2", Width: 1920, Height: 1080,
-			Codecs: "avc1.640028", Bandwidth: 1234567, InitRange: "0-915", IndexRange: "916-2503",
+			Codecs: "avc1.640028", Bandwidth: "1234567", InitRange: "0-915", IndexRange: "916-2503",
 		}},
-		&mpdAudioRep{
+		&MpdAudioRep{
 			ID: "30280", BaseURL: "https://cdn.example.com/a?x=1&y=2", Codecs: "mp4a.40.2",
-			Bandwidth: 128000, InitRange: "0-836", IndexRange: "837-2400",
+			Bandwidth: "128000", InitRange: "0-836", IndexRange: "837-2400",
 		},
 		123.4567, 1.5,
 	)
@@ -41,9 +41,9 @@ func TestBuildMpdGolden(t *testing.T) {
 		t.Errorf("full MPD 不一致:\n got=%q\nwant=%q", full, wantFull)
 	}
 
-	noAudio := buildMpd([]mpdVideoRep{{
+	noAudio := BuildMpd([]MpdVideoRep{{
 		ID: "32", BaseURL: "https://cdn.example.com/v", Width: 640, Height: 360,
-		Codecs: "avc1.64001E", Bandwidth: 128000, InitRange: "0-1", IndexRange: "2-3",
+		Codecs: "avc1.64001E", Bandwidth: "128000", InitRange: "0-1", IndexRange: "2-3",
 	}}, nil, 0, 0)
 	wantNoAudio := `<?xml version="1.0" encoding="UTF-8"?>
 <MPD xmlns="urn:mpeg:dash:schema:mpd:2011" profiles="urn:mpeg:dash:profile:isoff-on-demand:2011" type="static"  minBufferTime="PT1.500S">

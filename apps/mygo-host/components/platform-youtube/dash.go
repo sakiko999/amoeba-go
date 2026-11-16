@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"mygo-host/platform"
@@ -74,13 +75,13 @@ func youtubeDashStreams(ctx context.Context, sc *platform.ServiceContext, adapti
 			codecs = "avc1.640033"
 		}
 		height := item.format.height()
-		rep := mpdVideoRep{
-			ID:         item.format.itagID(),
+		rep := platform.MpdVideoRep{
+			ID:         strconv.Itoa(item.format.itagID()),
 			BaseURL:    item.url,
 			Width:      item.format.width(),
 			Height:     height,
 			Codecs:     codecs,
-			Bandwidth:  item.format.bitrate(),
+			Bandwidth:  formatNumber(item.format.bitrate()),
 			InitRange:  item.format.InitRange.spec(),
 			IndexRange: item.format.IndexRange.spec(),
 		}
@@ -95,14 +96,14 @@ func youtubeDashStreams(ctx context.Context, sc *platform.ServiceContext, adapti
 			Headers:      headers,
 			Quality:      platform.Str(quality),
 			Rate:         platform.Int(height),
-			DashManifest: platform.Str(buildMpd([]mpdVideoRep{rep}, audioRep, duration)),
+			DashManifest: platform.Str(platform.BuildMpd([]platform.MpdVideoRep{rep}, audioRep, duration, 0)),
 		})
 	}
 	return streams, nil
 }
 
 // highestAudioRep 最高码率 AAC 音轨(升序稳定排序取最后 = 同码率取后者)。
-func highestAudioRep(ctx context.Context, sc *platform.ServiceContext, adaptive []playerFormat, videoID string) *mpdAudioRep {
+func highestAudioRep(ctx context.Context, sc *platform.ServiceContext, adaptive []playerFormat, videoID string) *platform.MpdAudioRep {
 	var audios []playerFormat
 	for _, format := range adaptive {
 		if isAacAudio(format) {
@@ -122,12 +123,17 @@ func highestAudioRep(ctx context.Context, sc *platform.ServiceContext, adaptive 
 	if !found {
 		codecs = "mp4a.40.2"
 	}
-	return &mpdAudioRep{
-		ID:         audio.itagID(),
+	return &platform.MpdAudioRep{
+		ID:         strconv.Itoa(audio.itagID()),
 		BaseURL:    streamURL,
 		Codecs:     codecs,
-		Bandwidth:  audio.bitrate(),
+		Bandwidth:  formatNumber(audio.bitrate()),
 		InitRange:  audio.InitRange.spec(),
 		IndexRange: audio.IndexRange.spec(),
 	}
+}
+
+// formatNumber TS 模板 `${bandwidth}` 的数值输出(无多余小数位)。
+func formatNumber(value float64) string {
+	return strconv.FormatFloat(value, 'f', -1, 64)
 }
