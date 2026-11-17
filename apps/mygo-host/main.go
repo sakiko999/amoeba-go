@@ -19,6 +19,7 @@ import (
 	"mygo-host/components/jsrunner"
 	"mygo-host/platform"
 	"mygo-host/registry"
+	"mygo-host/search"
 	"mygo-host/services"
 	"mygo-host/tabs"
 )
@@ -58,7 +59,8 @@ func main() {
 		Creds: platform.NewCredentials(filepath.Join(userData, "credentials.json")),
 		JS:    js,
 	}
-	if _, err := services.Activate(sc, comps, jsSvc); err != nil {
+	gw, err := services.Activate(sc, comps, jsSvc)
+	if err != nil {
 		log.Fatal(err)
 	}
 
@@ -73,6 +75,7 @@ func main() {
 	mgr := tabs.NewManager(comps, theme)
 	mgr.Logf = log.Printf
 	mygo.BindAs("Tabs", tabs.NewService(mgr))
+	mygo.BindAs("Search", search.NewService(gw))
 
 	web, err := fs.Sub(chromeDist, "chrome/dist")
 	if err != nil {

@@ -138,7 +138,7 @@ func (m *Manager) Create(kind string) error {
 		BackgroundColor: m.theme.Background(),
 		Page: mygo.PageOptions{
 			Session:       mygo.NewSession("page-" + kind),
-			PreloadScript: pageBridgeScript(instanceID, kind),
+			PreloadScript: pageBridgeScript(instanceID, kind, m.theme.Theme()),
 			ZoomFactor:    m.zoom,
 		},
 	})
