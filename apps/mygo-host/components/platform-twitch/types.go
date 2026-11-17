@@ -86,3 +86,28 @@ type gqlPlaybackToken struct {
 	Signature *string `json:"signature"`
 	Value     *string `json:"value"`
 }
+
+type gqlVideoNode struct {
+	ID                  *string         `json:"id"`
+	Title               *string         `json:"title"`
+	LengthSeconds       *int            `json:"lengthSeconds"`
+	CreatedAt           *string         `json:"createdAt"`
+	PublishedAt         *string         `json:"publishedAt"`
+	ViewCount           *int            `json:"viewCount"`
+	Status              *string         `json:"status"`
+	BroadcastType       *string         `json:"broadcastType"`
+	PreviewThumbnailURL *string         `json:"previewThumbnailURL"`
+	Owner               *gqlBroadcaster `json:"owner"`
+	Game                *gqlGameName    `json:"game"`
+}
+
+type gqlVideoEdge struct {
+	Cursor *string       `json:"cursor"`
+	Node   *gqlVideoNode `json:"node"`
+}
+
+type gqlVideoConnection struct {
+	TotalCount *int             `json:"totalCount"`
+	Edges      []gqlVideoEdge   `json:"edges"`
+	PageInfo   *gqlPageInfo     `json:"pageInfo"`
+}

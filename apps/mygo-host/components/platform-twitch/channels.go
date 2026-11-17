@@ -108,11 +108,14 @@ func (c *hotChannel) SourceInfoTpl() []platform.SourceInfoField {
 func (c *hotChannel) DefaultInfo() platform.SourceInfo { return nil }
 
 func (c *hotChannel) GetSource(platform.SourceInfo) platform.DataSource {
-	return &streamsSource{
-		sc:       c.sc,
-		sourceID: c.Key(),
-		fetchPage: func(ctx context.Context, after string) (*twitchStreamPage, error) {
-			return fetchTwitchTopStreams(ctx, c.sc, 30, after)
+	return &cursorSource{
+		sc: c.sc, sourceID: c.Key(),
+		fetchPage: func(ctx context.Context, after string) (cursorPage, error) {
+			page, err := fetchTwitchTopStreams(ctx, c.sc, 30, after)
+			if err != nil {
+				return nil, err
+			}
+			return streamItemsPage(page, c.Key(), c.sc.NowMs()), nil
 		},
 	}
 }
@@ -138,10 +141,9 @@ func (c *categoryChannel) SourceInfoTpl() []platform.SourceInfoField {
 
 func (c *categoryChannel) GetSource(info platform.SourceInfo) platform.DataSource {
 	raw := info["category"]
-	return &streamsSource{
-		sc:       c.sc,
-		sourceID: c.Key(),
-		fetchPage: func(ctx context.Context, after string) (*twitchStreamPage, error) {
+	return &cursorSource{
+		sc: c.sc, sourceID: c.Key(),
+		fetchPage: func(ctx context.Context, after string) (cursorPage, error) {
 			slug, ok := normalizeTwitchCategory(raw)
 			if !ok {
 				shown := strings.TrimSpace(raw)
@@ -150,7 +152,11 @@ func (c *categoryChannel) GetSource(info platform.SourceInfo) platform.DataSourc
 				}
 				return nil, fmt.Errorf("twitch:category 分类无效(%s)", shown)
 			}
-			return fetchTwitchCategoryStreams(ctx, c.sc, slug, 30, after)
+			page, err := fetchTwitchCategoryStreams(ctx, c.sc, slug, 30, after)
+			if err != nil {
+				return nil, err
+			}
+			return streamItemsPage(page, c.Key(), c.sc.NowMs()), nil
 		},
 	}
 }

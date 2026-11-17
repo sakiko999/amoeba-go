@@ -32,7 +32,7 @@ func TestOpsSurface(t *testing.T) {
 		names = append(names, name)
 	}
 	sort.Strings(names)
-	want := []string{"channels", "fetch", "play"}
+	want := []string{"channels", "danmaku", "fetch", "play"}
 	if len(names) != len(want) {
 		t.Fatalf("ops = %v, want %v", names, want)
 	}
@@ -68,6 +68,7 @@ func TestChannelDeclarations(t *testing.T) {
 		key, name, kind string
 	}{
 		{"twitch:live", "Twitch 直播", "live"},
+		{"twitch:vod", "Twitch 直播回放", "video"},
 		{"twitch:hot", "Twitch 热门直播", "live"},
 		{"twitch:category", "Twitch 分区直播", "live"},
 		{"twitch:categories", "Twitch 分区列表", "category"},
@@ -117,7 +118,8 @@ func TestPlaybackRoutes(t *testing.T) {
 	}{
 		{"https://www.twitch.tv/shroud", "shroud", "live", true},
 		{"https://m.twitch.tv/%73hroud", "shroud", "live", true},
-		{"https://www.twitch.tv/videos/123", "", "", false},
+		{"https://www.twitch.tv/videos/2929172303", "2929172303", "video", true},
+		{"https://www.twitch.tv/videos/abc", "", "", false},
 		{"https://clips.twitch.tv/FunnySlug", "", "", false},
 		{"https://nottwitch.tv/shroud", "", "", false},
 	}

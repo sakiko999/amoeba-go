@@ -20,6 +20,16 @@ func New(sc *platform.ServiceContext) platform.Spec {
 		ResolveLivePlay: func(ctx context.Context, id string, _ platform.ResolveInfo) ([]platform.Stream, error) {
 			return resolveTwitchLivePlay(ctx, sc, id)
 		},
+		ResolveVideoPlay: func(ctx context.Context, id string, _ platform.ResolveInfo) (*platform.VideoPlayResult, error) {
+			return resolveTwitchVODPlay(ctx, sc, id)
+		},
+		GetDanmaku: func(id string, opts platform.DanmakuInfo) platform.DanmakuStream {
+			// 默认 vod(唯一已实现的弹幕能力;URL 路由命中 /videos/ 时已填 vod)。
+			if opts.Kind == "live" {
+				return unimplementedLiveDanmaku(sc)
+			}
+			return vodDanmakuStream(sc, id)
+		},
 	}
 	return platform.Spec{
 		Namespace: "twitch",
@@ -32,10 +42,11 @@ func New(sc *platform.ServiceContext) platform.Spec {
 	}
 }
 
-// twitchChannels 渠道清单(顺序与 TS register.ts 一致)。
+// twitchChannels 渠道清单(顺序与 TS register.ts 一致;twitch:vod 为 Go 侧新增)。
 func twitchChannels(sc *platform.ServiceContext) []platform.DataChannel {
 	return []platform.DataChannel{
 		&liveChannel{sc: sc},
+		&vodChannel{sc: sc},
 		&hotChannel{sc: sc},
 		&categoryChannel{sc: sc},
 		newCategoriesChannel(sc),

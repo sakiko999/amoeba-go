@@ -97,7 +97,8 @@ func callPlay(t *testing.T, spec platform.Spec, params string) (any, error) {
 
 func TestPlayResolveLiveByID(t *testing.T) {
 	spec := New(startPlayServer(t))
-	result, err := callPlay(t, spec, `{"id":"shroud"}`)
+	// id-only 的 play 默认 kind 已随 ResolveVideoPlay 变为 video,显式 live。
+	result, err := callPlay(t, spec, `{"id":"shroud","kind":"live"}`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -130,13 +131,13 @@ func TestPlayErrors(t *testing.T) {
 		params   string
 		contains string
 	}{
-		{"无效频道名", `{"id":"bad!"}`, "无效频道名"},
+		{"无效频道名", `{"id":"bad!","kind":"live"}`, "无效频道名"},
 		{"无法路由", `{"url":"https://example.com/x"}`, "无法从 URL 解析播放路由"},
-		{"无 token", `{"id":"notoken"}`, "无法获取播放 token"},
-		{"地区受限", `{"id":"geo"}`, "地区/版权受限(US)"},
-		{"blackout", `{"id":"blackout"}`, "版权限制(blackout)"},
-		{"master 无档位", `{"id":"nvt"}`, "master 播放列表无可用档位"},
-		{"master 500", `{"id":"boom"}`, "HTTP 500"},
+		{"无 token", `{"id":"notoken","kind":"live"}`, "无法获取播放 token"},
+		{"地区受限", `{"id":"geo","kind":"live"}`, "地区/版权受限(US)"},
+		{"blackout", `{"id":"blackout","kind":"live"}`, "版权限制(blackout)"},
+		{"master 无档位", `{"id":"nvt","kind":"live"}`, "master 播放列表无可用档位"},
+		{"master 500", `{"id":"boom","kind":"live"}`, "HTTP 500"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -146,7 +147,7 @@ func TestPlayErrors(t *testing.T) {
 		})
 	}
 
-	_, err := callPlay(t, spec, `{"id":"offline"}`)
+	_, err := callPlay(t, spec, `{"id":"offline","kind":"live"}`)
 	var notFound *platform.NotFoundError
 	if !errors.As(err, &notFound) {
 		t.Errorf("master 404 err = %v, want NotFoundError", err)
