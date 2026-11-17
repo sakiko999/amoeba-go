@@ -4,6 +4,7 @@
   "workspaces": [
     "apps/*",
     "apps/mygo-host/chrome",
+    "apps/mygo-host/components/page-search",
     "packages/*",
     "packages/amoeba/*"
   ],

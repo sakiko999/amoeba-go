@@ -55,6 +55,23 @@
         "vite": "^8.3.6",
       },
     },
+    "apps/mygo-host/components/page-search": {
+      "name": "@mygo/page-search",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@demo/ui": "workspace:*",
+        "@host/sdk": "workspace:*",
+        "@tailwindcss/vite": "^4.3.3",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
+        "@vitejs/plugin-react": "^6.1.1",
+        "lucide-react": "^1.69.0",
+        "react": "^19.3.0",
+        "react-dom": "^19.3.0",
+        "tailwindcss": "^4.3.3",
+        "vite": "^8.3.6",
+      },
+    },
     "packages/amoeba/core": {
       "name": "@amoeba/core",
       "version": "0.1.0",
@@ -415,24 +432,6 @@
         "vite": "^8.3.6",
       },
     },
-    "packages/tab-search": {
-      "name": "@tabs/search",
-      "version": "0.1.0",
-      "devDependencies": {
-        "@demo/ui": "workspace:*",
-        "@host/sdk": "workspace:*",
-        "@tailwindcss/vite": "^4.3.3",
-        "@types/react": "^19",
-        "@types/react-dom": "^19",
-        "@vitejs/plugin-react": "^6.1.1",
-        "electron-vite": "^6.0.0",
-        "lucide-react": "^1.69.0",
-        "react": "^19.3.0",
-        "react-dom": "^19.3.0",
-        "tailwindcss": "^4.3.3",
-        "vite": "^8.3.6",
-      },
-    },
     "packages/tab-sysinfo": {
       "name": "@tabs/sysinfo",
       "version": "0.1.0",
@@ -617,6 +616,8 @@
     "@malept/cross-spawn-promise": ["@malept/cross-spawn-promise@2.0.0", "https://r2.cnpmjs.org/@malept/cross-spawn-promise/-/cross-spawn-promise-2.0.0.tgz", { "dependencies": { "cross-spawn": "^7.0.1" } }, "sha512-1DpKU0Z5ThltBwjNySMC14g0CkbyhCaz9FkhxqNsZI6uAPJXFS8cMXlBKo26FJ8ZuW6S9GCMcR9IO5k2X5/9Fg=="],
 
     "@media-manager/app": ["@media-manager/app@workspace:packages/media-manager"],
+
+    "@mygo/page-search": ["@mygo/page-search@workspace:apps/mygo-host/components/page-search"],
 
     "@nodable/entities": ["@nodable/entities@3.1.0", "https://registry.npmmirror.com/@nodable/entities/-/entities-3.1.0.tgz", {}, "sha512-LsS/DjHr+uDM647Gru/cA8+J3a3HfhttwCKLyuoyN7yXTFCxKBtSgMQBvrW9yNPa2/zDRUNuGPaH5QUFoa4arQ=="],
 
@@ -833,8 +834,6 @@
     "@tabs/rss-service": ["@tabs/rss-service@workspace:packages/rss-service"],
 
     "@tabs/rss-subscriptions": ["@tabs/rss-subscriptions@workspace:packages/rss-subscriptions"],
-
-    "@tabs/search": ["@tabs/search@workspace:packages/tab-search"],
 
     "@tabs/sysinfo": ["@tabs/sysinfo@workspace:packages/tab-sysinfo"],
 

@@ -1,18 +1,17 @@
 /**
- * 把 search 打成宿主可注册的页面组件包（out/page/）。
+ * 把 search 打成宿主可注册的页面组件包（out/page/，宿主默认页面目录直接指向
+ * out/）。vite 已把产物直接写进 out/page/renderer；这里只补 component.json。
  * 共享层：page-vendor manifest 存在时以 PAGE_VENDOR_EXTERNAL=1 触发 external
- * 构建（import map + CSP hash 由 electron.vite.config 的插件在构建期注入）；
- * manifest 缺失（独立构建 / 未跑 pages:prepare）则全内联。
+ * 构建（import map + CSP hash 由 vite 插件在构建期注入）；缺失则全内联。
  */
 
 import { existsSync } from "node:fs";
-import { cp, mkdir, rm } from "node:fs/promises";
+import { copyFile, mkdir } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
 const root = resolve(import.meta.dir, "..");
-const useVendor = existsSync(
-  resolve(root, "..", "page-vendor", "out", "dist", "manifest.json"),
-);
+const vendorRoot = resolve(root, "..", "..", "..", "..", "packages", "page-vendor");
+const useVendor = existsSync(join(vendorRoot, "out", "dist", "manifest.json"));
 
 const build = Bun.spawn({
   cmd: ["bun", "run", "build"],
@@ -22,16 +21,12 @@ const build = Bun.spawn({
   env: { ...process.env, PAGE_VENDOR_EXTERNAL: useVendor ? "1" : "0" },
 });
 if ((await build.exited) !== 0) {
-  throw new Error("electron-vite build failed (search)");
+  throw new Error("vite build failed (search)");
 }
 
 const dist = join(root, "out", "page");
-await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
-await cp(join(root, "out", "renderer"), join(dist, "renderer"), {
-  recursive: true,
-});
-await cp(join(root, "component.json"), join(dist, "component.json"));
+await copyFile(join(root, "component.json"), join(dist, "component.json"));
 
 console.log(
   useVendor

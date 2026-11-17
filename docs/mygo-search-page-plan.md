@@ -4,12 +4,12 @@
 > 需求:新增聚合搜索子页,阶段 1 可搜任意平台直播间,结果标注平台/主播/直播间信息,参考 amoeba 原有搜索。
 > 关联:apps/mygo-host(Go 宿主)、packages/platform-*、packages/tab-*(页面组件)。
 
-**推荐架构:页面组件 `packages/tab-search` + 宿主 `search` 服务 fan-out + 各平台统一 `<ns>.search` op。**
+**推荐架构:页面组件 `apps/mygo-host/components/page-search` + 宿主 `search` 服务 fan-out + 各平台统一 `<ns>.search` op。**
 一句话理由:gateway 必须保持无域逻辑(注册/分发),页面应最小权限;并发、超时、结构化部分失败、
 取消与流式回传只有宿主服务层能统一做好。
 
 ```text
-packages/tab-search(页面组件,无 preload/main)
+apps/mygo-host/components/page-search(页面组件,无 preload/main)
   window.mygo.call("Search.Sources", scope)
   window.mygo.call("Search.Query", params, mygo.channel)
         │
@@ -147,7 +147,7 @@ type Result struct {
 4. `search/service.go` + `service_test.go`(发现/过滤/错误/超时/流式/顺序;测试直调 run)。
 5. `main.go`:接住 `services.Activate` 返回(当前 main.go:61 丢弃),`BindAs("Search", ...)`。
 6. 顺带根因修复:`tabs/pagebridge.go` 初始主题写死 dark,接 `m.theme.Theme()`。
-7. `packages/tab-search/` 新包:component.json(id=search,无 main/preload/inject)、
+7. `apps/mygo-host/components/page-search/` 新包:component.json(id=search,无 main/preload/inject)、
    package.json、electron.vite.config.ts(照 home 删 preload)、scripts/pack.ts。
 8. 页面源码:index.html(CSP `img-src https:` + `referrerPolicy="no-referrer"`)、
    api.ts(镜像 DTO,不改 @host/sdk)、App/SearchBar/PlatformChips/ResultGroup/ResultItem。

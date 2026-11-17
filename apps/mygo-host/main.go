@@ -29,8 +29,8 @@ import (
 var chromeDist embed.FS
 
 func main() {
-	pagesDir := flag.String("pages", filepath.Join("..", "desktop", "out", "pages"), "内置页面组件目录")
-	vendorDir := flag.String("vendor", filepath.Join("..", "desktop", "out", "vendor"), "vendor:// 共享层目录")
+	pagesDir := flag.String("pages", filepath.Join("components", "page-search", "out"), "内置页面组件目录(每子目录一个组件包)")
+	vendorDir := flag.String("vendor", filepath.Join("..", "..", "packages", "page-vendor", "out", "dist"), "vendor:// 共享层目录")
 	flag.Parse()
 
 	userData, err := mygo.App.Path(mygo.PathUserData)

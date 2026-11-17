@@ -75,17 +75,17 @@ func TestRewriteVendorHTMLNoMap(t *testing.T) {
 	}
 }
 
-// 真机构建产物回归(sync-pages 之后跑):验证重写规则与 injectIntoHtmlText 的
-// 实际产出形态匹配,特别是 CSP hash 语义(脚本元素文本内容)。
+// 真机构建产物回归(先 bun run --cwd components/page-search pack):验证重写规则
+// 与 injectIntoHtmlText 的实际产出形态匹配,特别是 CSP hash 语义(脚本元素文本内容)。
 func TestRewriteRealArtifact(t *testing.T) {
 	old := rewriteVendorEnabled
 	rewriteVendorEnabled = true
 	t.Cleanup(func() { rewriteVendorEnabled = old })
 
-	const artifact = `../../desktop/out/pages/search/renderer/index.html`
+	const artifact = `../components/page-search/out/page/renderer/index.html`
 	data, err := os.ReadFile(artifact)
 	if err != nil {
-		t.Skip("构建产物不存在(先 bun run pages:prepare + sync-pages)")
+		t.Skip("构建产物不存在(先 bun run --cwd apps/mygo-host/components/page-search pack)")
 	}
 	html := string(data)
 	out := rewriteVendorHTML(html)
