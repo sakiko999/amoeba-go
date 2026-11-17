@@ -16,7 +16,7 @@ func (m *Manager) View(c *ui.Context) {
 	m.bar = c.TitleBar()
 	ui.Column(c).Fill().Background(ui.Hex(m.theme.Background())).Children(func() {
 		if m.chrome != nil {
-			ui.WebView(c, m.chrome).Height(ChromeHeight)
+			ui.WebView(c, m.chrome).Height(m.ChromeHeight)
 		}
 		e := m.activeEntry()
 		switch {

@@ -84,6 +84,7 @@ func main() {
 	mygo.SetFrontend(web)
 
 	mygo.App.WhenReady(func() {
+		mgr.MeasureChrome()
 		win := mygo.NewWindow(mygo.WindowOptions{
 			Title:           "Tabs",
 			Width:           1100,
@@ -91,7 +92,7 @@ func main() {
 			MinWidth:        640,
 			MinHeight:       400,
 			TitleBarStyle:   mygo.TitleBarHidden,
-			TitleBarHeight:  int(tabs.ChromeHeight),
+			TitleBarHeight:  int(mgr.ChromeHeight),
 			BackgroundColor: theme.Background(),
 			Content:         ui.View(mgr.View),
 			// 隐藏创建，chrome 首帧就绪后 Show：避免标题栏从空白到 tab 条的闪烁

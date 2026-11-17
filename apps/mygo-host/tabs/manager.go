@@ -8,6 +8,7 @@ package tabs
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
@@ -15,8 +16,10 @@ import (
 	"mygo-host/registry"
 )
 
-// ChromeHeight 与 chrome 页面（tab 条）和 WindowOptions.TitleBarHeight 保持一致。
-const ChromeHeight float32 = 44
+// chromeBaseHeight 是 100% 文本缩放下 tab 条（chrome webview）的设计高度；
+// 实际容器高度 = 基准 × 系统文本缩放：WebView2 会把页面内容按 TextScale
+// 放大，native 容器必须同步放大，否则 tab 条内容溢出被裁（MeasureChrome）。
+const chromeBaseHeight float32 = 44
 
 // Summary 是广播给 chrome 的 tab 投影（字段与 Electron 版 TabSummary 对齐）。
 type Summary struct {
@@ -77,20 +80,32 @@ type Manager struct {
 	win     *mygo.Window
 	chrome  *mygo.WebView
 	bar     ui.TitleBar
-	entries map[string]*entry
-	order   []string
-	active  string
-	seq     int
+	// ChromeHeight 是 chrome 容器高度（DIP），与窗口 TitleBarHeight 一致；
+	// 由 MeasureChrome 在创建窗口前按系统文本缩放计算。
+	ChromeHeight float32
+	entries      map[string]*entry
+	order        []string
+	active       string
+	seq          int
 	// Logf 由宿主注入（缺省丢弃）
 	Logf func(format string, args ...any)
 }
 
 func NewManager(comps *registry.Manager, theme ThemeSource) *Manager {
 	return &Manager{
-		comps:   comps,
-		theme:   theme,
-		entries: make(map[string]*entry),
-		Logf:    func(string, ...any) {},
+		comps:        comps,
+		theme:        theme,
+		ChromeHeight: chromeBaseHeight,
+		entries:      make(map[string]*entry),
+		Logf:         func(string, ...any) {},
+	}
+}
+
+// MeasureChrome 按系统文本缩放计算 chrome 容器高度；App 就绪后、创建窗口前调用。
+// 运行中改系统文本缩放不跟随（重启生效），与窗口 TitleBarHeight 的静态语义一致。
+func (m *Manager) MeasureChrome() {
+	if ts := mygo.Theme.Preferences().TextScale; ts > 1 {
+		m.ChromeHeight = float32(math.Round(float64(chromeBaseHeight) * ts))
 	}
 }
 
