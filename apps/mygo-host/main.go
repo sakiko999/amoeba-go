@@ -94,6 +94,8 @@ func main() {
 			TitleBarHeight:  int(tabs.ChromeHeight),
 			BackgroundColor: theme.Background(),
 			Content:         ui.View(mgr.View),
+			// 隐藏创建，chrome 首帧就绪后 Show：避免标题栏从空白到 tab 条的闪烁
+			Hidden: true,
 		})
 		mgr.Attach(win)
 		js.Init()

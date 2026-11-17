@@ -115,9 +115,13 @@ func (m *Manager) Start() error {
 		return err
 	}
 	m.chrome = chrome
-	chrome.Page().OnDidFinishLoad(func() { m.logf("chrome 已加载") })
+	chrome.Page().OnDidFinishLoad(func() {
+		m.logf("chrome 已加载")
+		m.win.Show() // 隐藏创建的窗口在 chrome 首帧就绪后再显示
+	})
 	chrome.Page().OnDidFailLoad(func(err *mygo.LoadError) {
 		m.logf("chrome 加载失败: %s (%d)", err.Description, err.Code)
+		m.win.Show() // 失败也必须显示窗口（错误态可诊断），否则窗口永远不出现
 	})
 	m.applyTheme()
 	m.win.Invalidate()
