@@ -18,6 +18,7 @@ import (
 
 	"mygo-host/components/jsrunner"
 	"mygo-host/platform"
+	"mygo-host/player"
 	"mygo-host/registry"
 	"mygo-host/search"
 	"mygo-host/services"
@@ -76,6 +77,7 @@ func main() {
 	mgr.Logf = log.Printf
 	mygo.BindAs("Tabs", tabs.NewService(mgr))
 	mygo.BindAs("Search", search.NewService(gw))
+	mygo.BindAs("Player", player.NewService(gw, mgr))
 
 	web, err := fs.Sub(chromeDist, "chrome/dist")
 	if err != nil {

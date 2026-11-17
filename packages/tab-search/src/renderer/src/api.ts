@@ -93,6 +93,23 @@ export interface SearchHandle {
   cancel(): void;
 }
 
+export interface PlayResult {
+  format: string;
+  quality?: string;
+}
+
+/** 点击结果卡片:宿主经网关解析平台流并打开原生播放器 tab */
+export async function play(
+  item: Item,
+  namespace: string,
+): Promise<PlayResult> {
+  return (await bridge().call("Player.Play", {
+    namespace,
+    url: item.url,
+    title: item.title,
+  })) as PlayResult;
+}
+
 export function query(
   params: QueryParams,
   onGroup: (group: PlatformGroup) => void,

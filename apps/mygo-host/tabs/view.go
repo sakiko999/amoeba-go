@@ -22,6 +22,8 @@ func (m *Manager) View(c *ui.Context) {
 		switch {
 		case e == nil:
 			m.emptyView(c)
+		case e.player != nil:
+			e.player.View(c)
 		case e.loading:
 			m.loadingView(c, e)
 		case e.err != "":

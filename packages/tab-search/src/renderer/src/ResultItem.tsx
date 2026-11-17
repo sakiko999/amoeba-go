@@ -1,12 +1,12 @@
 /**
  * 单条结果：缩略图（无图/加载失败回退平台色块）+ 标题 + 次行（主播/人气/房号）
- * + 直播状态徽标。整卡是到平台页的外链（mygo 默认系统浏览器打开）；
- * 远程图 no-referrer 防盗链，summary 仅展示不解析。
+ * + 直播状态徽标。整卡点击 = 宿主原生播放器播放（Player.Play 经网关解析平台流），
+ * 失败在卡内显示错误；外链打开是后续项（播放为主诉求）。
  */
 
 import { useState } from "react";
 import { Badge } from "@demo/ui";
-import type { Item } from "./api";
+import { play, type Item } from "./api";
 import { platformColor, platformName } from "./platforms";
 
 function formatCount(n: number): string {
@@ -40,6 +40,15 @@ export function ResultItem({
   label,
 }: ResultItemProps): React.ReactElement {
   const [imgFailed, setImgFailed] = useState(false);
+  const [playError, setPlayError] = useState<string | null>(null);
+  const canPlay = item.url !== undefined && item.url !== "";
+  const onPlay = (): void => {
+    if (!canPlay) return;
+    setPlayError(null);
+    play(item, namespace).catch((e: unknown) => {
+      setPlayError(e instanceof Error ? e.message : String(e));
+    });
+  };
   const color = platformColor(namespace);
   const name = platformName(namespace, label);
   const meta: string[] = [];
@@ -92,6 +101,9 @@ export function ResultItem({
             {item.summary}
           </p>
         )}
+        {playError !== null && (
+          <p className="line-clamp-1 text-xs text-red-500">{playError}</p>
+        )}
         <div className="mt-auto flex items-center gap-1.5 text-xs text-muted-foreground">
           <span
             className="size-2 shrink-0 rounded-full"
@@ -103,12 +115,11 @@ export function ResultItem({
     </>
   );
   const cls =
-    "flex gap-3 rounded-xl border bg-card p-3 text-left transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-primary";
-  return item.url !== undefined && item.url !== "" ? (
-    <a href={item.url} target="_blank" rel="noreferrer" className={cls}>
+    "flex w-full gap-3 rounded-xl border bg-card p-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-primary" +
+    (canPlay ? " cursor-pointer hover:border-primary/50" : "");
+  return (
+    <button type="button" onClick={onPlay} disabled={!canPlay} className={cls}>
       {content}
-    </a>
-  ) : (
-    <div className={cls}>{content}</div>
+    </button>
   );
 }

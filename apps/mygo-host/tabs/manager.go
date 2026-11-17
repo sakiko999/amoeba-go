@@ -13,6 +13,7 @@ import (
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 
+	"mygo-host/player"
 	"mygo-host/registry"
 )
 
@@ -62,6 +63,7 @@ type entry struct {
 	kind       string
 	title      string
 	view       *mygo.WebView
+	player     *player.Player // 非 nil = 原生播放器 tab(无 webview)
 	loading    bool
 	err        string
 }
@@ -175,6 +177,32 @@ func (m *Manager) Create(kind string) error {
 	return nil
 }
 
+// OpenPlayer 打开原生播放器 tab(非页面组件:不进 registry 与新建菜单,内容区
+// 是 native ui.Video)。复用已有播放 tab:搜索场景会连续点播,开一堆 tab 不可取。
+func (m *Manager) OpenPlayer(title, url, quality string) error {
+	for _, id := range m.order {
+		if e := m.entries[id]; e.player != nil {
+			e.player.Close()
+			e.player = player.New(url, quality, m.theme)
+			e.title = title
+			m.Activate(id)
+			return nil
+		}
+	}
+	m.seq++
+	instanceID := fmt.Sprintf("player-%d", m.seq)
+	e := &entry{
+		instanceID: instanceID,
+		kind:       "player",
+		title:      title,
+		player:     player.New(url, quality, m.theme),
+	}
+	m.entries[instanceID] = e
+	m.order = append(m.order, instanceID)
+	m.Activate(instanceID)
+	return nil
+}
+
 func (m *Manager) Activate(instanceID string) {
 	if _, ok := m.entries[instanceID]; !ok {
 		return
@@ -191,6 +219,9 @@ func (m *Manager) Close(instanceID string) {
 	}
 	delete(m.entries, instanceID)
 	m.order = removeString(m.order, instanceID)
+	if e.player != nil {
+		e.player.Close() // 播放 tab 关闭即停止解码与声音
+	}
 	if !e.view.IsDestroyed() {
 		e.view.Destroy()
 	}
