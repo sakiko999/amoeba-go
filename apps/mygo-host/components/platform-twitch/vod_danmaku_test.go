@@ -118,23 +118,31 @@ func TestVODDanmakuClosedChat(t *testing.T) {
 func TestVODDanmakuRepeatCursorStops(t *testing.T) {
 	sc := startVODServer(t)
 	got := collectDanmaku(t, vodDanmakuStream(sc, "repeatcursor"), 1)
-	// 上游重复发同一 cursor 且 hasNextPage=true:游标不前进必须终止(只拿到 1 页 1 条)。
+	// 上游重复发同一 cursor 且 hasNextPage=true:重复页投递一次后游标不前进,终止。
 	if len(got) != 1 {
 		t.Fatalf("items = %d, want 1(重复游标终止)", len(got))
 	}
 }
 
-func TestDanmakuOpDefaultKind(t *testing.T) {
+// id-only danmaku 不填 kind → 默认 live(未实现,静默无数据);显式 vod 走评论分页。
+func TestDanmakuOpKindDispatch(t *testing.T) {
 	spec := New(startVODServer(t))
-	result, err := spec.Ops["danmaku"].Invoke(context.Background(), json.RawMessage(`{"id":"`+vodGoodID+`"}`))
+	live, err := spec.Ops["danmaku"].Invoke(context.Background(), json.RawMessage(`{"id":"shroud"}`))
 	if err != nil {
 		t.Fatal(err)
 	}
-	op := result.(platform.DanmakuOpResult)
-	if op.Kind != "" || op.ID != vodGoodID {
+	if got := collectDanmaku(t, live.(platform.DanmakuOpResult).Subscribe, 1); len(got) != 0 {
+		t.Errorf("live no-op 应无条目, got %d", len(got))
+	}
+	vod, err := spec.Ops["danmaku"].Invoke(context.Background(), json.RawMessage(`{"id":"`+vodGoodID+`","kind":"vod"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	op := vod.(platform.DanmakuOpResult)
+	if op.Kind != "vod" || op.ID != vodGoodID {
 		t.Errorf("danmaku op = %+v", op)
 	}
-	if op.Subscribe == nil {
-		t.Fatal("subscribe 缺失")
+	if got := collectDanmaku(t, op.Subscribe, 2); len(got) != 2 {
+		t.Errorf("vod 条目 = %d, want 2", len(got))
 	}
 }

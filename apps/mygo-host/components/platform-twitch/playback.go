@@ -1,4 +1,4 @@
-// twitch 直播播放解析与 URL 路由:PlaybackAccessToken(persisted query)
+// twitch 播放解析与 URL 路由(直播 + 回放):PlaybackAccessToken(persisted query)
 // → usher master → 档位排序 → Stream[]。master 无 ACAO,必须服务端拉取并只把
 // variant URL 交给播放器;错误文案不含 token/signature。
 
@@ -21,10 +21,10 @@ const playbackTokenHash = "ed230aa1e33e07eebb8928504583da78a5173989fadfb1ac94be0
 
 // usherBase 为变量:测试可用本地 httptest 端点替换。
 var (
-	usherBase   = "https://usher.ttvnw.net/api/v2/channel/hls"
+	usherBase    = "https://usher.ttvnw.net/api/v2/channel/hls"
 	vodUsherBase = "https://usher.ttvnw.net/vod/v2"
-	twitchRoute = regexp.MustCompile(`(?i)(?:^|[./])twitch\.tv/\S*`)
-	vodIDRe     = regexp.MustCompile(`^[0-9]{6,20}$`)
+	twitchRoute  = regexp.MustCompile(`(?i)(?:^|[./])twitch\.tv/\S*`)
+	vodIDRe      = regexp.MustCompile(`^[0-9]{6,20}$`)
 )
 
 // twitchRoutes 路由:回放页(twitch.tv/videos/<id>)在前,频道页(单段路径)在后。

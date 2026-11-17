@@ -1,5 +1,6 @@
-// twitch 平台:匿名 GraphQL 元数据渠道(直播订阅/热门/分区/分区列表/搜频道)
-// + 直播 HLS 播放解析,经 feedOps 注册 channels / fetch / play(无弹幕实现)。
+// twitch 平台:匿名 GraphQL 元数据渠道(直播订阅/回放/热门/分区/分区列表/搜频道)
+// + 直播与回放 HLS 播放解析 + VOD 评论弹幕(直播弹幕 IRC 二期未实现),
+// 经 feedOps 注册 channels / fetch / play / danmaku。
 // 对齐 packages/platform-twitch/src;GraphQL Client-ID 与播放 token 查询见 client.go。
 
 package twitch
@@ -24,11 +25,11 @@ func New(sc *platform.ServiceContext) platform.Spec {
 			return resolveTwitchVODPlay(ctx, sc, id)
 		},
 		GetDanmaku: func(id string, opts platform.DanmakuInfo) platform.DanmakuStream {
-			// 默认 vod(唯一已实现的弹幕能力;URL 路由命中 /videos/ 时已填 vod)。
-			if opts.Kind == "live" {
-				return unimplementedLiveDanmaku(sc)
+			// 与 douyu 同:显式 vod 走评论分页;默认 live(未实现,IRC 二期)。
+			if opts.Kind == "vod" {
+				return vodDanmakuStream(sc, id)
 			}
-			return vodDanmakuStream(sc, id)
+			return unimplementedLiveDanmaku(sc)
 		},
 	}
 	return platform.Spec{

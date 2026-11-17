@@ -107,7 +107,7 @@ type gqlVideoEdge struct {
 }
 
 type gqlVideoConnection struct {
-	TotalCount *int             `json:"totalCount"`
-	Edges      []gqlVideoEdge   `json:"edges"`
-	PageInfo   *gqlPageInfo     `json:"pageInfo"`
+	TotalCount *int           `json:"totalCount"`
+	Edges      []gqlVideoEdge `json:"edges"`
+	PageInfo   *gqlPageInfo   `json:"pageInfo"`
 }

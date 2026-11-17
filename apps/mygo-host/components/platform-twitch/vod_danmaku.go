@@ -1,6 +1,7 @@
 // twitch VOD 弹幕:VideoCommentsByOffsetOrCursor persisted query 分页拉全量
 // (首页按偏移 0,后续按 cursor;cursor 翻页必须移动端 Client-ID)。
 // contentOffsetSeconds 即相对回放起点的秒数,×1000 = timeMs。
+// 已知限制:遇错即记日志停止,无重试/退避(长 VOD 限流场景的上限见研究文档)。
 // 依据 docs/twitch-vod-research.md §4。
 
 package twitch
@@ -30,13 +31,13 @@ type gqlCommentNode struct {
 		Login       *string `json:"login"`
 		DisplayName *string `json:"displayName"`
 	} `json:"commenter"`
-	ContentOffsetSeconds *float64          `json:"contentOffsetSeconds"`
+	ContentOffsetSeconds *float64           `json:"contentOffsetSeconds"`
 	Message              *gqlCommentMessage `json:"message"`
 }
 
 type gqlCommentsPage struct {
 	Edges []struct {
-		Cursor *string        `json:"cursor"`
+		Cursor *string         `json:"cursor"`
 		Node   *gqlCommentNode `json:"node"`
 	} `json:"edges"`
 	PageInfo *gqlPageInfo `json:"pageInfo"`

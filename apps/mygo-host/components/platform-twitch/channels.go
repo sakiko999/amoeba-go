@@ -1,5 +1,6 @@
-// twitch 渠道实现:直播订阅(roomIds)、热门/分区(游标翻页)、分区列表与
-// 频道搜索(声明式单页渠道)。渠道 key/名称/kind/参数表与 TS 完全一致。
+// twitch 渠道实现:直播订阅(roomIds)、回放(vodChannel,Go 侧新增)、热门/分区
+// (游标翻页)、分区列表与频道搜索(声明式单页渠道)。除 twitch:vod 外,
+// 渠道 key/名称/kind/参数表与 TS 完全一致。
 
 package twitch
 
