@@ -35,8 +35,11 @@ func (m *Manager) View(c *ui.Context) {
 // 页面首次 did-finish-load 前不显示其 webview：避免白屏闪一下，先给加载页
 func (m *Manager) loadingView(c *ui.Context, e *entry) {
 	ui.Column(c).Grow(1).AlignItems(ui.Center).Justify(ui.Center).Gap(12).Children(func() {
-		// loading.dev 同款指示器（Go 绘制）；ReduceMotion 自动停帧、辅助技术读作进度条
-		loading.Ring(c).Label("正在加载 " + e.title)
+		// loading.dev 同款指示器（Go 绘制）；ReduceMotion 自动停帧、辅助技术读作进度条。
+		// 颜色必须显式跟随宿主主题：Ring 缺省用 mygo 默认主题（跟随系统亮暗），
+		// 系统暗 + 宿主亮时画白色弧，在浅色背景上不可见。
+		loading.Ring(c, loading.Options{Color: ui.Hex(m.theme.Foreground())}).
+			Label("正在加载 " + e.title)
 		ui.Text(c, "正在加载 "+e.title+"…").TextColor(ui.Hex(m.theme.Foreground()))
 	})
 }

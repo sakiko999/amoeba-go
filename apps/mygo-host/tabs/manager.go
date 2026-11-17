@@ -81,9 +81,6 @@ type Manager struct {
 	order   []string
 	active  string
 	seq     int
-	// zoom 抵消 WebView2 把 Windows 文字缩放（TextScale）当作页面 zoom 的默认行为，
-	// 让 webview 里 CSS px 与窗口 DIP 一一对应（与 Electron 版观感一致）
-	zoom float64
 	// Logf 由宿主注入（缺省丢弃）
 	Logf func(format string, args ...any)
 }
@@ -93,7 +90,6 @@ func NewManager(comps *registry.Manager, theme ThemeSource) *Manager {
 		comps:   comps,
 		theme:   theme,
 		entries: make(map[string]*entry),
-		zoom:    1,
 		Logf:    func(string, ...any) {},
 	}
 }
@@ -103,13 +99,9 @@ func (m *Manager) Attach(win *mygo.Window) { m.win = win }
 
 // Start 创建 chrome webview（mygo 前端），应用窗口主题并触发首帧。
 func (m *Manager) Start() error {
-	if ts := mygo.Theme.Preferences().TextScale; ts > 0 {
-		m.zoom = 1 / ts
-	}
 	chrome, err := m.win.NewWebView(mygo.WebViewOptions{
 		URL:             "/",
 		BackgroundColor: m.theme.Background(),
-		Page:            mygo.PageOptions{ZoomFactor: m.zoom},
 	})
 	if err != nil {
 		return err
@@ -143,7 +135,6 @@ func (m *Manager) Create(kind string) error {
 		Page: mygo.PageOptions{
 			Session:       mygo.NewSession("page-" + kind),
 			PreloadScript: pageBridgeScript(instanceID, kind, m.theme.Theme()),
-			ZoomFactor:    m.zoom,
 		},
 	})
 	if err != nil {
