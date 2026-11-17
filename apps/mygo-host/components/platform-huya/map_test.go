@@ -216,6 +216,36 @@ func TestMapAnchorRows(t *testing.T) {
 	}
 }
 
+// 真实响应除房间/主播桶外还带其他内容桶(如 1026),值是裸数组甚至字符串;
+// 曾经让整个响应 unmarshal 失败、搜索页该平台整组报错。
+func TestSearchResponseToleratesRawBuckets(t *testing.T) {
+	raw := platform.RawJSON(`{"response":{
+		"1": {"docs": [{"room_id": 520000, "game_nick": "主播甲", "gameLiveOn": true}]},
+		"3": {"docs": [{"room_id": 777, "game_introduction": "标题A"}]},
+		"1026": [{"title": "相关视频"}, {"title": "相关视频2"}],
+		"1027": "未知形态"
+	}}`)
+	var res searchResponse
+	if err := platform.UnmarshalJSON(raw, &res); err != nil {
+		t.Fatal(err)
+	}
+	if rows := res.bucket("1"); len(rows) != 1 || strVal(rows[0].GameNick) != "主播甲" {
+		t.Errorf("bucket(1) = %+v", rows)
+	}
+	if rows := res.bucket("3"); len(rows) != 1 || strVal(rows[0].GameIntroduction) != "标题A" {
+		t.Errorf("bucket(3) = %+v", rows)
+	}
+	if rows := res.bucket("1026"); rows != nil {
+		t.Errorf("非预期数组桶应视为空: %+v", rows)
+	}
+	if rows := res.bucket("1027"); rows != nil {
+		t.Errorf("未知形态桶应视为空: %+v", rows)
+	}
+	if rows := res.bucket("404"); rows != nil {
+		t.Errorf("缺失桶应为空: %+v", rows)
+	}
+}
+
 func TestMapSearchRooms(t *testing.T) {
 	res := loadSearch(t, "search_rooms.json")
 	rooms, anchors := res.bucket("3"), res.bucket("1")

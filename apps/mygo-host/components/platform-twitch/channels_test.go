@@ -282,3 +282,54 @@ func TestFetchUserSearchChannel(t *testing.T) {
 		t.Errorf("gql 请求数 = %d, want 1", len(queries))
 	}
 }
+
+func TestSearchLiveOp(t *testing.T) {
+	sc, calls := startGQLServer(t, func(query string) any {
+		if strings.Contains(query, "searchFor") {
+			return map[string]any{"searchFor": map[string]any{"channels": map[string]any{"items": []any{
+				map[string]any{"login": "Shroud", "displayName": "Shroud"},
+				map[string]any{"login": "xqc", "displayName": "xQc"},
+			}}}}
+		}
+		return map[string]any{
+			"u0": map[string]any{
+				"login": "shroud", "displayName": "Shroud",
+				"stream": map[string]any{
+					"id": "s1", "title": "Ranked grind", "viewersCount": 12345,
+					"createdAt": "2026-10-20T08:00:00.000Z", "type": "live",
+					"game": map[string]any{"name": "VALORANT"},
+				},
+			},
+			"u1": map[string]any{"login": "xqc", "displayName": "xQc", "stream": nil},
+		}
+	})
+	spec := New(sc)
+	result, err := spec.Ops["search"].Invoke(context.Background(),
+		json.RawMessage(`{"keyword":"shroud","scope":"live"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	items := result.(platform.FetchPage).Items
+	if len(items) != 1 {
+		t.Fatalf("items = %+v, want 只有在播的 shroud", items)
+	}
+	item := items[0]
+	checkStr(t, "live id", item.ID, "twitch:shroud")
+	checkStr(t, "live sourceID", item.SourceID, "twitch:live:search")
+	checkStr(t, "live title", item.Title, "Ranked grind")
+	checkIntPtr(t, "live online", item.Online, 12345)
+	if item.LiveStatus == nil || *item.LiveStatus != platform.LiveStatusLive {
+		t.Errorf("live liveStatus = %v", item.LiveStatus)
+	}
+	if item.Author == nil || item.Author.Name != "Shroud" {
+		t.Errorf("live author = %+v", item.Author)
+	}
+
+	queries, _ := calls()
+	if len(queries) != 2 {
+		t.Fatalf("gql 请求数 = %d, want 2(搜索 + enrich)", len(queries))
+	}
+	if !strings.Contains(queries[1], `u0: user(login: "shroud")`) {
+		t.Errorf("enrich 查询应按别名批量查 user: %s", queries[1])
+	}
+}

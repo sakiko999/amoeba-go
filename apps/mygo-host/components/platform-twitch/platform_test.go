@@ -44,8 +44,8 @@ func TestOpsSurface(t *testing.T) {
 	if spec.Namespace != "twitch" || spec.Label != "Twitch" {
 		t.Errorf("spec = %s/%s", spec.Namespace, spec.Label)
 	}
-	if len(spec.Tags) != 2 || spec.Tags[0] != "platform.data" || spec.Tags[1] != "search.channel" {
-		t.Errorf("tags = %v(应含 platform.data + search.channel)", spec.Tags)
+	if len(spec.Tags) != 3 || spec.Tags[0] != "platform.data" || spec.Tags[1] != "search.channel" || spec.Tags[2] != "search.live" {
+		t.Errorf("tags = %v(应含 platform.data + search.channel + search.live)", spec.Tags)
 	}
 	if _, ok := spec.Ops["search"]; !ok {
 		t.Errorf("缺少 search op")

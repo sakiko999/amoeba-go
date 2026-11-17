@@ -164,13 +164,31 @@ type subCategoryRow struct {
 	GameFullName *flexStr `json:"gameFullName"`
 }
 
-// searchResponse search.cdn.huya.com(房间桶 "3"、主播桶 "1")。
+// searchResponse search.cdn.huya.com。房间桶 "3"、主播桶 "1" 是 {docs:[...]}
+// 形态;其余桶(如 1026 视频桶)的值是裸数组等其他结构,若按 searchBucket
+// 强解析会让整个响应 unmarshal 失败,故桶值保留原始 JSON、由 bucket 惰性解析。
 type searchResponse struct {
-	Response map[string]*searchBucket `json:"response"`
+	Response map[string]json.RawMessage `json:"response"`
 }
 
 type searchBucket struct {
 	Docs []searchRow `json:"docs"`
+}
+
+// bucket 取指定桶的行;桶形态不是 {docs} 对象视为空桶(非预期桶不参与解析)。
+func (r *searchResponse) bucket(key string) []searchRow {
+	if r == nil {
+		return nil
+	}
+	raw := r.Response[key]
+	if len(raw) == 0 {
+		return nil
+	}
+	var b searchBucket
+	if err := json.Unmarshal(raw, &b); err != nil {
+		return nil
+	}
+	return b.Docs
 }
 
 // searchRow 房间桶与主播桶共用字段集。

@@ -85,13 +85,6 @@ func fetchSearch(ctx context.Context, sc *platform.ServiceContext, keyword strin
 	return &res, nil
 }
 
-func (r *searchResponse) bucket(key string) []searchRow {
-	if r == nil || r.Response == nil || r.Response[key] == nil {
-		return nil
-	}
-	return r.Response[key].Docs
-}
-
 // searchAnchors 搜主播(v=1;rows 服务端封顶 50,start 语义怪异故不接翻页)。
 func searchAnchors(ctx context.Context, sc *platform.ServiceContext, keyword string, pageSize int) ([]platform.Item, error) {
 	res, err := fetchSearch(ctx, sc, keyword, 1, clampInt(pageSize, 1, 50), 0)

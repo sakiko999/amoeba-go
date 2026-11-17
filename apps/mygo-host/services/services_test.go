@@ -103,8 +103,8 @@ func TestUnknownOpError(t *testing.T) {
 	}
 }
 
-// search op 的网关发现面:双 scope 平台带 search.live+search.channel,
-// twitch 仅 channel,其余平台无 search.* tag 与 search op。
+// search op 的网关发现面:五平台双 scope 带 search.live+search.channel,
+// 其余平台无 search.* tag 与 search op。
 func TestSearchOpRegistration(t *testing.T) {
 	gw, err := Activate(testContext(t), testManager(t))
 	if err != nil {
@@ -115,7 +115,7 @@ func TestSearchOpRegistration(t *testing.T) {
 		"douyu":   {"search.live", "search.channel"},
 		"huya":    {"search.live", "search.channel"},
 		"youtube": {"search.live", "search.channel"},
-		"twitch":  {"search.channel"},
+		"twitch":  {"search.live", "search.channel"},
 	}
 	for _, info := range gw.List() {
 		tags, declared := wantTags[info.Namespace]
