@@ -54,6 +54,9 @@ function vendorImportMapPlugin(manifest: VendorManifest) {
 
 export default defineConfig({
   root: "src/renderer",
+  // 页面经 page://<id>/renderer/index.html 服务,资源必须相对引用;默认的
+  // 绝对 /assets/... 会落到组件根而 404(WebView2 报 MIME text/plain)
+  base: "./",
   build: {
     // 直接产出组件包结构(out/page/renderer + component.json),宿主 pages 目录
     // 指向 out/ 即可,不需要单独的投影/同步步骤
