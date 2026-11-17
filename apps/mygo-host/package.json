@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "chrome": "bun run --cwd chrome build",
-    "pages": "bun run --cwd components/page-search pack",
+    "pages": "bun run --cwd components/page-search pack && bun run --cwd components/page-player-h5 pack",
     "dev": "bun run chrome && bun run pages && go run .",
     "build": "bun run chrome && bun run pages && go build -o ../../tmp/mygo-host/mygo-host.exe ."
   }

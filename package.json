@@ -5,6 +5,7 @@
     "apps/*",
     "apps/mygo-host/chrome",
     "apps/mygo-host/components/page-search",
+    "apps/mygo-host/components/page-player-h5",
     "packages/*",
     "packages/amoeba/*"
   ],

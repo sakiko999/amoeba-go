@@ -58,12 +58,16 @@ var TabsChanged = mygo.NewEvent[[]Summary]("tabs.changed")
 // HostStateChanged 在主题变化时广播。
 var HostStateChanged = mygo.NewEvent[ThemeInfo]("host.state")
 
+// PlayerH5Play 在复用 player-h5 tab 播放新内容时广播（页面按 instanceId 过滤）。
+var PlayerH5Play = mygo.NewEvent[player.H5Target]("player.h5.play")
+
 type entry struct {
 	instanceID string
 	kind       string
 	title      string
 	view       *mygo.WebView
-	player     *player.Player // 非 nil = 原生播放器 tab(无 webview)
+	player     *player.Player   // 非 nil = 原生播放器 tab(无 webview)
+	h5Target   *player.H5Target // 非 nil = player-h5 页面 tab 的播放目标
 	loading    bool
 	err        string
 }
@@ -140,9 +144,18 @@ func (m *Manager) Start() error {
 
 // Create 打开一个页面组件的新 tab：独立 session、独立 webview，创建即激活。
 func (m *Manager) Create(kind string) error {
+	_, err := m.create(kind, "", nil)
+	return err
+}
+
+// create 是 Create 与 OpenPlayerH5 的公共创建路径；title 为空时取组件名。
+func (m *Manager) create(kind, title string, h5 *player.H5Target) (*entry, error) {
 	comp := m.comps.Get(kind)
 	if comp == nil {
-		return fmt.Errorf("页面组件 %q 未安装或未就绪", kind)
+		return nil, fmt.Errorf("页面组件 %q 未安装或未就绪", kind)
+	}
+	if title == "" {
+		title = comp.Manifest.Name
 	}
 	m.seq++
 	instanceID := fmt.Sprintf("%s-%d", kind, m.seq)
@@ -155,9 +168,9 @@ func (m *Manager) Create(kind string) error {
 		},
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
-	e := &entry{instanceID: instanceID, kind: kind, title: comp.Manifest.Name, view: view, loading: true}
+	e := &entry{instanceID: instanceID, kind: kind, title: title, view: view, h5Target: h5, loading: true}
 	view.Page().OnDidFinishLoad(func() {
 		e.loading = false
 		m.logf("tab %s（%s）已加载", instanceID, kind)
@@ -174,7 +187,42 @@ func (m *Manager) Create(kind string) error {
 	m.entries[instanceID] = e
 	m.order = append(m.order, instanceID)
 	m.Activate(instanceID)
+	return e, nil
+}
+
+// OpenPlayerH5 打开(或复用)player-h5 页面 tab。首次目标随创建写入，页面挂载后
+// 经 Player.Target 主动来取；复用同一个 tab 时改目标并广播事件(页面按 instanceId
+// 过滤)——连续点播不堆一堆播放 tab，与原生播放器的复用语义一致。
+func (m *Manager) OpenPlayerH5(title string, target player.H5Target) error {
+	for _, id := range m.order {
+		e := m.entries[id]
+		if e.kind != "player-h5" {
+			continue
+		}
+		target.InstanceID = id
+		e.h5Target = &target
+		if title != "" {
+			e.title = title
+		}
+		m.Activate(id)
+		PlayerH5Play.Emit(m.win, target)
+		return nil
+	}
+	e, err := m.create("player-h5", title, &target)
+	if err != nil {
+		return err
+	}
+	target.InstanceID = e.instanceID
 	return nil
+}
+
+// Target 取 player-h5 tab 的播放目标（页面挂载时调用；从新建菜单直接打开的没有目标）。
+func (m *Manager) Target(instanceID string) (player.H5Target, bool) {
+	e, ok := m.entries[instanceID]
+	if !ok || e.h5Target == nil {
+		return player.H5Target{}, false
+	}
+	return *e.h5Target, true
 }
 
 // OpenPlayer 打开原生播放器 tab(非页面组件:不进 registry 与新建菜单,内容区

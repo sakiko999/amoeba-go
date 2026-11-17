@@ -12,8 +12,10 @@ import (
 	"io/fs"
 	"log"
 	"path/filepath"
+	"strings"
 
 	"github.com/egoist/mygo"
+	"github.com/egoist/mygo/plugins/fetch"
 	"github.com/egoist/mygo/ui"
 
 	"mygo-host/components/jsrunner"
@@ -29,7 +31,10 @@ import (
 var chromeDist embed.FS
 
 func main() {
-	pagesDir := flag.String("pages", filepath.Join("components", "page-search", "out"), "内置页面组件目录(每子目录一个组件包)")
+	pagesDirs := flag.String("pages", strings.Join([]string{
+		filepath.Join("components", "page-search", "out"),
+		filepath.Join("components", "page-player-h5", "out"),
+	}, ";"), "内置页面组件目录(每子目录一个组件包;多个根用 ; 分隔)")
 	vendorDir := flag.String("vendor", filepath.Join("..", "..", "packages", "page-vendor", "out", "dist"), "vendor:// 共享层目录")
 	flag.Parse()
 
@@ -39,7 +44,12 @@ func main() {
 	}
 	theme := newThemeStore(filepath.Join(userData, "host-state.json"))
 
-	comps := registry.NewManager(*pagesDir, filepath.Join(userData, "pages"))
+	// 页面可调用的 Go 侧 fetch(无 CORS、任意请求头):player-h5 的 hls.js/dash.js
+	// 请求出口(hostFetch.ts)与之后页面抓取都靠它。所有 trusted 页面(含外部安装的
+	// 页面组件)都可调用 —— 页面本就可载任意 JS,不构成额外权限升级。
+	mygo.Use(fetch.Plugin)
+
+	comps := registry.NewManager(strings.Split(*pagesDirs, ";"), filepath.Join(userData, "pages"))
 	comps.Logf = log.Printf
 	comps.Scan()
 

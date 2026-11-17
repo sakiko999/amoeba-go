@@ -94,11 +94,16 @@ export interface SearchHandle {
 }
 
 export interface PlayResult {
-  format: string;
+  /** native = ui.Video 原生播放器;h5 = player-h5 页面(hls.js/dash.js) */
+  engine: "native" | "h5";
+  format?: string;
   quality?: string;
 }
 
-/** 点击结果卡片:宿主经网关解析平台流并打开原生播放器 tab */
+/**
+ * 点击结果卡片:宿主经网关解析平台流并播放。原生播放器放不了的流
+ * (DASH/FLV/需要自定义请求头)自动落到 player-h5 页面。
+ */
 export async function play(
   item: Item,
   namespace: string,
@@ -107,6 +112,7 @@ export async function play(
     namespace,
     url: item.url,
     title: item.title,
+    kind: item.kind,
   })) as PlayResult;
 }
 

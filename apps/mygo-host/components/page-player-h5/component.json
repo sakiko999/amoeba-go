@@ -1,0 +1,8 @@
+{
+  "id": "player-h5",
+  "kind": "page",
+  "name": "H5 播放器",
+  "version": "0.1.0",
+  "color": "#7aa2f7",
+  "entry": "renderer/index.html"
+}

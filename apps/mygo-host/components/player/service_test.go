@@ -11,11 +11,11 @@ import (
 	"mygo-host/platform"
 )
 
-func TestPickStream(t *testing.T) {
+func TestPickNative(t *testing.T) {
 	cases := []struct {
 		name    string
 		streams []platform.Stream
-		wantURL string // 空 = 无可播
+		wantURL string // 空 = 无原生可播(H5)
 	}{
 		{"空列表", nil, ""},
 		{"仅 DASH", []platform.Stream{{URL: "d", Format: new("dash")}}, ""},
@@ -23,21 +23,21 @@ func TestPickStream(t *testing.T) {
 			{URL: "p", Format: new("progressive")},
 			{URL: "h", Format: new("hls")},
 		}, "h"},
-		{"无 header 直连优先于带 header hls", []platform.Stream{
+		{"带 header 的流不进原生", []platform.Stream{
 			{URL: "hh", Format: new("hls"), Headers: map[string]string{"referer": "x"}},
 			{URL: "p", Format: new("progressive")},
 		}, "p"},
-		{"带 header 流兜底", []platform.Stream{
+		{"只有带 header hls 时交给 H5", []platform.Stream{
 			{URL: "d", Format: new("dash")},
 			{URL: "hh", Format: new("hls"), Headers: map[string]string{"referer": "x"}},
-		}, "hh"},
+		}, ""},
 		{"未标注 format 按直连", []platform.Stream{{URL: "u"}}, "u"},
 	}
 	for _, tc := range cases {
-		got := pickStream(tc.streams)
+		got := pickNative(tc.streams)
 		if tc.wantURL == "" {
 			if got != nil {
-				t.Errorf("%s: 应无可播流,得到 %s", tc.name, got.URL)
+				t.Errorf("%s: 应交给 H5,得到 %s", tc.name, got.URL)
 			}
 			continue
 		}
@@ -47,11 +47,28 @@ func TestPickStream(t *testing.T) {
 	}
 }
 
-type recordingOpener struct{ title, url, quality string }
+type recordingOpener struct {
+	title, url, quality string
+	h5Open              bool
+	h5                  H5Target
+	targets             map[string]H5Target
+}
 
 func (o *recordingOpener) OpenPlayer(title, url, quality string) error {
 	o.title, o.url, o.quality = title, url, quality
 	return nil
+}
+
+func (o *recordingOpener) OpenPlayerH5(title string, target H5Target) error {
+	o.h5Open = true
+	o.h5 = target
+	o.title = title
+	return nil
+}
+
+func (o *recordingOpener) Target(instanceID string) (H5Target, bool) {
+	t, ok := o.targets[instanceID]
+	return t, ok
 }
 
 func TestPlayParamsValidation(t *testing.T) {
@@ -104,8 +121,60 @@ func TestPlayThroughGateway(t *testing.T) {
 	if opener.url != "https://cdn/v.m3u8" || opener.quality != "原画" || opener.title != "直播间" {
 		t.Errorf("opener = %+v", opener)
 	}
-	if res.Format != "hls" || res.Quality != "原画" {
+	if res.Engine != "native" || res.Format != "hls" || res.Quality != "原画" {
 		t.Errorf("result = %+v", res)
+	}
+}
+
+// DASH-only 结果交给 H5 播放器:streams 原样带进 H5Target(页面侧选流)。
+func TestPlayFallsBackToH5(t *testing.T) {
+	opener := &recordingOpener{}
+	svc, comp, err := NewService(opener)
+	if err != nil {
+		t.Fatal(err)
+	}
+	gw := &fakeGateway{result: platform.PlayOpResult{ID: "1", Streams: []platform.Stream{
+		{URL: "https://cdn/v.mpd", Format: new("dash"), DashManifest: new("<mpd/>")},
+	}}}
+	if err := comp.Activate(gw); err != nil {
+		t.Fatal(err)
+	}
+	res, err := svc.Play(context.Background(), PlayParams{
+		Namespace: "bilibili", URL: "https://www.bilibili.com/video/BV1", Title: "视频", Kind: "video",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Engine != "h5" {
+		t.Errorf("engine = %q, want h5", res.Engine)
+	}
+	if !opener.h5Open || len(opener.h5.Streams) != 1 || opener.h5.Kind != "video" || opener.h5.Title != "视频" {
+		t.Errorf("h5 target = %+v (open=%v)", opener.h5, opener.h5Open)
+	}
+	if opener.url != "" {
+		t.Error("DASH-only 结果不应打开原生播放器")
+	}
+}
+
+// Target 透传宿主存下的播放目标;没有目标时返回 nil(页面显示空态)。
+func TestTargetLookup(t *testing.T) {
+	opener := &recordingOpener{targets: map[string]H5Target{
+		"player-h5-1": {InstanceID: "player-h5-1", URL: "https://x"},
+	}}
+	svc, _, err := NewService(opener)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := svc.Target(context.Background(), "player-h5-1")
+	if err != nil || got == nil || got.URL != "https://x" {
+		t.Fatalf("Target = %+v, %v", got, err)
+	}
+	none, err := svc.Target(context.Background(), "missing")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if none != nil {
+		t.Errorf("没有目标时应为 nil,得到 %+v", none)
 	}
 }
 

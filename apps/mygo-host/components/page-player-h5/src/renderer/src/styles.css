@@ -1,0 +1,13 @@
+/* Tailwind 4：播放器组件的类名都在本包源码里，vite 插件按模块图扫描。 */
+@import "tailwindcss";
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #000;
+}

@@ -31,7 +31,7 @@ func testContext(t *testing.T) *platform.ServiceContext {
 
 func testManager(t *testing.T) *registry.Manager {
 	t.Helper()
-	return registry.NewManager(t.TempDir(), t.TempDir())
+	return registry.NewManager([]string{t.TempDir()}, t.TempDir())
 }
 
 func TestActivateRegistersAllPlatforms(t *testing.T) {

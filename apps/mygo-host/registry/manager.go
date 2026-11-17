@@ -33,7 +33,7 @@ type ServiceRecord struct {
 // 状态权威源仍在宿主主进程,tab 生命周期由 tabs.Manager 消费 Kinds();
 // 服务登记发生在启动期(装配层单线程调用),不需要锁。
 type Manager struct {
-	builtinDir  string
+	builtinDirs []string
 	externalDir string
 	byID        map[string]*Component
 	services    []ServiceRecord
@@ -41,9 +41,11 @@ type Manager struct {
 	Logf func(format string, args ...any)
 }
 
-func NewManager(builtinDir, externalDir string) *Manager {
+// NewManager 接收多个内置页面根目录（每个根下每子目录一个组件包）：页面组件
+// 各自在自己的 components/<name>/out/ 产出，宿主不需要先投影到统一目录。
+func NewManager(builtinDirs []string, externalDir string) *Manager {
 	return &Manager{
-		builtinDir:  builtinDir,
+		builtinDirs: builtinDirs,
 		externalDir: externalDir,
 		byID:        make(map[string]*Component),
 		Logf:        func(string, ...any) {},
@@ -66,7 +68,9 @@ func (m *Manager) Services() []ServiceRecord {
 // 不影响其它组件（与 Electron 版 scan 语义一致）。
 func (m *Manager) Scan() {
 	m.byID = make(map[string]*Component)
-	m.scanDir(m.builtinDir, SourceBuiltin, false)
+	for _, dir := range m.builtinDirs {
+		m.scanDir(dir, SourceBuiltin, false)
+	}
 	m.scanDir(m.externalDir, SourceExternal, true)
 }
 

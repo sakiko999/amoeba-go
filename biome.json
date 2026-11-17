@@ -9,6 +9,7 @@
       "!**/release",
       "!tmp",
       "!packages/amoeba",
+      "!apps/mygo-host/components/page-player-h5/src/renderer/src/player",
       "!packages/rss-service/runtime",
       "!packages/platform-kit/src/runtime",
       "!packages/platform-*/src/impl",

@@ -22,9 +22,22 @@ import (
 //go:embed component.json
 var manifestRaw []byte
 
-// Opener 由 tabs.Manager 实现:打开(或复用)原生播放 tab。
+// H5Target 是 player-h5 页面 tab 的播放目标(页面经 Player.Target 取到)。streams
+// 原样携带平台解析结果 —— 页面侧按需选流(hls.js/dash.js/flv.js),不再回查网关。
+type H5Target struct {
+	InstanceID string            `json:"instanceId"`
+	Title      string            `json:"title,omitempty"`
+	Kind       string            `json:"kind,omitempty"` // live / video 等条目 kind
+	Namespace  string            `json:"namespace"`
+	URL        string            `json:"url"`
+	Streams    []platform.Stream `json:"streams"`
+}
+
+// Opener 由 tabs.Manager 实现:打开(或复用)播放 tab,以及取回 H5 tab 的目标。
 type Opener interface {
 	OpenPlayer(title, url, quality string) error
+	OpenPlayerH5(title string, target H5Target) error
+	Target(instanceID string) (H5Target, bool)
 }
 
 type Service struct {
@@ -62,10 +75,13 @@ type PlayParams struct {
 	Namespace string `json:"namespace"`
 	URL       string `json:"url"`
 	Title     string `json:"title,omitempty"` // tab 标题,缺省用 url
+	Kind      string `json:"kind,omitempty"`  // live / video,透传给 H5 播放器
 }
 
 type PlayResult struct {
-	Format  string `json:"format"`
+	// Engine 是实际打开的播放器:native(ui.Video/IMFMediaEngine)或 h5(player-h5 页面)。
+	Engine  string `json:"engine"`
+	Format  string `json:"format,omitempty"`
 	Quality string `json:"quality,omitempty"`
 }
 
@@ -95,48 +111,70 @@ func (s *Service) Play(ctx context.Context, p PlayParams) (PlayResult, error) {
 	if !ok {
 		return PlayResult{}, fmt.Errorf("play 返回类型异常(%T)", raw)
 	}
-	stream := pickStream(result.Streams)
-	if stream == nil {
-		return PlayResult{}, errors.New("没有原生可播的流(仅 DASH,或全部需要自定义请求头)")
+	if len(result.Streams) == 0 {
+		return PlayResult{}, errors.New("平台没有返回可播流")
 	}
-	quality := ""
-	if stream.Quality != nil {
-		quality = *stream.Quality
+	// 原生播放器(IMFMediaEngine)只接无自定义请求头的 HLS/渐进式;其余
+	// (DASH、FLV、防盗链流)交给 H5 播放器(hls.js/dash.js/flv.js)。
+	if stream := pickNative(result.Streams); stream != nil {
+		quality := ""
+		if stream.Quality != nil {
+			quality = *stream.Quality
+		}
+		if err := s.opener.OpenPlayer(p.Title, stream.URL, quality); err != nil {
+			return PlayResult{}, err
+		}
+		return PlayResult{Engine: "native", Format: formatName(stream), Quality: quality}, nil
 	}
-	if err := s.opener.OpenPlayer(p.Title, stream.URL, quality); err != nil {
+	target := H5Target{
+		Title:     p.Title,
+		Kind:      p.Kind,
+		Namespace: p.Namespace,
+		URL:       p.URL,
+		Streams:   result.Streams,
+	}
+	if err := s.opener.OpenPlayerH5(p.Title, target); err != nil {
 		return PlayResult{}, err
 	}
-	return PlayResult{Format: formatName(stream), Quality: quality}, nil
+	return PlayResult{Engine: "h5"}, nil
 }
 
-// pickStream 选原生可播流,打分高者胜:hls > 直连/未标注 > 需要自定义请求头
-// 的流(OpenURL 不能带 header,播放大概率被拒,仅作无选之选);DASH 淘汰。
-func pickStream(streams []platform.Stream) *platform.Stream {
-	best, bestScore := (*platform.Stream)(nil), -1
+// Target 是 player-h5 页面的挂载入口:取本 tab 当前的播放目标(没有则 nil)。
+func (s *Service) Target(ctx context.Context, instanceID string) (*H5Target, error) {
+	t, ok := s.opener.Target(instanceID)
+	if !ok {
+		return nil, nil
+	}
+	return &t, nil
+}
+
+// pickNative 挑一路原生可播的流:hls > 渐进式/未标注;需要自定义请求头
+// (OpenURL 不能带 header)或 DASH 的流一律不算。nil = 该结果不属于原生播放器。
+func pickNative(streams []platform.Stream) *platform.Stream {
+	best, bestScore := (*platform.Stream)(nil), 0
 	for i := range streams {
-		if score := streamScore(&streams[i]); score > bestScore {
+		if score := nativeScore(&streams[i]); score > bestScore {
 			best, bestScore = &streams[i], score
 		}
 	}
 	return best
 }
 
-func streamScore(s *platform.Stream) int {
+func nativeScore(s *platform.Stream) int {
+	if len(s.Headers) > 0 {
+		return 0
+	}
 	format := ""
 	if s.Format != nil {
 		format = *s.Format
 	}
 	if format == string(platform.FormatDASH) || s.DashManifest != nil {
-		return -1
+		return 0
 	}
-	score := 2
-	if format != string(platform.FormatHLS) { // progressive 与未标注按直连处理
-		score = 1
+	if format == string(platform.FormatHLS) {
+		return 2
 	}
-	if len(s.Headers) > 0 {
-		score -= 2
-	}
-	return score
+	return 1 // progressive 与未标注按直连处理
 }
 
 func formatName(s *platform.Stream) string {
