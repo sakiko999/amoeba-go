@@ -73,6 +73,18 @@ func serveComponentFile(w http.ResponseWriter, r *http.Request, root string) {
 		http.NotFound(w, r)
 		return
 	}
+	// HTML 走重写(vendor:// → WebView2 的 http 映射形态,见 htmlrewrite.go)
+	if strings.EqualFold(filepath.Ext(file), ".html") {
+		data, err := os.ReadFile(file)
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("content-type", "text/html; charset=utf-8")
+		w.Header().Set("x-content-type-options", "nosniff")
+		http.ServeContent(w, r, file, info.ModTime(), strings.NewReader(rewriteVendorHTML(string(data))))
+		return
+	}
 	if ct := contentType(file); ct != "" {
 		w.Header().Set("content-type", ct)
 	}
