@@ -21,6 +21,7 @@ const baseComponents: [string, string][] = [
   ["media-manager", "pack:page"],
   ["component-inspector", "pack"],
   ["home", "pack"],
+  ["tab-search", "pack"],
   ["tab-clock", "pack"],
   ["tab-notes", "pack"],
   ["tab-sysinfo", "pack"],
@@ -71,7 +72,7 @@ const manifestPath = join(
   "manifest.json",
 );
 if (existsSync(manifestPath)) {
-  const pagePacks = ["home", "component-inspector", "media-manager"];
+  const pagePacks = ["home", "tab-search", "component-inspector", "media-manager"];
   for (const name of pagePacks) {
     const assetsDir = join(packagesDir, name, "out", "page", "renderer", "assets");
     const files = (await readdir(assetsDir)).filter((f) => f.endsWith(".js"));

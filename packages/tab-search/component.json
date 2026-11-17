@@ -1,0 +1,8 @@
+{
+  "id": "search",
+  "kind": "page",
+  "name": "搜索",
+  "version": "0.1.0",
+  "color": "#9ece6a",
+  "entry": "renderer/index.html"
+}

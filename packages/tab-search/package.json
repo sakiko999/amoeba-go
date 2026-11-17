@@ -1,0 +1,24 @@
+{
+  "name": "@tabs/search",
+  "version": "0.1.0",
+  "private": true,
+  "description": "聚合搜索页：跨平台搜直播间/主播（React + @demo/ui，经宿主 Search 服务 fan-out）。",
+  "scripts": {
+    "build": "electron-vite build",
+    "pack": "bun run scripts/pack.ts"
+  },
+  "devDependencies": {
+    "@demo/ui": "workspace:*",
+    "@host/sdk": "workspace:*",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.1.1",
+    "electron-vite": "^6.0.0",
+    "lucide-react": "^1.69.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.6"
+  }
+}
