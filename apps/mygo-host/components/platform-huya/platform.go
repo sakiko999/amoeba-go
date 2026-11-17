@@ -17,7 +17,10 @@ func New(sc *platform.ServiceContext) platform.Spec {
 	return platform.Spec{
 		Namespace: "huya",
 		Label:     label,
-		Tags:      []string{tag},
-		Ops:       platform.FeedOps(platform.FeedSpec{Channels: channels(sc), Playback: playback(sc)}),
+		Tags:      append([]string{tag}, platform.SearchTags(platform.SearchLive, platform.SearchChannel)...),
+		Ops: platform.MergeOps(
+			platform.FeedOps(platform.FeedSpec{Channels: channels(sc), Playback: playback(sc)}),
+			searchOps(sc),
+		),
 	}
 }

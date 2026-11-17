@@ -12,10 +12,13 @@ func New(sc *platform.ServiceContext) platform.Spec {
 	return platform.Spec{
 		Namespace: "bili",
 		Label:     "B站",
-		Tags:      []string{"platform.data"},
-		Ops: platform.FeedOps(platform.FeedSpec{
-			Channels: channels(c),
-			Playback: newPlayback(c),
-		}),
+		Tags:      append([]string{"platform.data"}, platform.SearchTags(platform.SearchLive, platform.SearchChannel)...),
+		Ops: platform.MergeOps(
+			platform.FeedOps(platform.FeedSpec{
+				Channels: channels(c),
+				Playback: newPlayback(c),
+			}),
+			searchOps(c),
+		),
 	}
 }

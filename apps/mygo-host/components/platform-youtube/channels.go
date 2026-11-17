@@ -75,22 +75,26 @@ func newUserChannel(sc *platform.ServiceContext) platform.DataChannel {
 			if err != nil {
 				return platform.PageItems{}, err
 			}
-			now := sc.NowMs()
-			items := make([]platform.Item, 0, len(hits))
-			for _, hit := range hits {
-				summary := joinNonEmpty([]string{hit.SubsText, hit.VideoCountText}, " · ")
-				items = append(items, platform.Item{
-					ID:        "ch-" + hit.ChannelID,
-					SourceID:  "youtube:user",
-					Kind:      platform.KindVideo,
-					Title:     hit.Title,
-					URL:       platform.Str("https://www.youtube.com/channel/" + hit.ChannelID),
-					Thumbnail: platform.StrOmit(hit.Thumb),
-					Summary:   platform.StrOmit(summary),
-					FetchedAt: now,
-				})
-			}
-			return platform.PageItems{Items: items}, nil
+			return platform.PageItems{Items: channelHitsToItems("youtube:user", hits, sc.NowMs())}, nil
 		},
 	})
+}
+
+// channelHitsToItems 频道搜索命中 → Video item(youtube:user 渠道与 search op 共用)。
+func channelHitsToItems(sourceID string, hits []youtubeChannelHit, now int64) []platform.Item {
+	items := make([]platform.Item, 0, len(hits))
+	for _, hit := range hits {
+		summary := joinNonEmpty([]string{hit.SubsText, hit.VideoCountText}, " · ")
+		items = append(items, platform.Item{
+			ID:        "ch-" + hit.ChannelID,
+			SourceID:  sourceID,
+			Kind:      platform.KindVideo,
+			Title:     hit.Title,
+			URL:       platform.Str("https://www.youtube.com/channel/" + hit.ChannelID),
+			Thumbnail: platform.StrOmit(hit.Thumb),
+			Summary:   platform.StrOmit(summary),
+			FetchedAt: now,
+		})
+	}
+	return items
 }

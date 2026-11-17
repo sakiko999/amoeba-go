@@ -6,8 +6,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strings"
 	"testing"
 
+	"mygo-host/components/api-gateway"
 	"mygo-host/platform"
 	"mygo-host/registry"
 )
@@ -99,4 +101,59 @@ func TestUnknownOpError(t *testing.T) {
 	if _, err := gw.Call(context.Background(), "nope.search", nil); err == nil {
 		t.Error("expected error for unknown op")
 	}
+}
+
+// search op 的网关发现面:双 scope 平台带 search.live+search.channel,
+// twitch 仅 channel,其余平台无 search.* tag 与 search op。
+func TestSearchOpRegistration(t *testing.T) {
+	gw, err := Activate(testContext(t), testManager(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	wantTags := map[string][]string{
+		"bili":    {"search.live", "search.channel"},
+		"douyu":   {"search.live", "search.channel"},
+		"huya":    {"search.live", "search.channel"},
+		"youtube": {"search.live", "search.channel"},
+		"twitch":  {"search.channel"},
+	}
+	for _, info := range gw.List() {
+		tags, declared := wantTags[info.Namespace]
+		if !declared {
+			for _, tag := range info.Tags {
+				if strings.HasPrefix(tag, "search.") {
+					t.Errorf("%s 不应带 %s tag", info.Namespace, tag)
+				}
+			}
+			continue
+		}
+		if !containsAll(info.Tags, tags) {
+			t.Errorf("%s tags = %v, want 含 %v", info.Namespace, info.Tags, tags)
+		}
+		if !opDeclared(info.Ops, "search") {
+			t.Errorf("%s 缺少 search op", info.Namespace)
+		}
+	}
+}
+
+func containsAll(tags, want []string) bool {
+	set := map[string]bool{}
+	for _, t := range tags {
+		set[t] = true
+	}
+	for _, w := range want {
+		if !set[w] {
+			return false
+		}
+	}
+	return true
+}
+
+func opDeclared(ops []gateway.OpDesc, name string) bool {
+	for _, op := range ops {
+		if op.Name == name {
+			return true
+		}
+	}
+	return false
 }

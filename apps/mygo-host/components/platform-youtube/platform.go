@@ -73,10 +73,13 @@ func New(sc *platform.ServiceContext) platform.Spec {
 	return platform.Spec{
 		Namespace: "youtube",
 		Label:     "YouTube",
-		Tags:      []string{"platform.data"},
-		Ops: platform.FeedOps(platform.FeedSpec{
-			Channels: channels(sc),
-			Playback: playback(sc),
-		}),
+		Tags:      append([]string{"platform.data"}, platform.SearchTags(platform.SearchLive, platform.SearchChannel)...),
+		Ops: platform.MergeOps(
+			platform.FeedOps(platform.FeedSpec{
+				Channels: channels(sc),
+				Playback: playback(sc),
+			}),
+			searchOps(sc),
+		),
 	}
 }

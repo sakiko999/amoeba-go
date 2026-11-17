@@ -140,15 +140,15 @@ func TestOpSurface(t *testing.T) {
 	if spec.Namespace != "huya" || spec.Label != "虎牙" {
 		t.Errorf("spec = %s/%s", spec.Namespace, spec.Label)
 	}
-	if len(spec.Tags) != 1 || spec.Tags[0] != "platform.data" {
+	if len(spec.Tags) != 3 || spec.Tags[0] != "platform.data" || spec.Tags[1] != "search.live" || spec.Tags[2] != "search.channel" {
 		t.Errorf("tags = %v", spec.Tags)
 	}
-	for _, name := range []string{"channels", "fetch", "play", "danmaku"} {
+	for _, name := range []string{"channels", "fetch", "play", "danmaku", "search"} {
 		if _, ok := spec.Ops[name]; !ok {
 			t.Errorf("缺少 op %q", name)
 		}
 	}
-	if len(spec.Ops) != 4 {
-		t.Errorf("op 数 = %d(应为 feed 协议 4 个)", len(spec.Ops))
+	if len(spec.Ops) != 5 {
+		t.Errorf("op 数 = %d(应为 feed 协议 4 个 + search)", len(spec.Ops))
 	}
 }

@@ -32,7 +32,7 @@ func TestOpsSurface(t *testing.T) {
 		names = append(names, name)
 	}
 	sort.Strings(names)
-	want := []string{"channels", "danmaku", "fetch", "play"}
+	want := []string{"channels", "danmaku", "fetch", "play", "search"}
 	if len(names) != len(want) {
 		t.Fatalf("ops = %v, want %v", names, want)
 	}
@@ -44,8 +44,11 @@ func TestOpsSurface(t *testing.T) {
 	if spec.Namespace != "twitch" || spec.Label != "Twitch" {
 		t.Errorf("spec = %s/%s", spec.Namespace, spec.Label)
 	}
-	if len(spec.Tags) != 1 || spec.Tags[0] != "platform.data" {
-		t.Errorf("tags = %v", spec.Tags)
+	if len(spec.Tags) != 2 || spec.Tags[0] != "platform.data" || spec.Tags[1] != "search.channel" {
+		t.Errorf("tags = %v(应含 platform.data + search.channel)", spec.Tags)
+	}
+	if _, ok := spec.Ops["search"]; !ok {
+		t.Errorf("缺少 search op")
 	}
 }
 

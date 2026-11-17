@@ -35,11 +35,14 @@ func New(sc *platform.ServiceContext) platform.Spec {
 	return platform.Spec{
 		Namespace: "twitch",
 		Label:     label,
-		Tags:      []string{"platform.data"},
-		Ops: platform.FeedOps(platform.FeedSpec{
-			Channels: twitchChannels(sc),
-			Playback: playback,
-		}),
+		Tags:      append([]string{"platform.data"}, platform.SearchTags(platform.SearchChannel)...),
+		Ops: platform.MergeOps(
+			platform.FeedOps(platform.FeedSpec{
+				Channels: twitchChannels(sc),
+				Playback: playback,
+			}),
+			searchOps(sc),
+		),
 	}
 }
 
