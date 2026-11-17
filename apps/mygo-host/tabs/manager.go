@@ -13,7 +13,7 @@ import (
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 
-	"mygo-host/player"
+	"mygo-host/components/player"
 	"mygo-host/registry"
 )
 
@@ -77,11 +77,11 @@ type ThemeSource interface {
 }
 
 type Manager struct {
-	comps   *registry.Manager
-	theme   ThemeSource
-	win     *mygo.Window
-	chrome  *mygo.WebView
-	bar     ui.TitleBar
+	comps  *registry.Manager
+	theme  ThemeSource
+	win    *mygo.Window
+	chrome *mygo.WebView
+	bar    ui.TitleBar
 	// ChromeHeight 是 chrome 容器高度（DIP），与窗口 TitleBarHeight 一致；
 	// 由 MeasureChrome 在创建窗口前按系统文本缩放计算。
 	ChromeHeight float32

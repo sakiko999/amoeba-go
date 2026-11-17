@@ -7,6 +7,7 @@
 package platform
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 )
@@ -32,6 +33,13 @@ type ServiceManifest struct {
 // (*gateway.Gateway 天然满足);出现新依赖形态时再扩展。
 type Registrar interface {
 	Register(spec Spec) error
+}
+
+// OpCaller 是网关的调用面(*gateway.Gateway 天然满足,对应 provides.expose
+// 里的 call):需要消费其他服务 op 的组件(player 调 <ns>.play)在 Activate
+// 里对 Registrar 断言取用——注册面之外的第二种依赖形态。
+type OpCaller interface {
+	Call(ctx context.Context, op string, params json.RawMessage) (any, error)
 }
 
 // Service 内置服务组件:Manifest 供组件清单/拓扑排序,Activate 在全部

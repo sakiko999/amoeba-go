@@ -1,19 +1,26 @@
-// Player 宿主服务:页面经 window.mygo.call("Player.Play", {namespace, url, title})
-// 触发;经 api-gateway 调 <ns>.play 解析流,选中原生可播的一路后交给宿主
-// 打开播放 tab。选流规则见 pickStream。
+// Player 服务组件:manifest 来自本目录 component.json(经 go:embed),
+// Activate 取网关调用面(platform.OpCaller,platform 断言后注入)——页面
+// window.mygo.call("Player.Play", {namespace, url, title}) 经 <ns>.play
+// 解析流,选中原生可播的一路后交给宿主打开播放 tab。打开 tab 的 Opener
+// 由宿主构造时注入(与 jsrunner 同:依赖宿主 UI,不进拓扑)。
+// Service(页面绑定面)与 component(拓扑参与面)分开:Activate/Manifest
+// 的参数不满足 BindAs 的 JSON 可编码校验。
 
 package player
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
 
-	"mygo-host/components/api-gateway"
 	"mygo-host/platform"
 )
+
+//go:embed component.json
+var manifestRaw []byte
 
 // Opener 由 tabs.Manager 实现:打开(或复用)原生播放 tab。
 type Opener interface {
@@ -21,12 +28,34 @@ type Opener interface {
 }
 
 type Service struct {
-	gw     *gateway.Gateway
 	opener Opener
+	gw     platform.OpCaller
 }
 
-func NewService(gw *gateway.Gateway, opener Opener) *Service {
-	return &Service{gw: gw, opener: opener}
+// NewService 返回页面绑定用的 Service 与参与拓扑激活的组件包装。
+func NewService(opener Opener) (*Service, platform.Service, error) {
+	m, err := platform.ParseServiceManifest(manifestRaw)
+	if err != nil {
+		return nil, nil, err
+	}
+	s := &Service{opener: opener}
+	return s, &component{s: s, m: m}, nil
+}
+
+type component struct {
+	s *Service
+	m platform.ServiceManifest
+}
+
+func (c *component) Manifest() platform.ServiceManifest { return c.m }
+
+func (c *component) Activate(r platform.Registrar) error {
+	caller, ok := r.(platform.OpCaller)
+	if !ok {
+		return errors.New("player: 网关未暴露调用面(Registrar 缺 OpCaller)")
+	}
+	c.s.gw = caller
+	return nil
 }
 
 type PlayParams struct {
@@ -45,6 +74,9 @@ func (s *Service) Play(ctx context.Context, p PlayParams) (PlayResult, error) {
 	p.URL = strings.TrimSpace(p.URL)
 	if p.Namespace == "" || p.URL == "" {
 		return PlayResult{}, errors.New("play 需要 namespace 与 url 参数")
+	}
+	if s.gw == nil {
+		return PlayResult{}, errors.New("player 未激活(缺网关调用面)")
 	}
 	if p.Title == "" {
 		p.Title = p.URL

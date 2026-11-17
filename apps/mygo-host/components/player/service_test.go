@@ -4,6 +4,7 @@ package player
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -54,11 +55,68 @@ func (o *recordingOpener) OpenPlayer(title, url, quality string) error {
 }
 
 func TestPlayParamsValidation(t *testing.T) {
-	svc := NewService(nil, &recordingOpener{})
+	svc, _, err := NewService(&recordingOpener{})
+	if err != nil {
+		t.Fatal(err)
+	}
 	for _, p := range []PlayParams{{}, {Namespace: "twitch"}, {URL: "https://x"}} {
 		if _, err := svc.Play(context.Background(), p); err == nil {
-			t.Errorf("Play(%+v) 应报参数错误", p)
+			t.Errorf("Play(%+v) 应报参数错误", err)
 		}
+	}
+}
+
+// fakeGateway 同时实现 Registrar 与 OpCaller(与 *gateway.Gateway 同面)。
+type fakeGateway struct {
+	result any
+	err    error
+	op     string
+}
+
+func (g *fakeGateway) Register(platform.Spec) error { return nil }
+
+func (g *fakeGateway) Call(_ context.Context, op string, _ json.RawMessage) (any, error) {
+	g.op = op
+	return g.result, g.err
+}
+
+// 激活后 Play 经网关调用 <ns>.play,pickStream 选流并交给 Opener。
+func TestPlayThroughGateway(t *testing.T) {
+	opener := &recordingOpener{}
+	svc, comp, err := NewService(opener)
+	if err != nil {
+		t.Fatal(err)
+	}
+	gw := &fakeGateway{result: platform.PlayOpResult{ID: "1", Streams: []platform.Stream{
+		{URL: "https://cdn/v.mpd", Format: new("dash"), DashManifest: new("<mpd/>")},
+		{URL: "https://cdn/v.m3u8", Format: new("hls"), Quality: new("原画")},
+	}}}
+	if err := comp.Activate(gw); err != nil {
+		t.Fatal(err)
+	}
+	res, err := svc.Play(context.Background(), PlayParams{Namespace: "twitch", URL: "https://www.twitch.tv/x", Title: "直播间"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if gw.op != "twitch.play" {
+		t.Errorf("网关 op = %q, want twitch.play", gw.op)
+	}
+	if opener.url != "https://cdn/v.m3u8" || opener.quality != "原画" || opener.title != "直播间" {
+		t.Errorf("opener = %+v", opener)
+	}
+	if res.Format != "hls" || res.Quality != "原画" {
+		t.Errorf("result = %+v", res)
+	}
+}
+
+// 未激活(网关调用面缺失)时 Play 应报错而不是空指针。
+func TestPlayRequiresActivation(t *testing.T) {
+	svc, _, err := NewService(&recordingOpener{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.Play(context.Background(), PlayParams{Namespace: "twitch", URL: "https://x"}); err == nil {
+		t.Error("未激活时 Play 应报错")
 	}
 }
 

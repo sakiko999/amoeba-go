@@ -17,8 +17,8 @@ import (
 	"github.com/egoist/mygo/ui"
 
 	"mygo-host/components/jsrunner"
+	"mygo-host/components/player"
 	"mygo-host/platform"
-	"mygo-host/player"
 	"mygo-host/registry"
 	"mygo-host/search"
 	"mygo-host/services"
@@ -60,7 +60,15 @@ func main() {
 		Creds: platform.NewCredentials(filepath.Join(userData, "credentials.json")),
 		JS:    js,
 	}
-	gw, err := services.Activate(sc, comps, jsSvc)
+	mgr := tabs.NewManager(comps, theme)
+	mgr.Logf = log.Printf
+	// player 是需要宿主依赖(打开 tab)的服务组件:构造时注入 Opener,
+	// 拓扑激活时经网关取调用面
+	playerSvc, playerComp, err := player.NewService(mgr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	gw, err := services.Activate(sc, comps, jsSvc, playerComp)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -73,11 +81,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	mgr := tabs.NewManager(comps, theme)
-	mgr.Logf = log.Printf
 	mygo.BindAs("Tabs", tabs.NewService(mgr))
 	mygo.BindAs("Search", search.NewService(gw))
-	mygo.BindAs("Player", player.NewService(gw, mgr))
+	mygo.BindAs("Player", playerSvc)
 
 	web, err := fs.Sub(chromeDist, "chrome/dist")
 	if err != nil {
