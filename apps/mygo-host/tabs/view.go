@@ -5,7 +5,10 @@
 
 package tabs
 
-import "github.com/egoist/mygo/ui"
+import (
+	"github.com/egoist/mygo/plugins/loading"
+	"github.com/egoist/mygo/ui"
+)
 
 // View 是 native UI 视图树：顶部 44px chrome + 内容区（active tab / 加载页 / 空态）。
 // 在 chrome 创建前也要能安全渲染（首帧可能早于 Start）。
@@ -32,7 +35,8 @@ func (m *Manager) View(c *ui.Context) {
 // 页面首次 did-finish-load 前不显示其 webview：避免白屏闪一下，先给加载页
 func (m *Manager) loadingView(c *ui.Context, e *entry) {
 	ui.Column(c).Grow(1).AlignItems(ui.Center).Justify(ui.Center).Gap(12).Children(func() {
-		ui.Spinner(c).Label("正在加载")
+		// loading.dev 同款指示器（Go 绘制）；ReduceMotion 自动停帧、辅助技术读作进度条
+		loading.Ring(c).Label("正在加载 " + e.title)
 		ui.Text(c, "正在加载 "+e.title+"…").TextColor(ui.Hex(m.theme.Foreground()))
 	})
 }
