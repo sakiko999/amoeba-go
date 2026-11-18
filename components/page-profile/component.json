@@ -1,0 +1,8 @@
+{
+  "id": "profile",
+  "kind": "page",
+  "name": "个人主页",
+  "version": "0.1.0",
+  "color": "#bb9af7",
+  "entry": "renderer/index.html"
+}

@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-CN" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <!-- 共享层：react/@demo/ui 解析到 vendor://（pack 时插件在 CSP meta 之后注入 import map；
+         script-src 放行 vendor: scheme；dev 不注入，裸导入由 Vite 解析）。
+         img-src 放行 https: —— 各平台远程头像/缩略图直出，img 标签带 referrerPolicy=no-referrer -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' vendor:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' ws:"
+    />
+    <title>个人主页</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./src/main.tsx"></script>
+  </body>
+</html>

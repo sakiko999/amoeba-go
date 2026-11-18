@@ -1,0 +1,39 @@
+{
+  "name": "@media-manager/app",
+  "productName": "Media Manager",
+  "version": "0.2.0",
+  "description": "本地媒体库管理器：浏览 / 刮削 / NFO 编辑 / 整理（独立应用或宿主页面）",
+  "author": "sakiko999",
+  "private": true,
+  "main": "out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "dev:debug": "electron-vite dev --inspect=9230 --sourcemap",
+    "build": "electron-vite build",
+    "pack:page": "bun run scripts/pack.ts",
+    "dist": "bun run build && bun run scripts/dist.ts",
+    "start": "electron .",
+    "smoke": "electron . --smoke"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@demo/ui": "workspace:*",
+    "@electron/packager": "^20.3.0",
+    "@host/sdk": "workspace:*",
+    "@tabs/media-library": "workspace:*",
+    "@tabs/platform-bangumi": "workspace:*",
+    "@tabs/platform-douban": "workspace:*",
+    "@tabs/platform-tmdb": "workspace:*",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.1.1",
+    "electron": "^45.2.3",
+    "electron-vite": "^6.0.0",
+    "lucide-react": "^1.69.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.6"
+  }
+}

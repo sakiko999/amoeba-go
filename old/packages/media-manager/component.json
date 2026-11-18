@@ -1,0 +1,11 @@
+{
+  "id": "media-manager",
+  "kind": "page",
+  "name": "媒体库",
+  "version": "0.3.0",
+  "color": "#e0a458",
+  "entry": "renderer/index.html",
+  "preload": "preload/index.js",
+  "main": "main.js",
+  "inject": ["media.library"]
+}

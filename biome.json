@@ -8,14 +8,8 @@
       "!**/node_modules",
       "!**/release",
       "!tmp",
-      "!packages/amoeba",
-      "!apps/mygo-host/components/page-player-h5/src/renderer/src/player",
-      "!packages/rss-service/runtime",
-      "!packages/platform-kit/src/runtime",
-      "!packages/platform-*/src/impl",
-      "!packages/platform-*/src/lib",
-      "!packages/platform-*/src/example",
-      "!packages/rss-subscriptions/src/example"
+      "!old",
+      "!components/page-player-h5/src/renderer/src/player"
     ]
   },
   "css": {
@@ -31,7 +25,7 @@
   },
   "overrides": [
     {
-      "includes": ["packages/ui/src/components/**", "packages/ui/src/hooks/**"],
+      "includes": ["web/ui/src/components/**", "web/ui/src/hooks/**"],
       "linter": {
         "enabled": false
       }

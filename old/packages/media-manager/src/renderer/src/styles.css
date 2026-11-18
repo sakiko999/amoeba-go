@@ -1,0 +1,27 @@
+/* Tailwind 4 + @demo/ui 主题；@source 把公共组件库源码纳入 class 扫描（node_modules 默认不扫）。
+   金色是唯一强调色（继承原项目约定：评分/主操作/选中），覆盖 --primary/--ring。 */
+@import "@demo/ui/theme.css";
+@source ".";
+@source "../../../../ui/src";
+
+/* 亮色用深金、暗色用浅金，保持同一强调色系 */
+:root {
+  --primary: oklch(0.62 0.12 87);
+  --primary-foreground: oklch(0.98 0.01 87);
+  --ring: oklch(0.62 0.12 87 / 55%);
+}
+
+.dark {
+  --primary: oklch(0.83 0.14 87);
+  --primary-foreground: oklch(0.22 0.03 87);
+  --ring: oklch(0.83 0.14 87 / 55%);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+body {
+  margin: 0;
+}

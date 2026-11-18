@@ -1,0 +1,24 @@
+{
+  "name": "@mygo/page-profile",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "个人主页：主播/UP 主资料卡 + 直播间 + 视频/回看列表（经宿主 Profile 服务与网关渠道取数）。",
+  "scripts": {
+    "build": "vite build",
+    "pack": "bun run scripts/pack.ts"
+  },
+  "devDependencies": {
+    "@demo/ui": "workspace:*",
+    "@host/sdk": "workspace:*",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.1.1",
+    "lucide-react": "^1.69.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.6"
+  }
+}

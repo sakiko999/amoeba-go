@@ -2,40 +2,35 @@
   "version": "2.0.0",
   "tasks": [
     {
-      // 宿主 dev：注册表扫描完成（[startup] registry）即代表 inspector 已就绪
-      "label": "dev: desktop",
+      // 只构建前端（chrome + 页面组件）：dlv 调试的 preLaunchTask，
+      // Go 侧由调试器自己编译启动，脚本不掺和 go
+      "label": "build: 前端",
+      "type": "shell",
+      "command": "bun run scripts/build.ts fe",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      // 宿主 dev（前端构建 + go run .）；关窗即退出
+      "label": "dev: 宿主",
       "type": "shell",
       "command": "bun run dev",
       "options": { "cwd": "${workspaceFolder}" },
       "isBackground": true,
-      "problemMatcher": {
-        "owner": "electron-vite",
-        "pattern": { "regexp": "^$" },
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": "starting electron app\\.\\.\\.",
-          "endsPattern": "\\[startup\\] registry"
-        }
-      },
       "presentation": { "reveal": "always", "panel": "dedicated" }
     },
     {
-      // 独立 media-manager：窗口加载完成后 inspector 9230 肯定已监听
-      "label": "dev: media",
+      "label": "build: 宿主",
       "type": "shell",
-      "command": "bun run media:debug",
+      "command": "bun run build",
       "options": { "cwd": "${workspaceFolder}" },
-      "isBackground": true,
-      "problemMatcher": {
-        "owner": "electron-vite",
-        "pattern": { "regexp": "^$" },
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": "starting electron app\\.\\.\\.",
-          "endsPattern": "\\[startup\\] media-manager ready"
-        }
-      },
-      "presentation": { "reveal": "always", "panel": "dedicated" }
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "test: go",
+      "type": "shell",
+      "command": "go test ./...",
+      "options": { "cwd": "${workspaceFolder}" }
     }
   ]
 }

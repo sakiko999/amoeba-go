@@ -1,0 +1,9 @@
+{
+  "id": "search",
+  "kind": "service",
+  "name": "聚合搜索",
+  "version": "0.1.0",
+  "inject": [
+    "api.gateway"
+  ]
+}

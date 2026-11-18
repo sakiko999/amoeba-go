@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <!-- 共享层：react/@demo/ui 解析到 vendor://（宿主页面包 pack 时插件在 CSP meta 之后注入；
+         dev 不注入，裸导入由 Vite 解析） -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' vendor:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws:"
+    />
+    <!-- style-src 'self' 是 Tailwind 外部样式表所必需；'unsafe-inline' 供内联样式。
+         connect-src ws: 供 electron-vite dev 的 HMR；海报经 IPC data URL 传输，img-src data: -->
+    <title>media-manager</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./src/main.tsx"></script>
+  </body>
+</html>
