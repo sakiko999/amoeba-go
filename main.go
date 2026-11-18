@@ -19,6 +19,7 @@ import (
 	"github.com/egoist/mygo/plugins/fetch"
 	"github.com/egoist/mygo/ui"
 
+	"mygo-host/components/browser"
 	"mygo-host/components/jsrunner"
 	"mygo-host/components/player"
 	"mygo-host/components/profile"
@@ -33,6 +34,9 @@ import (
 var chromeDist embed.FS
 
 func main() {
+	if browser.RunCarrierIfRequested() {
+		return
+	}
 	pagesDirs := flag.String("pages", strings.Join(discoverPages(), ";"), "内置页面组件根目录(每子目录一个组件包;多个根用 ; 分隔;默认自动发现 components/*/out)")
 	vendorDir := flag.String("vendor", filepath.Join("web", "page-vendor", "out", "dist"), "vendor:// 共享层目录")
 	flag.Parse()
@@ -50,6 +54,15 @@ func main() {
 	// 请求出口(hostFetch.ts)与之后页面抓取都靠它。所有 trusted 页面(含外部安装的
 	// 页面组件)都可调用 —— 页面本就可载任意 JS,不构成额外权限升级。
 	mygo.Use(fetch.Plugin)
+
+	cacheDir, err := mygo.App.Path(mygo.PathCache)
+	if err != nil {
+		log.Fatal(err)
+	}
+	browserSvc, browserComp, err := browser.NewService(filepath.Join(cacheDir, "browser-carrier"), log.Printf)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	comps := registry.NewManager(strings.Split(*pagesDirs, ";"), filepath.Join(userData, "pages"))
 	comps.Logf = log.Printf
@@ -88,7 +101,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if _, err := services.Activate(sc, comps, jsSvc, playerComp, searchComp, profileComp); err != nil {
+	if _, err := services.Activate(sc, comps, jsSvc, playerComp, searchComp, profileComp, browserComp); err != nil {
 		log.Fatal(err)
 	}
 
@@ -132,6 +145,7 @@ func main() {
 			log.Fatal(err)
 		}
 	})
+	mygo.App.OnQuit(func() { _ = browserSvc.Stop() })
 	if err := mygo.App.Run(); err != nil {
 		log.Fatal(err)
 	}

@@ -1,0 +1,12 @@
+{
+  "id": "browser",
+  "kind": "service",
+  "name": "爬虫浏览器载具",
+  "version": "0.1.0",
+  "provides": [
+    {
+      "name": "browser.proxy",
+      "expose": ["endpoint", "targetCount", "status", "reset", "stop"]
+    }
+  ]
+}
