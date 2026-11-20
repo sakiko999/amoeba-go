@@ -1,6 +1,6 @@
 // youtube 平台(feed 协议):7 个数据渠道 + 播放/弹幕能力注册进 api.gateway。
 // 渠道声明与 TS register.ts 完全一致;播放按 URL 路由(watch?v= / youtu.be),
-// 弹幕是 live chat 轮询。Go 版对齐 packages/platform-youtube/src 全部能力。
+// 弹幕是 live chat 轮询。
 
 package youtube
 
@@ -73,7 +73,7 @@ func New(sc *platform.ServiceContext) platform.Spec {
 	return platform.Spec{
 		Namespace: "youtube",
 		Label:     "YouTube",
-		Tags:      append([]string{"platform.data"}, platform.SearchTags(platform.SearchLive, platform.SearchChannel)...),
+		Tags:      append([]string{"platform.data"}, platform.SearchTags(platform.SearchLive, platform.SearchEntity)...),
 		Ops: platform.MergeOps(
 			platform.FeedOps(platform.FeedSpec{
 				Channels: channels(sc),

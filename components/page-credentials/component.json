@@ -1,0 +1,8 @@
+{
+  "id": "credentials",
+  "kind": "page",
+  "name": "登录态与密钥",
+  "version": "0.1.0",
+  "color": "#f5c542",
+  "entry": "renderer/index.html"
+}

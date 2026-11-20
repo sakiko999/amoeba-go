@@ -1,7 +1,6 @@
 // Package tabs 管理 tab 生命周期（每个 tab = 一个 mygo.WebView）。
-// 与 Electron 版（apps/desktop/src/main/tabs.ts）的映射：
 //   - 视图树只构建 active tab 的 webview；其余 tab 的 webview 不构建即隐藏，
-//     页面保留（mygo 语义），切回瞬时——对应 Electron 的 setVisible 保活
+//     页面保留（mygo 语义），切回瞬时可见
 //   - 状态唯一权威源在这里；每次变更 Invalidate 原生视图并广播 tabs.changed（chrome 消费）
 //   - 会话按组件隔离：persist:page-<id> ⇔ NewSession("page-"+id)
 package tabs
@@ -13,8 +12,8 @@ import (
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 
-	"mygo-host/components/player"
-	"mygo-host/components/profile"
+	"mygo-host/components/service-player"
+	"mygo-host/components/service-profile"
 	"mygo-host/registry"
 )
 
@@ -23,7 +22,7 @@ import (
 // 放大，native 容器必须同步放大，否则 tab 条内容溢出被裁（MeasureChrome）。
 const chromeBaseHeight float32 = 44
 
-// Summary 是广播给 chrome 的 tab 投影（字段与 Electron 版 TabSummary 对齐）。
+// Summary 是广播给 chrome 的 tab 投影。
 type Summary struct {
 	InstanceID string `json:"instanceId"`
 	Kind       string `json:"kind"`
@@ -32,7 +31,7 @@ type Summary struct {
 	Loading    bool   `json:"loading"`
 }
 
-// Kind 是“新建 tab”菜单的数据（对应 Electron 版 TabManifest）。
+// Kind 是“新建 tab”菜单的数据。
 type Kind struct {
 	ID    string `json:"id"`
 	Title string `json:"title"`

@@ -9,9 +9,9 @@ import (
 
 	"github.com/egoist/mygo"
 
-	"mygo-host/components/player"
-	"mygo-host/components/profile"
-	"mygo-host/components/search"
+	"mygo-host/components/service-player"
+	"mygo-host/components/service-profile"
+	"mygo-host/components/service-search"
 )
 
 func TestBindSearchService(t *testing.T) {

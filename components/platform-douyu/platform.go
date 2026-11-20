@@ -1,4 +1,4 @@
-// douyu 数据平台:对齐 packages/platform-douyu/src 的渠道/播放/弹幕能力,
+// douyu 数据平台:渠道/播放/弹幕能力
 // 经 platform.FeedOps 注册 channels / fetch / play / danmaku。
 // 签名链维持 JS 原文执行(CRYPTO_JS + 服务端 crptext,见 cryptojs.go),
 // 流走 getH5Play,弹幕走 STT 文本协议。
@@ -17,7 +17,7 @@ func New(sc *platform.ServiceContext) platform.Spec {
 	return platform.Spec{
 		Namespace: "douyu",
 		Label:     label,
-		Tags:      append([]string{tag}, platform.SearchTags(platform.SearchLive, platform.SearchChannel)...),
+		Tags:      append([]string{tag}, platform.SearchTags(platform.SearchLive, platform.SearchEntity)...),
 		Ops: platform.MergeOps(
 			platform.FeedOps(platform.FeedSpec{
 				Channels: channels(sc),

@@ -1,4 +1,4 @@
-// 页面侧宿主桥（对应 Electron 版 apps/desktop/src/preload/pageBridge.ts）。
+// 页面侧宿主桥：把 mygo 注入的 window.mygo 包装成页面友好的 window.tab。
 // mygo 用 PageOptions.PreloadScript 在页面自有脚本之前注入，此时 window.mygo 已可用；
 // 暴露 window.tab / window.hostState，能力经 Tabs 服务回到主线程。
 // initial.theme 取注入时刻的真实主题（页面创建时同步可得）；之后的切换经

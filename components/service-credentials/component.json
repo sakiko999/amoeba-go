@@ -1,0 +1,6 @@
+{
+  "id": "credentials",
+  "kind": "service",
+  "name": "登录态与密钥",
+  "version": "0.1.0"
+}

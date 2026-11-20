@@ -1,0 +1,31 @@
+{
+  "status_code": 0,
+  "user_list": [
+    {
+      "user_info": {
+        "sec_uid": "MS4wLjABAAAA1234567890abcdef",
+        "nickname": "测试用户",
+        "unique_id": "test123",
+        "follower_count": 12345,
+        "avatar_thumb": {"url_list": ["https://p3.douyinpic.com/thumb.jpg"]}
+      }
+    },
+    {
+      "user_info": {
+        "sec_uid": "MS4wLjABAAAA0987654321fedcba",
+        "nickname": "",
+        "unique_id": "",
+        "follower_count": 0,
+        "avatar_thumb": {"url_list": [""]},
+        "avatar_medium": {"url_list": ["https://p3.douyinpic.com/medium.jpg"]}
+      }
+    },
+    {
+      "user_info": {
+        "sec_uid": "MS4wLjABAAAA1234567890abcdef",
+        "nickname": "重复用户",
+        "unique_id": "dup"
+      }
+    }
+  ]
+}

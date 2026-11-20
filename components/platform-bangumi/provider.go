@@ -38,6 +38,18 @@ func newProvider(sc *platform.ServiceContext) *provider {
 
 func (p *provider) Source() string { return "bangumi" }
 
+// headers 带上凭据页保存的 Access Token(可选):v0 读接口免 token,带 token
+// 只提升配额;未设置时不发 Authorization。
+func (p *provider) headers() map[string]string {
+	if p.sc == nil || p.sc.Creds == nil {
+		return nil
+	}
+	if token, ok := p.sc.Creds.Lookup(KeyName); ok && token != "" {
+		return map[string]string{"Authorization": "Bearer " + token}
+	}
+	return nil
+}
+
 func (p *provider) Search(ctx context.Context, keyword string, _ platform.MediaType) ([]platform.SearchResult, error) {
 	if strings.TrimSpace(keyword) == "" {
 		return []platform.SearchResult{}, nil
@@ -48,7 +60,7 @@ func (p *provider) Search(ctx context.Context, keyword string, _ platform.MediaT
 	}
 	url := fmt.Sprintf("%s/search/subjects?limit=%d", apiBase, searchLimit)
 	raw, err := p.sc.Cache.PostJSONCached(ctx, p.sc.HTTP, "bangumi",
-		[]string{"bangumi", "search", keyword, strconv.Itoa(searchLimit)}, url, body)
+		[]string{"bangumi", "search", keyword, strconv.Itoa(searchLimit)}, url, body, p.headers())
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +69,7 @@ func (p *provider) Search(ctx context.Context, keyword string, _ platform.MediaT
 
 func (p *provider) FetchMetadata(ctx context.Context, id string, mediaType platform.MediaType) (*platform.MediaMetadata, error) {
 	raw, err := p.sc.Cache.GetJSONCached(ctx, p.sc.HTTP, "bangumi",
-		[]string{"bangumi", "subject", id}, apiBase+"/subjects/"+id, nil)
+		[]string{"bangumi", "subject", id}, apiBase+"/subjects/"+id, p.headers())
 	if err != nil {
 		return nil, err
 	}

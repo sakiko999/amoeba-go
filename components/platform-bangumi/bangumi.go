@@ -1,6 +1,6 @@
 // bangumi 元数据平台:bgm.tv v0 API 的 provider 包成 metadata 协议 ops
 // (search / fetchMetadata / fetchEpisodes)注册进网关。Go 版对齐
-// packages/platform-bangumi:搜索 POST + JSON body、条目 type 过滤、中文名/别名
+// 搜索 POST + JSON body、条目 type 过滤、中文名/别名
 // 取名规则、每集一次请求拿全集。
 
 package bangumi

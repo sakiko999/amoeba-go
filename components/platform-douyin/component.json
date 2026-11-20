@@ -1,0 +1,9 @@
+{
+  "id": "platform-douyin",
+  "kind": "service",
+  "name": "抖音",
+  "version": "0.1.0",
+  "inject": [
+    "api.gateway"
+  ]
+}

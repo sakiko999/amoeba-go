@@ -1,0 +1,25 @@
+{
+  "name": "@mygo/page-credentials",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "登录态与密钥：微博/小红书/抖音/豆瓣/B站扫码登录（与载具 cookie 双向同步）+ TMDB/Bangumi 密钥管理。",
+  "scripts": {
+    "build": "vite build",
+    "pack": "bun run scripts/pack.ts"
+  },
+  "devDependencies": {
+    "@demo/ui": "workspace:*",
+    "@host/sdk": "workspace:*",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.1.1",
+    "lucide-react": "^1.69.0",
+    "qrcode-generator": "^2.0.4",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.6"
+  }
+}

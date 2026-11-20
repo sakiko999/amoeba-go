@@ -1,4 +1,4 @@
-// douyu search op:live=搜房间(searchRooms),channel=搜主播(searchAnchors)。
+// douyu search op:live=搜房间(searchRooms),entity=搜主播(searchAnchors)。
 // 两个端点均匿名可用;与渠道形态(live:douyu:anchor)并存。
 
 package douyu
@@ -11,7 +11,7 @@ import (
 
 func searchOps(sc *platform.ServiceContext) platform.Ops {
 	return platform.SearchOps(platform.SearchSpec{
-		Scopes: []platform.SearchScope{platform.SearchLive, platform.SearchChannel},
+		Scopes: []platform.SearchScope{platform.SearchLive, platform.SearchEntity},
 		Search: func(ctx context.Context, p platform.SearchParams) (platform.FetchPage, error) {
 			if p.Scope == platform.SearchLive {
 				items, err := searchRooms(ctx, sc, p.Keyword, p.Page, p.PageSize)

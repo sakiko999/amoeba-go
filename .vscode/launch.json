@@ -11,6 +11,9 @@
       "mode": "debug",
       "program": "${workspaceFolder}",
       "cwd": "${workspaceFolder}",
+      // dlv 默认把二进制叫 __debug_bin 放在模块根；固定到已忽略的 tmp/ 下，
+      // 避免前端构建产物和调试二进制散落在仓库根目录。
+      "output": "${workspaceFolder}/tmp/debug/mygo-host.exe",
       "preLaunchTask": "build: 前端"
     }
   ]

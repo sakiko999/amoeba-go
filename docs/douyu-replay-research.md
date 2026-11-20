@@ -1,8 +1,7 @@
 # 斗鱼直播回放接入调研
 
-> 2026-11-16。调研 agent 实测(curl.exe -k,本机网关证书过期,只读 GET/POST,无 cookie)。
-> 实测房间:71415(寅子)、24422(pigff)、9999(yyfyyf)。约 40+ 次请求全程无风控。
-> 关联:packages/platform-douyu(TS 现行)、apps/mygo-host/platforms/douyu(Go 移植中)。
+> 2026-11-16 实测(只读 GET/POST,无 cookie;房间 71415、24422、9999)。协议现状
+> 由 `components/platform-douyu` 的回放实现承载;本文保留端点语义与字段坑作回归参考。
 
 **结论:有条件能接。** 回放列表、VOD 弹幕、详情页均可匿名访问,回放流是带短时
 token 的 HLS VOD;唯一硬条件是取流要复用现有 crptext 签名链(依赖 JS 执行面,

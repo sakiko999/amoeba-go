@@ -140,7 +140,7 @@ func TestOpSurface(t *testing.T) {
 	if spec.Namespace != "huya" || spec.Label != "虎牙" {
 		t.Errorf("spec = %s/%s", spec.Namespace, spec.Label)
 	}
-	if len(spec.Tags) != 3 || spec.Tags[0] != "platform.data" || spec.Tags[1] != "search.live" || spec.Tags[2] != "search.channel" {
+	if len(spec.Tags) != 3 || spec.Tags[0] != "platform.data" || spec.Tags[1] != "search.live" || spec.Tags[2] != "search.entity" {
 		t.Errorf("tags = %v", spec.Tags)
 	}
 	for _, name := range []string{"channels", "fetch", "play", "danmaku", "search"} {

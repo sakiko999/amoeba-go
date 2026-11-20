@@ -1,7 +1,7 @@
 // 搜索协议(searchOps):聚合搜索页的消费契约,scope ∈ {live(搜直播间),
-// channel(搜主播/频道)}。平台按能力声明 scope;返回复用 FetchPage
-// (阶段 1 只填 items,分页字段留给「加载更多」)。
-// 对齐 docs/mygo-search-page-plan.md §3.1。
+// entity(搜实体:主播/频道/播客)}。平台按能力声明 scope;返回复用 FetchPage
+// (当前只填 items,分页字段留给「加载更多」)。
+// 平台统一搜索 op 契约：scope 校验、参数默认值与结果分页包装。
 
 package platform
 
@@ -16,8 +16,8 @@ import (
 type SearchScope string
 
 const (
-	SearchLive    SearchScope = "live"
-	SearchChannel SearchScope = "channel"
+	SearchLive   SearchScope = "live"
+	SearchEntity SearchScope = "entity"
 )
 
 // defaultSearchPageSize 页大小缺省(平台端点另有上限的自行钳制)。
@@ -42,7 +42,7 @@ type SearchSpec struct {
 func SearchOps(spec SearchSpec) Ops {
 	return Ops{
 		"search": {
-			Description: "按关键词搜索(scope: live=搜直播间, channel=搜主播/频道)",
+			Description: "按关键词搜索(scope: live=搜直播间, entity=搜实体)",
 			Invoke: func(ctx context.Context, params json.RawMessage) (any, error) {
 				var p SearchParams
 				if err := DecodeParams(params, &p); err != nil {
@@ -91,7 +91,7 @@ func joinScopes(scopes []SearchScope) string {
 	return strings.Join(parts, ", ")
 }
 
-// SearchTags scope → 网关发现 tag(search.live / search.channel),
+// SearchTags scope → 网关发现 tag(search.live / search.entity),
 // 与 platform.data 一起进 Spec.Tags。
 func SearchTags(scopes ...SearchScope) []string {
 	tags := make([]string, 0, len(scopes))

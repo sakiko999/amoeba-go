@@ -9,6 +9,8 @@
       "!**/release",
       "!tmp",
       "!old",
+      "!components/platform-douyin/abogus.js",
+      "!components/platform-douyin/testdata",
       "!components/page-player-h5/src/renderer/src/player"
     ]
   },

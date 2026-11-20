@@ -1,0 +1,31 @@
+{
+  "ok": 1,
+  "data": {
+    "cards": [
+      { "card_type": 4 },
+      {
+        "card_group": [
+          {
+            "user": {
+              "id": 1234567890,
+              "screen_name": "半佛仙人",
+              "avatar_hd": "https://tvax1.sinaimg.cn/avatar_hd.jpg",
+              "profile_image_url": "https://tvax1.sinaimg.cn/profile.jpg",
+              "followers_count": "207.7万",
+              "verified_reason": "知名互联网资讯博主"
+            }
+          }
+        ]
+      },
+      {
+        "user": {
+          "id": 987654321,
+          "screen_name": "另一个用户",
+          "profile_image_url": "https://tvax2.sinaimg.cn/profile.jpg",
+          "followers_count": 34,
+          "verified_reason": ""
+        }
+      }
+    ]
+  }
+}

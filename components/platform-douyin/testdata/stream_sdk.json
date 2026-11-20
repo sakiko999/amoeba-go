@@ -1,0 +1,14 @@
+{
+  "live_core_sdk_data": {
+    "pull_data": {
+      "stream_data": "{\"data\":{\"hd\":{\"main\":{\"flv\":\"https://pull-flv.douyincdn.com/stage/stream-3.flv\",\"hls\":\"https://pull-hls.douyincdn.com/stage/stream-3.m3u8\"}},\"sd\":{\"main\":{\"flv\":\"\",\"hls\":\"https://pull-hls.douyincdn.com/stage/stream-1.m3u8\"}}}}",
+      "options": {
+        "qualities": [
+          {"sdk_key": "sd", "name": "标清", "level": 1},
+          {"sdk_key": "hd", "name": "", "level": 3},
+          {"sdk_key": "full", "name": "蓝光", "level": 5}
+        ]
+      }
+    }
+  }
+}

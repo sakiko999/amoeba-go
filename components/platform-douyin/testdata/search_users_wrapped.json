@@ -1,0 +1,19 @@
+{
+  "data": [
+    {
+      "user_list": [
+        {
+          "sec_uid": "MS4wLjABAAAAwrapped01",
+          "nickname": "包裹用户",
+          "unique_id": "wrap",
+          "avatar_medium": {"url_list": ["https://p3.douyinpic.com/wrap.jpg"]}
+        },
+        {
+          "user_info": null,
+          "sec_uid": "MS4wLjABAAAAnullinfo",
+          "nickname": "空信息回落"
+        }
+      ]
+    }
+  ]
+}

@@ -28,7 +28,9 @@ type ServiceContext struct {
 	Cache *Cache // 可为 nil(metadata 平台缺省直连)
 	Creds *Credentials
 	JS    JSRunner // 可为 ErrJSRunnerUnavailable 的实现(签名平台降级报错)
-	Now   func() int64
+	// Browser 浏览器载具执行面;可为 nil(非 Windows / 测试)。平台使用前必须判空。
+	Browser Browser
+	Now     func() int64
 }
 
 // Log 缺省丢弃日志。

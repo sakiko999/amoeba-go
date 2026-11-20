@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"mygo-host/components/api-gateway"
+	"mygo-host/components/service-api-gateway"
 	"mygo-host/platform"
 	"mygo-host/registry"
 )
@@ -42,7 +42,7 @@ func TestActivateRegistersAllPlatforms(t *testing.T) {
 	want := map[string]bool{
 		"gateway": false, "tmdb": false, "douban": false, "bangumi": false,
 		"apple": false, "youtube": false, "bili": false, "douyu": false,
-		"huya": false, "twitch": false,
+		"huya": false, "twitch": false, "weibo": false, "xhs": false, "douyin": false,
 	}
 	for _, info := range gw.List() {
 		if _, ok := want[info.Namespace]; !ok {
@@ -64,8 +64,8 @@ func TestActivateRegistersServicesAsComponents(t *testing.T) {
 		t.Fatal(err)
 	}
 	services := comps.Services()
-	if len(services) != 10 {
-		t.Fatalf("内置服务应为 10 个(api-gateway + 9 平台),got %d", len(services))
+	if len(services) != 13 {
+		t.Fatalf("内置服务应为 13 个(api-gateway + 12 平台),got %d", len(services))
 	}
 	if services[0].Manifest.ID != "api-gateway" {
 		t.Errorf("根服务应为 api-gateway,got %s", services[0].Manifest.ID)
@@ -103,7 +103,7 @@ func TestUnknownOpError(t *testing.T) {
 	}
 }
 
-// search op 的网关发现面:五平台双 scope 带 search.live+search.channel,
+// search op 的网关发现面:五平台双 scope、weibo/xhs/douyin/apple 仅 entity,
 // 其余平台无 search.* tag 与 search op。
 func TestSearchOpRegistration(t *testing.T) {
 	gw, err := Activate(testContext(t), testManager(t))
@@ -111,11 +111,15 @@ func TestSearchOpRegistration(t *testing.T) {
 		t.Fatal(err)
 	}
 	wantTags := map[string][]string{
-		"bili":    {"search.live", "search.channel"},
-		"douyu":   {"search.live", "search.channel"},
-		"huya":    {"search.live", "search.channel"},
-		"youtube": {"search.live", "search.channel"},
-		"twitch":  {"search.live", "search.channel"},
+		"bili":    {"search.live", "search.entity"},
+		"douyu":   {"search.live", "search.entity"},
+		"huya":    {"search.live", "search.entity"},
+		"youtube": {"search.live", "search.entity"},
+		"twitch":  {"search.live", "search.entity"},
+		"weibo":   {"search.entity"},
+		"xhs":     {"search.entity"},
+		"douyin":  {"search.entity"},
+		"apple":   {"search.entity"},
 	}
 	for _, info := range gw.List() {
 		tags, declared := wantTags[info.Namespace]

@@ -8,7 +8,8 @@
     "web/page-vendor",
     "components/page-search",
     "components/page-player-h5",
-    "components/page-profile"
+    "components/page-profile",
+    "components/page-credentials"
   ],
   "scripts": {
     "dev": "bun run scripts/build.ts dev",

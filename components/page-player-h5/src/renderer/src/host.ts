@@ -1,5 +1,5 @@
 /**
- * player-h5 与宿主的契约（Go 侧 components/player/service.go 的 H5Target
+ * player-h5 与宿主的契约（Go 侧 components/service-player/service.go 的 H5Target
  * 与 tabs.Manager.OpenPlayerH5）。首次播放目标在打开 tab 时由宿主存下，
  * 页面挂载后主动来取；同 tab 复用时的后续目标经 "player.h5.play" 事件推送。
  */

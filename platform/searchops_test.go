@@ -11,7 +11,7 @@ import (
 
 func TestSearchOpsValidation(t *testing.T) {
 	spec := SearchSpec{
-		Scopes: []SearchScope{SearchLive, SearchChannel},
+		Scopes: []SearchScope{SearchLive, SearchEntity},
 		Search: func(ctx context.Context, p SearchParams) (FetchPage, error) {
 			return FetchPage{Items: []Item{{ID: "x", Title: "t", FetchedAt: 1}}}, nil
 		},
@@ -39,13 +39,13 @@ func TestSearchOpsValidation(t *testing.T) {
 func TestSearchOpsDefaultsAndItems(t *testing.T) {
 	var got SearchParams
 	spec := SearchSpec{
-		Scopes: []SearchScope{SearchChannel},
+		Scopes: []SearchScope{SearchEntity},
 		Search: func(ctx context.Context, p SearchParams) (FetchPage, error) {
 			got = p
 			return FetchPage{}, nil // Items nil → 应归一为 []
 		},
 	}
-	result, err := SearchOps(spec)["search"].Invoke(context.Background(), json.RawMessage(`{"keyword":" x ","scope":"channel"}`))
+	result, err := SearchOps(spec)["search"].Invoke(context.Background(), json.RawMessage(`{"keyword":" x ","scope":"entity"}`))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,8 +66,8 @@ func TestSearchOpsDefaultsAndItems(t *testing.T) {
 }
 
 func TestSearchTags(t *testing.T) {
-	tags := SearchTags(SearchLive, SearchChannel)
-	if len(tags) != 2 || tags[0] != "search.live" || tags[1] != "search.channel" {
+	tags := SearchTags(SearchLive, SearchEntity)
+	if len(tags) != 2 || tags[0] != "search.live" || tags[1] != "search.entity" {
 		t.Errorf("tags = %v", tags)
 	}
 }

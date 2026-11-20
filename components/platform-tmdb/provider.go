@@ -1,4 +1,5 @@
-// TMDB 网络层 + MetadataProvider 实现(凭证只从 TMDB_TOKEN 环境变量读)。
+// TMDB 网络层 + MetadataProvider 实现(凭证优先读 credentials.json 的 tmdb 项,
+// 未设置时回退 TMDB_TOKEN 环境变量)。
 
 package tmdb
 
@@ -27,19 +28,25 @@ func newProvider(sc *platform.ServiceContext) *provider {
 
 func (p *provider) Source() string { return "tmdb" }
 
-func authHeaders() (map[string]string, error) {
-	token := os.Getenv("TMDB_TOKEN")
+func (p *provider) authHeaders() (map[string]string, error) {
+	token := ""
+	if p.sc != nil && p.sc.Creds != nil {
+		token, _ = p.sc.Creds.Lookup(KeyName)
+	}
+	if token == "" {
+		token = os.Getenv("TMDB_TOKEN")
+	}
 	if token == "" {
 		return nil, &platform.ProviderError{
 			Source:  "tmdb",
-			Message: "未设置 TMDB_TOKEN 环境变量(v4 Read Access Token),无法访问 TMDB。",
+			Message: "未设置 TMDB Token(凭据页或 TMDB_TOKEN 环境变量,v4 Read Access Token)。",
 		}
 	}
 	return map[string]string{"Authorization": "Bearer " + token}, nil
 }
 
 func (p *provider) get(ctx context.Context, path string, keyParts []string) (platform.RawJSON, error) {
-	headers, err := authHeaders()
+	headers, err := p.authHeaders()
 	if err != nil {
 		return nil, err
 	}

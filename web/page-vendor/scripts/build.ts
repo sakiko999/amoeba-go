@@ -32,6 +32,8 @@ function writeGeneratedEntry(
   file: string,
   modules: Array<{ specifier: string; alias: string }>,
 ): string {
+  const first = modules[0];
+  if (first === undefined) throw new Error(`生成 entry 需要至少一个模块：${file}`);
   const keys = new Map<string, string>(); // 导出名 → 模块别名
   for (const { specifier, alias } of modules) {
     for (const key of Object.keys(req(specifier))) {
@@ -41,13 +43,13 @@ function writeGeneratedEntry(
   }
   const lines = [
     ...modules.map(({ specifier, alias }) => `import * as ${alias} from ${JSON.stringify(specifier)};`),
-    `export default ${modules[0]!.alias};`,
+    `export default ${first.alias};`,
     ...[...keys.entries()].map(
       ([key, alias]) => `export const ${key} = ${alias}.${key};`,
     ),
   ];
   const path = join(gen, file);
-  void writeFile(path, lines.join("\n") + "\n");
+  void writeFile(path, `${lines.join("\n")}\n`);
   return path;
 }
 
@@ -117,7 +119,7 @@ const manifest = {
   },
   entries: files,
 };
-await writeFile(join(dist, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
+await writeFile(join(dist, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
 
 for (const [name, file] of Object.entries(files)) {
   const text = readFileSync(join(dist, file), "utf8");

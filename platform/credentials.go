@@ -51,7 +51,9 @@ func (c *Credentials) Set(platformID, cookie string) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(c.path, raw, 0o644)
+	// 0600 在 Unix 上限制为当前用户读写;Windows 的 Go 实现不落 ACL,
+	// 依赖 userData 目录本身的用户级权限。
+	return os.WriteFile(c.path, raw, 0o600)
 }
 
 // ResolveCookie 统一入口:显式非空 > 显式空串(强制匿名,false)> 平台默认。

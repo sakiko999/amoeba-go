@@ -1,8 +1,7 @@
 /**
  * 播放器包的本地类型面：对应上游 @amoeba/core 的 MediaStream/PlaybackChapter/
- * ResolvePlayback 与 @amoeba/resolve 的 DanmakuItem/DanmakuStream（结构逐字段对齐，
- * 迁移到 mygo-host 后不再依赖 amoeba 包图）。MediaStream 与 Go 侧
- * platform.Stream 的 JSON 同形（apps/mygo-host/platform/feed.go）。
+ * ResolvePlayback 与弹幕 DTO 的播放器本地形态,不再依赖旧 amoeba 包图。
+ * MediaStream 与 Go 侧 platform.Stream 的 JSON 同形。
  */
 
 export interface MediaStream {

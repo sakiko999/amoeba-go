@@ -65,8 +65,8 @@ type searchUserResponse struct {
 // map[string]any 承接、映射层按 helpers 的 JS 语义归一。
 
 type replayListResponse struct {
-	Error any  `json:"error"`
-	Msg   any  `json:"msg"`
+	Error any `json:"error"`
+	Msg   any `json:"msg"`
 	Data  struct {
 		Count any              `json:"count"`
 		List  []map[string]any `json:"list"`
@@ -81,8 +81,8 @@ type replayPartsResponse struct {
 }
 
 type vodStreamResponse struct {
-	Error any  `json:"error"`
-	Msg   any  `json:"msg"`
+	Error any `json:"error"`
+	Msg   any `json:"msg"`
 	Data  struct {
 		ThumbVideo map[string]map[string]any `json:"thumb_video"`
 	} `json:"data"`

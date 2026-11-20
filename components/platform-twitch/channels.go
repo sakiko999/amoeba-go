@@ -185,7 +185,7 @@ func newCategoriesChannel(sc *platform.ServiceContext) platform.DataChannel {
 	return inner
 }
 
-// newUserSearchChannel twitch:user:search —— 按关键词搜频道(声明式单页渠道)。
+// newUserSearchEntity twitch:user:search —— 按关键词搜频道(声明式单页渠道)。
 func newUserSearchChannel(sc *platform.ServiceContext) platform.DataChannel {
 	inner := platform.MakeChannel(platform.ChannelSpec{
 		Key:  "twitch:user:search",

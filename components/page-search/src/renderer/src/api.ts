@@ -1,11 +1,11 @@
 /**
- * 宿主 Search 服务的类型镜像与调用层（DTO 见 components/search/service.go
+ * 宿主 Search 服务的类型镜像与调用层（DTO 见 components/service-search/service.go
  * 与 platform/feed.go 的 Item；不改 @host/sdk —— 契约漂移由真机验收兜底）。
  * 流式：Query 的第三个参数是 mygo channel，每平台完成即推一条 PlatformGroup，
  * promise 结算 = 全部完成（其 groups 按 Sources 序，是权威快照）。
  */
 
-export type Scope = "live" | "channel";
+export type Scope = "live" | "entity";
 
 export interface Source {
   namespace: string;
@@ -29,7 +29,7 @@ export interface Item {
   thumbnail?: string;
   author?: Author;
   publishedAt?: number;
-  /** Live 项（live 房间搜索才有；channel 结果可能为空，平台身份看 group.namespace） */
+  /** Live 项（live 房间搜索才有；entity 结果可能为空，平台身份看 group.namespace） */
   platform?: string;
   roomId?: string;
   liveStatus?: "live" | "offline" | "unknown";
@@ -111,6 +111,10 @@ export async function play(item: Item, namespace: string): Promise<void> {
  */
 export async function openProfile(item: Item, namespace: string): Promise<void> {
   await bridge().call("Profile.Open", { namespace, item });
+}
+
+export async function openExternal(url: string): Promise<void> {
+  await bridge().call("Tabs.OpenExternal", url);
 }
 
 export function query(

@@ -1,5 +1,5 @@
 /**
- * 搜索条：关键词输入 + scope 切换（搜直播间/搜主播）+ 搜索/取消按钮。
+ * 搜索条：关键词输入 + scope 切换（搜直播间/搜实体）+ 搜索/取消按钮。
  * Enter 触发搜索，但跳过中文输入法组合态（isComposing）。
  */
 
@@ -34,14 +34,14 @@ export function SearchBar({
       <Tabs value={scope} onValueChange={(v) => onScopeChange(v as Scope)}>
         <TabsList>
           <TabsTrigger value="live">直播间</TabsTrigger>
-          <TabsTrigger value="channel">主播</TabsTrigger>
+          <TabsTrigger value="entity">实体</TabsTrigger>
         </TabsList>
       </Tabs>
       <Input
         data-testid="search-input"
         className="h-9 min-w-56 flex-1"
         placeholder={
-          scope === "live" ? "搜索关键词，如：英雄联盟" : "搜索主播 / 频道名"
+          scope === "live" ? "搜索关键词，如：英雄联盟" : "搜索主播 / 频道 / 播客"
         }
         value={keyword}
         autoFocus

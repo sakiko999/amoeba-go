@@ -6,8 +6,14 @@ package tabs
 
 import (
 	"context"
+	"errors"
+	"net/url"
 	"runtime"
+
+	"github.com/egoist/mygo"
 )
+
+var errExternalURL = errors.New("Tabs.OpenExternal 仅支持 https URL")
 
 type Service struct{ mgr *Manager }
 
@@ -76,4 +82,12 @@ func (s *Service) State(ctx context.Context) (ThemeInfo, error) { return s.mgr.T
 func (s *Service) ToggleTheme(ctx context.Context) error {
 	s.mgr.ToggleTheme()
 	return nil
+}
+
+func (s *Service) OpenExternal(ctx context.Context, rawURL string) error {
+	parsed, err := url.Parse(rawURL)
+	if err != nil || parsed.Scheme != "https" || parsed.Host == "" {
+		return errExternalURL
+	}
+	return mygo.Shell.OpenExternal(parsed.String())
 }

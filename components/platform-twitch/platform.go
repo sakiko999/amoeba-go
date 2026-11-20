@@ -1,7 +1,7 @@
 // twitch 平台:匿名 GraphQL 元数据渠道(直播订阅/回放/热门/分区/分区列表/搜频道/搜直播间)
 // + 直播与回放 HLS 播放解析 + VOD 评论弹幕(直播弹幕 IRC 二期未实现),
 // 经 feedOps 注册 channels / fetch / play / danmaku。
-// 对齐 packages/platform-twitch/src;GraphQL Client-ID 与播放 token 查询见 client.go。
+// GraphQL Client-ID 与播放 token 查询见 client.go。
 
 package twitch
 
@@ -35,7 +35,7 @@ func New(sc *platform.ServiceContext) platform.Spec {
 	return platform.Spec{
 		Namespace: "twitch",
 		Label:     label,
-		Tags:      append([]string{"platform.data"}, platform.SearchTags(platform.SearchChannel, platform.SearchLive)...),
+		Tags:      append([]string{"platform.data"}, platform.SearchTags(platform.SearchEntity, platform.SearchLive)...),
 		Ops: platform.MergeOps(
 			platform.FeedOps(platform.FeedSpec{
 				Channels: twitchChannels(sc),

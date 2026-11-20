@@ -19,11 +19,12 @@ import (
 	"github.com/egoist/mygo/plugins/fetch"
 	"github.com/egoist/mygo/ui"
 
-	"mygo-host/components/browser"
-	"mygo-host/components/jsrunner"
-	"mygo-host/components/player"
-	"mygo-host/components/profile"
-	"mygo-host/components/search"
+	"mygo-host/components/service-browser"
+	"mygo-host/components/service-credentials"
+	"mygo-host/components/service-jsrunner"
+	"mygo-host/components/service-player"
+	"mygo-host/components/service-profile"
+	"mygo-host/components/service-search"
 	"mygo-host/platform"
 	"mygo-host/registry"
 	"mygo-host/services"
@@ -59,10 +60,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	browserSvc, browserComp, err := browser.NewService(filepath.Join(cacheDir, "browser-carrier"), log.Printf)
+	browserPool, browserComp, err := browser.NewPoolService(filepath.Join(cacheDir, "browser-carrier"), log.Printf)
 	if err != nil {
 		log.Fatal(err)
 	}
+	bridge := browser.NewRouter(browserPool, log.Printf)
 
 	comps := registry.NewManager(strings.Split(*pagesDirs, ";"), filepath.Join(userData, "pages"))
 	comps.Logf = log.Printf
@@ -78,12 +80,19 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	creds := platform.NewCredentials(filepath.Join(userData, "credentials.json"))
 	sc := &platform.ServiceContext{
-		Logf:  log.Printf,
-		HTTP:  platform.NewHostClient(),
-		Cache: cache,
-		Creds: platform.NewCredentials(filepath.Join(userData, "credentials.json")),
-		JS:    js,
+		Logf:    log.Printf,
+		HTTP:    platform.NewHostClient(),
+		Cache:   cache,
+		Creds:   creds,
+		JS:      js,
+		Browser: bridge,
+	}
+	credSvc, credComp, err := credentials.NewService(creds, bridge, sc.HTTP, log.Printf,
+		services.LoginFlows(), services.KeySpecs())
+	if err != nil {
+		log.Fatal(err)
 	}
 	mgr := tabs.NewManager(comps, theme)
 	mgr.Logf = log.Printf
@@ -101,7 +110,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if _, err := services.Activate(sc, comps, jsSvc, playerComp, searchComp, profileComp, browserComp); err != nil {
+	if _, err := services.Activate(sc, comps, jsSvc, playerComp, searchComp, profileComp, browserComp, credComp); err != nil {
 		log.Fatal(err)
 	}
 
@@ -117,6 +126,7 @@ func main() {
 	mygo.BindAs("Search", searchSvc)
 	mygo.BindAs("Player", playerSvc)
 	mygo.BindAs("Profile", profileSvc)
+	mygo.BindAs("Credentials", credSvc)
 
 	web, err := fs.Sub(chromeDist, "web/chrome/dist")
 	if err != nil {
@@ -145,7 +155,7 @@ func main() {
 			log.Fatal(err)
 		}
 	})
-	mygo.App.OnQuit(func() { _ = browserSvc.Stop() })
+	mygo.App.OnQuit(func() { browserPool.StopAll() })
 	if err := mygo.App.Run(); err != nil {
 		log.Fatal(err)
 	}

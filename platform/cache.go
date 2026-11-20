@@ -10,6 +10,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -105,29 +106,26 @@ func (c *Cache) providerRequest(ctx context.Context, client *HostClient, source,
 func (c *Cache) GetJSONCached(ctx context.Context, client *HostClient, source string, keyParts []string, url string, headers map[string]string) (RawJSON, error) {
 	return c.cached(ctx, source, CacheKey(keyParts), func() (string, error) {
 		merged := map[string]string{"Accept": "application/json"}
-		for k, v := range headers {
-			merged[k] = v
-		}
+		maps.Copy(merged, headers)
 		return c.providerRequest(ctx, client, source, url, Request{URL: url, Headers: merged})
 	})
 }
 
-// PostJSONCached POST JSON body(带缓存;Bangumi v0 搜索是 POST)。
-func (c *Cache) PostJSONCached(ctx context.Context, client *HostClient, source string, keyParts []string, url string, body any) (RawJSON, error) {
+// PostJSONCached POST JSON body(带缓存;Bangumi v0 搜索是 POST)。headers
+// 与 Content-Type/Accept 合并(如可选的 Authorization)。
+func (c *Cache) PostJSONCached(ctx context.Context, client *HostClient, source string, keyParts []string,
+	url string, body any, headers map[string]string) (RawJSON, error) {
 	return c.cached(ctx, source, CacheKey(keyParts), func() (string, error) {
 		encoded, err := json.Marshal(body)
 		if err != nil {
 			return "", err
 		}
-		req := Request{
-			URL:    url,
-			Method: "POST",
-			Body:   string(encoded),
-			Headers: map[string]string{
-				"Content-Type": "application/json",
-				"Accept":       "application/json",
-			},
+		merged := map[string]string{
+			"Content-Type": "application/json",
+			"Accept":       "application/json",
 		}
+		maps.Copy(merged, headers)
+		req := Request{URL: url, Method: "POST", Body: string(encoded), Headers: merged}
 		return c.providerRequest(ctx, client, source, url, req)
 	})
 }

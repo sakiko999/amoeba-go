@@ -6,7 +6,7 @@
 package services
 
 import (
-	gateway "mygo-host/components/api-gateway"
+	gateway "mygo-host/components/service-api-gateway"
 	"mygo-host/platform"
 	"mygo-host/registry"
 
@@ -14,10 +14,13 @@ import (
 	"mygo-host/components/platform-bangumi"
 	"mygo-host/components/platform-bili"
 	"mygo-host/components/platform-douban"
+	"mygo-host/components/platform-douyin"
 	"mygo-host/components/platform-douyu"
 	"mygo-host/components/platform-huya"
 	"mygo-host/components/platform-tmdb"
 	"mygo-host/components/platform-twitch"
+	"mygo-host/components/platform-weibo"
+	"mygo-host/components/platform-xhs"
 	"mygo-host/components/platform-youtube"
 )
 
@@ -36,6 +39,7 @@ func Activate(sc *platform.ServiceContext, comps *registry.Manager, extra ...pla
 	factories := []func(*platform.ServiceContext) (platform.Service, error){
 		tmdb.NewService, douban.NewService, bangumi.NewService, apple.NewService,
 		youtube.NewService, bili.NewService, douyu.NewService, huya.NewService, twitch.NewService,
+		weibo.NewService, xhs.NewService, douyin.NewService,
 	}
 	list := append([]platform.Service{root}, extra...)
 	for _, newService := range factories {

@@ -1,0 +1,24 @@
+{
+  "live_core_sdk_data": {
+    "pull_data": {
+      "options": {
+        "qualities": [
+          {"sdk_key": "FULL_HD1", "name": "蓝光", "level": 4},
+          {"sdk_key": "SD2", "name": "流畅", "level": 1}
+        ]
+      }
+    }
+  },
+  "flv_pull_url": {
+    "FULL_HD1": "https://pull-flv.douyincdn.com/stage/stream-5.flv",
+    "HD1": "https://pull-flv.douyincdn.com/stage/stream-4.flv",
+    "SD1": "https://pull-flv.douyincdn.com/stage/stream-3.flv",
+    "SD2": ""
+  },
+  "hls_pull_url_map": {
+    "FULL_HD1": "https://pull-hls.douyincdn.com/stage/stream-5.m3u8",
+    "HD1": "https://pull-hls.douyincdn.com/stage/stream-4.m3u8",
+    "SD1": "https://pull-hls.douyincdn.com/stage/stream-3.m3u8",
+    "SD2": "https://pull-hls.douyincdn.com/stage/stream-2.m3u8"
+  }
+}

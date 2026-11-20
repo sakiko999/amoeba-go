@@ -11,7 +11,7 @@ import (
 
 func searchOps(sc *platform.ServiceContext) platform.Ops {
 	return platform.SearchOps(platform.SearchSpec{
-		Scopes: []platform.SearchScope{platform.SearchChannel, platform.SearchLive},
+		Scopes: []platform.SearchScope{platform.SearchEntity, platform.SearchLive},
 		Search: func(ctx context.Context, p platform.SearchParams) (platform.FetchPage, error) {
 			if p.Scope == platform.SearchLive {
 				return searchLivePage(ctx, sc, p.Keyword)

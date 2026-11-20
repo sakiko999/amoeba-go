@@ -1,8 +1,7 @@
 # Twitch 直播回放(VOD)接入调研
 
-> 2026-11-16。调研 agent 实测(匿名,无 OAuth,只读 GQL/usher GET/POST)。
-> 实测 VOD:2929172303(shroud 场次);实测主播:shroud(totalCount 1607)。
-> 关联:packages/platform-twitch(TS 现行)、apps/mygo-host/components/platform-twitch(Go)。
+> 2026-11-16 实测(匿名,无 OAuth,只读 GQL/usher)。协议现状由
+> `components/platform-twitch` 的 VOD 实现承载;本文保留端点语义与分页坑作回归参考。
 
 **结论:有条件能接。** VOD 列表、详情、播放 token、usher master、弹幕评论分页均
 匿名实测通过,Go 侧接入规模与 douyu replay 同量级(2–3.5 人日,不含播放器)。
@@ -16,21 +15,16 @@
 
 ## 1. 现状盘点
 
-渠道 Go/TS 一一对应,均 5 个(`twitch:live/hot/category/categories/user:search`),
-**无任何 VOD 渠道**。直播流链路:GQL `PlaybackAccessToken` persisted query →
-usher master → Go 侧服务端拉取解析 master(usher 无 ACAO,必须 Go 拉)→
-只把 variant URL 交给播放器。直播弹幕 Go/TS 均未实现(IRC over WS 二期)。
+现有渠道为 `twitch:live/hot/category/categories/user:search` 与 VOD。直播/VOD
+流链路:GQL `PlaybackAccessToken` → usher master → 宿主服务端拉取解析(usher 无
+ACAO)→ 播放器消费 variant URL。
 
-- Go 取流:`components/platform-twitch/playback.go:20`(persisted hash)、
-  `:72-101`(token)、`:126-155`(master URL + 服务端拉取解析);
-  `master.go:33-107` 解析 `EXT-X-STREAM-INF`。
-- TS:`packages/platform-twitch/src/lib/live.ts:23/:45-97/:100-120/:171-221`。
+- 取流实现:`components/platform-twitch/playback.go` 与 `master.go`;
+  VOD 数据面见 `vod.go`、评论见 `vod_danmaku.go`。
 - Client-ID:网页 `kimne78kx3ncx6brgo4mv6wki5h1ko`,移动端
   `kd1unb4b3q4t58fwlpcbzcbnm76a8fp`(`client.go:17-20`)。
-- **仓库内无播放器**:`tabs/manager.go:128-148` 把 tab 指向页面包 EntryURL,
-  页面组件无 `<video>`、无 hls.js/dash.js 依赖。本机 WebView2 157 的
-  Edge `canPlayType("application/vnd.apple.mpegurl")` 返回 `maybe`
-  (Chromium 142+ 原生 HLS),未实际验收。
+- 播放器在 `components/page-player-h5`;Twitch VOD 分片无 ACAO 的结论仍需
+  在真实播放链路中复核。
 
 ## 2. 回放数据源
 

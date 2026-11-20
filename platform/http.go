@@ -1,6 +1,7 @@
 // appHost.http 的 Go 等价:统一 HTTP 传输面。所有平台请求都走这里(不发直连),
 // 未来治理(速率/风控)挂在这一层。响应 body 恒为 text;set-cookie 以 "\n" 连接
-// 回传(bili 扫码登录/douyin ttwid warmup 依赖它)。
+// 回传(bili 扫码登录/douyin ttwid warmup 依赖它)。二进制响应(二维码)走
+// GetBytes,不能经过任何字符串转码。
 
 package platform
 
@@ -26,6 +27,8 @@ type Request struct {
 	Body    string
 	// Timeout 单请求超时;0 = 不限。
 	Timeout time.Duration
+	// NoRedirect 关闭自动跟随;跨域登录需要逐跳收集 Set-Cookie。
+	NoRedirect bool
 }
 
 // Response 统一响应:status + headers(set-cookie 多值合并 "\n")+ bodyText。
@@ -33,6 +36,8 @@ type Response struct {
 	Status  int
 	Headers map[string]string
 	Body    string
+	// Raw 是原始响应字节;只有 GetBytes 需要,避免 PNG 在 string 转换中失真。
+	Raw []byte
 }
 
 // HostClient 平台统一 HTTP 客户端(并发安全;宿主内单例)。
@@ -75,12 +80,20 @@ func (c *HostClient) Do(ctx context.Context, req Request) (*Response, error) {
 		defer cancel()
 		httpReq = httpReq.WithContext(ctx)
 	}
-	res, err := c.HTTP.Do(httpReq)
+	client := c.HTTP
+	if req.NoRedirect {
+		clone := *c.HTTP
+		clone.CheckRedirect = func(*http.Request, []*http.Request) error {
+			return http.ErrUseLastResponse
+		}
+		client = &clone
+	}
+	res, err := client.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
 	defer res.Body.Close()
-	text, err := io.ReadAll(res.Body)
+	raw, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +101,25 @@ func (c *HostClient) Do(ctx context.Context, req Request) (*Response, error) {
 	if raw := res.Header.Values("Set-Cookie"); len(raw) > 0 {
 		headers["set-cookie"] = strings.Join(raw, "\n")
 	}
-	return &Response{Status: res.StatusCode, Headers: headers, Body: string(text)}, nil
+	if ct := res.Header.Get("Content-Type"); ct != "" {
+		headers["content-type"] = ct
+	}
+	return &Response{Status: res.StatusCode, Headers: headers, Body: string(raw), Raw: raw}, nil
+}
+
+// GetBytes 便捷 GET:原始字节(二维码等二进制图,不能按文本转码),非 2xx 报错。
+func (c *HostClient) GetBytes(ctx context.Context, url string, headers map[string]string) ([]byte, string, error) {
+	res, err := c.Do(ctx, Request{URL: url, Headers: headers, Timeout: 15 * time.Second})
+	if err != nil {
+		return nil, "", err
+	}
+	if res.Status < 200 || res.Status >= 300 {
+		return nil, "", fmt.Errorf("HTTP %d: %s", res.Status, url)
+	}
+	if res.Raw == nil {
+		return nil, "", fmt.Errorf("响应缺少原始字节: %s", url)
+	}
+	return res.Raw, res.Headers["content-type"], nil
 }
 
 // GetText 便捷 GET:text 响应,非 2xx 报错。

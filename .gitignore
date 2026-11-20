@@ -4,3 +4,6 @@ out/
 release/
 tmp/
 *.log
+# 构建/调试产物统一落 tmp/；根目录只兜底忽略 exe 与调试二进制。
+/*.exe
+__debug_bin*

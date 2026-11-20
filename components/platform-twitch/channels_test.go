@@ -243,7 +243,7 @@ func TestFetchCategoriesChannel(t *testing.T) {
 	}
 }
 
-func TestFetchUserSearchChannel(t *testing.T) {
+func TestFetchUserSearchEntity(t *testing.T) {
 	sc, calls := startGQLServer(t, func(query string) any {
 		if !strings.Contains(query, "searchFor") {
 			t.Errorf("query = %s", query)

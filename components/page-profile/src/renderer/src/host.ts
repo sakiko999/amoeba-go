@@ -1,5 +1,5 @@
 /**
- * profile 与宿主的契约（Go 侧 components/profile/service.go 的 ProfileTarget /
+ * profile 与宿主的契约（Go 侧 components/service-profile/service.go 的 ProfileTarget /
  * Profile.Videos，播放复用 Player.Play）。首次目标在打开 tab 时由宿主存下，
  * 页面挂载后主动来取；同 tab 复用的后续目标经 "profile.open" 事件推送。
  */

@@ -183,7 +183,9 @@ export function App(): React.ReactElement {
                 </div>
               ) : null;
             }
-            return <ResultGroup key={src.namespace} group={group} />;
+            return (
+              <ResultGroup key={src.namespace} group={group} scope={scope} />
+            );
           })}
         </div>
       )}

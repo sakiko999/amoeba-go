@@ -100,9 +100,11 @@ func danmakuStream(sc *platform.ServiceContext, roomID string) platform.DanmakuS
 		},
 		func(args danmakuArgs, onItems func([]platform.DanmakuItem)) func() {
 			return platform.CreateWSStream(context.Background(), platform.WSStreamOptions{
-				URL:         func() string { return danmakuWSURL },
-				OnOpen:      func(conn *platform.WSConn) { _ = conn.Write(encodeJoin(args)) },
-				OnMessage:   func(data []byte, _ *platform.WSConn) ([]platform.DanmakuItem, error) { return decodeDanmakuFrame(data), nil },
+				URL:    func() string { return danmakuWSURL },
+				OnOpen: func(conn *platform.WSConn) { _ = conn.Write(encodeJoin(args)) },
+				OnMessage: func(data []byte, _ *platform.WSConn) ([]platform.DanmakuItem, error) {
+					return decodeDanmakuFrame(data), nil
+				},
 				Heartbeat:   func() []byte { return heartbeatFrame },
 				HeartbeatMs: heartbeatMs,
 			}, logf)(onItems)

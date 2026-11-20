@@ -1,13 +1,18 @@
 /**
- * 单条结果：缩略图（无图/加载失败回退平台色块）+ 标题 + 次行（主播/人气/房号）
- * + 直播状态徽标。整卡点击：直播结果（主播房间）进个人主页，视频结果直接播放
- * （Player.Play 经网关解析平台流）；点作者名同样进个人主页（Profile.Open）。
- * 失败都在卡内显示。
+ * 单条结果：缩略图（无图/加载失败回退平台色块）+ 标题 + 次行（作者/人气/房号）
+ * + 直播状态徽标。整卡点击：直播结果（主播房间）与 entity 搜索命中的用户/
+ * 频道进个人主页，Apple 播客打开节目页，视频结果直接播放。失败都在卡内显示。
  */
 
 import { useState } from "react";
 import { Badge } from "@demo/ui";
-import { openProfile, play, type Item } from "./api";
+import {
+  openExternal,
+  openProfile,
+  play,
+  type Item,
+  type Scope,
+} from "./api";
 import { platformColor, platformName } from "./platforms";
 
 function formatCount(n: number): string {
@@ -33,20 +38,27 @@ interface ResultItemProps {
   item: Item;
   namespace: string;
   label?: string;
+  scope: Scope;
 }
 
 export function ResultItem({
   item,
   namespace,
   label,
+  scope,
 }: ResultItemProps): React.ReactElement {
   const [imgFailed, setImgFailed] = useState(false);
   const [playError, setPlayError] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
+  const [externalError, setExternalError] = useState<string | null>(null);
   const canPlay = item.url !== undefined && item.url !== "";
   // 直播结果（主播房间）整卡进个人主页（主页里有直播间/回看与进入直播间），
   // 视频结果保持直接播放
   const isLive = item.liveStatus === "live" || item.liveStatus === "offline";
+  // Apple 播客没有 Profile 面;entity 命中打开节目页,其余实体进主页。
+  const isApple = namespace === "apple";
+  const isEntity = scope === "entity" && !isApple;
+  const externalURL = entityPageURL(item);
   const onPlay = (): void => {
     if (!canPlay) return;
     setPlayError(null);
@@ -60,8 +72,16 @@ export function ResultItem({
       setProfileError(e instanceof Error ? e.message : String(e));
     });
   };
+  const onOpenExternal = (): void => {
+    if (externalURL === null) return;
+    setExternalError(null);
+    openExternal(externalURL).catch((e: unknown) => {
+      setExternalError(e instanceof Error ? e.message : String(e));
+    });
+  };
   const onCard = (): void => {
-    if (isLive) onOpenProfile();
+    if (isLive || isEntity) onOpenProfile();
+    else if (scope === "entity" && isApple) onOpenExternal();
     else onPlay();
   };
   const color = platformColor(namespace);
@@ -76,12 +96,12 @@ export function ResultItem({
     item.thumbnail !== undefined && item.thumbnail !== ""
       ? item.thumbnail
       : item.author?.avatar;
-  const clickable = isLive || canPlay;
+  const clickable = isLive || isEntity || canPlay || externalURL !== null;
   const cls =
     "flex w-full flex-col gap-2 rounded-xl border bg-card p-3 text-left transition-colors" +
     (clickable ? " hover:border-primary/50" : "");
   // 主操作与「进入主页」是两个并列的真实按钮（作者按钮不能嵌在 <button> 里）；
-  // 无 URL 的条目（如频道结果）仍可点（主播进主页）。
+  // 无 URL 的主页型条目仍可点；作者名仅在 Profile 平台展示为主操作。
   return (
     <div className={cls}>
       <button
@@ -127,7 +147,7 @@ export function ResultItem({
         </div>
       </button>
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        {authorName !== "" && (
+        {authorName !== "" && !isApple && (
           <button
             type="button"
             className="max-w-40 truncate underline decoration-dotted underline-offset-2 hover:text-foreground"
@@ -149,6 +169,14 @@ export function ResultItem({
       {profileError !== null && (
         <p className="line-clamp-1 text-xs text-red-500">{profileError}</p>
       )}
+      {externalError !== null && (
+        <p className="line-clamp-1 text-xs text-red-500">{externalError}</p>
+      )}
     </div>
   );
+}
+
+function entityPageURL(item: Item): string | null {
+  if (item.url === undefined || item.url === "") return null;
+  return item.url.startsWith("https://podcasts.apple.com/") ? item.url : null;
 }

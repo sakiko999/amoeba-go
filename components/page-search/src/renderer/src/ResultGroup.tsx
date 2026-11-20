@@ -1,7 +1,7 @@
 /** 一个平台的结果分组：平台名/计数/耗时 + 条目列表；error 显示为分组内提示。 */
 
 import { AlertTriangle } from "lucide-react";
-import type { GroupError, PlatformGroup } from "./api";
+import type { GroupError, PlatformGroup, Scope } from "./api";
 import { platformColor, platformName } from "./platforms";
 import { ResultItem } from "./ResultItem";
 
@@ -28,8 +28,10 @@ function GroupErrorNote({ error }: { error: GroupError }): React.ReactElement {
 
 export function ResultGroup({
   group,
+  scope,
 }: {
   group: PlatformGroup;
+  scope: Scope;
 }): React.ReactElement {
   const name = platformName(group.namespace, group.label);
   return (
@@ -63,6 +65,7 @@ export function ResultGroup({
             item={item}
             namespace={group.namespace}
             label={group.label}
+            scope={scope}
           />
         ))}
       </div>
