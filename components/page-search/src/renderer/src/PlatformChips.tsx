@@ -1,7 +1,8 @@
 /** 平台选择 chips：「全部」+ Search.Sources 发现的各平台；选中即限定下一次查询。 */
 
 import type { Source } from "./api";
-import { platformColor, platformName } from "./platforms";
+import { platformName } from "./platforms";
+import { PlatformIcon } from "platform-icons";
 
 interface PlatformChipsProps {
   sources: Source[];
@@ -11,13 +12,13 @@ interface PlatformChipsProps {
 
 function Chip({
   active,
-  color,
+  namespace,
   label,
   onClick,
   testId,
 }: {
   active: boolean;
-  color: string;
+  namespace: string;
   label: string;
   onClick: () => void;
   testId?: string;
@@ -33,10 +34,7 @@ function Chip({
           : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
       }`}
     >
-      <span
-        className="size-2 shrink-0 rounded-full"
-        style={{ backgroundColor: color }}
-      />
+      <PlatformIcon namespace={namespace} />
       {label}
     </button>
   );
@@ -54,7 +52,7 @@ export function PlatformChips({
     >
       <Chip
         active={selected === null}
-        color="#7aa2f7"
+        namespace="all"
         label="全部"
         onClick={() => onSelect(null)}
       />
@@ -63,7 +61,7 @@ export function PlatformChips({
           key={src.namespace}
           testId={`chip-${src.namespace}`}
           active={selected === src.namespace}
-          color={platformColor(src.namespace)}
+          namespace={src.namespace}
           label={platformName(src.namespace, src.label)}
           onClick={() => onSelect(src.namespace)}
         />

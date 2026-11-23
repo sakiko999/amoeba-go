@@ -1,8 +1,8 @@
 // Search 服务组件:聚合搜索的平台发现与并发 fan-out。页面经
-// window.mygo.call("Search.Sources"/"Search.Query", ...) 消费;每平台一个
-// goroutine + 超时(普通平台 8s,浏览器载具平台 45s——冷启动与捕获窗口
-// 远大于 8s),完成一个经 *mygo.Channel 推一个,全部完成后返回按 Sources
-// 顺序的权威快照。单平台失败是分组数据(error 字段),不阻塞其他平台。
+// window.mygo.call("Search.Sources"/"Search.Query", ...) 消费;统一搜索以
+// entity 为主,直播间状态作为实体条目的附加字段由平台映射层保留。每平台一个
+// goroutine + 超时,完成一个经 *mygo.Channel 推一个,全部完成后返回按
+// Sources 顺序的权威快照。单平台失败是分组数据(error 字段),不阻塞其他平台。
 // 全程成功的结果进进程内 TTL 缓存(见 cache.go)。
 // manifest 来自本目录 component.json(经 go:embed),Activate 注入网关。
 // 聚合搜索服务：按平台 spec 并发 fan-out，单平台失败收敛为该组错误。
@@ -86,7 +86,7 @@ type Source struct {
 
 type QueryParams struct {
 	Keyword   string               `json:"keyword"`
-	Scope     platform.SearchScope `json:"scope"`
+	Scope     platform.SearchScope `json:"scope,omitempty"` // 旧页面参数;统一搜索忽略
 	Platforms []string             `json:"platforms,omitempty"` // 空 = 全部
 }
 
@@ -138,9 +138,7 @@ func (s *Service) Query(ctx context.Context, p QueryParams, groups *mygo.Channel
 	if p.Keyword == "" {
 		return Result{}, errors.New("search 需要 keyword 参数")
 	}
-	if p.Scope != platform.SearchLive && p.Scope != platform.SearchEntity {
-		return Result{}, fmt.Errorf("search 不支持 scope %q(live/entity)", p.Scope)
-	}
+	p.Scope = platform.SearchEntity
 	var emit func(PlatformGroup) error
 	if groups != nil {
 		emit = groups.Send
@@ -156,14 +154,14 @@ func (s *Service) Query(ctx context.Context, p QueryParams, groups *mygo.Channel
 		}
 		return cached, nil
 	}
-	sources := filterSources(s.sourcesOf(p.Scope), p.Platforms)
+	sources := filterSources(s.sourcesOf(), p.Platforms)
 	result := s.run(ctx, p, sources, emit)
 	s.cache.store(key, result, time.Now())
 	return result, nil
 }
 
-func (s *Service) sourcesOf(scope platform.SearchScope) []Source {
-	out, _ := s.Sources(context.Background(), scope)
+func (s *Service) sourcesOf() []Source {
+	out, _ := s.Sources(context.Background(), platform.SearchEntity)
 	return out
 }
 

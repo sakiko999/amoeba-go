@@ -5,7 +5,6 @@
  * promise 结算 = 全部完成（其 groups 按 Sources 序，是权威快照）。
  */
 
-export type Scope = "live" | "entity";
 
 export interface Source {
   namespace: string;
@@ -29,7 +28,7 @@ export interface Item {
   thumbnail?: string;
   author?: Author;
   publishedAt?: number;
-  /** Live 项（live 房间搜索才有；entity 结果可能为空，平台身份看 group.namespace） */
+  /** 直播附加信息（实体结果命中直播间时才有）；平台身份看 group.namespace */
   platform?: string;
   roomId?: string;
   liveStatus?: "live" | "offline" | "unknown";
@@ -55,13 +54,12 @@ export interface PlatformGroup {
 
 export interface QueryParams {
   keyword: string;
-  scope: Scope;
   platforms?: string[];
 }
 
 export interface Result {
   keyword: string;
-  scope: Scope;
+  scope: "entity";
   groups: PlatformGroup[];
   elapsedMs: number;
 }
@@ -82,8 +80,8 @@ function bridge(): MygoBridge {
   return window.mygo;
 }
 
-export async function sources(scope: Scope): Promise<Source[]> {
-  return (await bridge().call("Search.Sources", scope)) as Source[];
+export async function sources(): Promise<Source[]> {
+  return (await bridge().call("Search.Sources", "entity")) as Source[];
 }
 
 export interface SearchHandle {

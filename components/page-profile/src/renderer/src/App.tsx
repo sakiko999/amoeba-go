@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Badge, Button } from "@demo/ui";
 import { Loader2, Play } from "lucide-react";
+import { PlatformIcon } from "platform-icons";
 import {
   onOpen,
   play,
@@ -109,7 +110,7 @@ function Header({ target }: { target: ProfileTarget }): React.ReactElement {
           <LiveBadge status={target.liveStatus} />
         </div>
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span className="size-2 rounded-full" style={{ backgroundColor: color }} />
+          <PlatformIcon namespace={target.platform} />
           {meta.join(" · ")}
         </p>
       </div>

@@ -31,6 +31,7 @@ web/                   宿主侧 TS 资产（bun workspaces）
   ui/                  @demo/ui 公共组件库（chrome 与页面组件共用）
   sdk/                 @host/sdk 页面类型
   page-vendor/         renderer 共享层（vendor:// 预构建 + import map + CSP hash）
+  platform-icons/      平台图标共享包（simple-icons + 虎牙/斗鱼/抖音 favicon）
 docs/                  当前环境说明与平台协议调研
 old/                   Electron 时代全部遗留（归档，不参与构建）
 ```

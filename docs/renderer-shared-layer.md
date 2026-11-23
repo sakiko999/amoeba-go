@@ -1,17 +1,21 @@
 # Renderer 共享层
 
-> 目的：页面组件与宿主 chrome 不重复打包 `react` / `react-dom` / `@demo/ui`。
+> 目的：页面组件与宿主 chrome 不重复打包 `react` / `react-dom` / `@demo/ui` /
+> `platform-icons`。
 > 共享层是项目级构建基建，不进组件注册表，也没有运行时生命周期。
 
 ## 结构
 
 ```text
 web/page-vendor/
-├── entries/            jsx-runtime、demo-ui 等共享入口
+├── entries/            jsx-runtime、demo-ui、platform-icons 等共享入口
 ├── scripts/build.ts    逐 entry Bun.build，输出内容 hash 文件与 manifest
 ├── scripts/import-map.ts
-└── out/dist/           react-*.js、react-dom-*.js、demo-ui-*.js、manifest.json
+└── out/dist/           react-*.js、react-dom-*.js、demo-ui-*.js、platform-icons-*.js、manifest.json
 ```
+
+`web/platform-icons/` 是对应的源码包（simple-icons SVG + 虎牙/斗鱼/抖音 favicon），
+入口在 `entries/platform-icons.ts`。
 
 `manifest.json` 记录 `vendor://app/`、共享包版本与 entry → 文件名映射。构建脚本
 由根 `scripts/build.ts` 在页面组件打包前执行；宿主运行时经 `vendor://` 直接
@@ -33,6 +37,8 @@ web/page-vendor/
 ## 设计边界
 
 - Tailwind CSS 不共享：产物由每页输入生成，跨页统一扫描会引入全局样式耦合。
+- 共享包的组件不依赖 Tailwind class：external 后页面扫描不到其源码；图标用固定
+  `width/height` 与内联样式控制尺寸。
 - `lucide-react` 不共享：全量入口大，逐页 tree-shake 更小。
 - 共享集变更需同步 `web/page-vendor/scripts/build.ts` 的 entry 清单、import map
   生成逻辑与各消费方 vite 配置。

@@ -1,19 +1,14 @@
 /**
- * 搜索条：关键词输入 + scope 切换（搜直播间/搜实体）+ 搜索/取消按钮。
+ * 搜索条：统一实体搜索的关键词输入 + 搜索/取消按钮。
  * Enter 触发搜索，但跳过中文输入法组合态（isComposing）。
  */
 
 import { Search, X } from "lucide-react";
-import { Button } from "@demo/ui";
-import { Input } from "@demo/ui";
-import { Tabs, TabsList, TabsTrigger } from "@demo/ui";
-import type { Scope } from "./api";
+import { Button, Input } from "@demo/ui";
 
 interface SearchBarProps {
   keyword: string;
   onKeywordChange: (value: string) => void;
-  scope: Scope;
-  onScopeChange: (scope: Scope) => void;
   searching: boolean;
   onSearch: () => void;
   onCancel: () => void;
@@ -22,8 +17,6 @@ interface SearchBarProps {
 export function SearchBar({
   keyword,
   onKeywordChange,
-  scope,
-  onScopeChange,
   searching,
   onSearch,
   onCancel,
@@ -31,18 +24,10 @@ export function SearchBar({
   const canSearch = keyword.trim() !== "" && !searching;
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Tabs value={scope} onValueChange={(v) => onScopeChange(v as Scope)}>
-        <TabsList>
-          <TabsTrigger value="live">直播间</TabsTrigger>
-          <TabsTrigger value="entity">实体</TabsTrigger>
-        </TabsList>
-      </Tabs>
       <Input
         data-testid="search-input"
         className="h-9 min-w-56 flex-1"
-        placeholder={
-          scope === "live" ? "搜索关键词，如：英雄联盟" : "搜索主播 / 频道 / 播客"
-        }
+        placeholder="搜索实体、频道或播客"
         value={keyword}
         autoFocus
         onChange={(e) => onKeywordChange(e.target.value)}

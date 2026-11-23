@@ -22,6 +22,7 @@ const SHARED_EXTERNAL = [
   "react-dom",
   "react-dom/client",
   "@demo/ui",
+  "platform-icons",
 ];
 
 const vendorManifest =

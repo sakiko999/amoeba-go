@@ -1,6 +1,6 @@
 /**
  * import map 工具：由 vendor manifest 生成页面/宿主 import map 并注入 HTML。
- * 各页面与宿主的 electron-vite 插件（transformIndexHtml）都从这里 import。
+ * 各页面与宿主的 vite 插件（transformIndexHtml）都从这里 import。
  *
  * 源 HTML 不含任何 import map 占位：构建时把 `<script type="importmap">` 插在
  * CSP meta 之后（必须早于所有 module script），并同步给 CSP 追加该内联 map 的
@@ -24,6 +24,7 @@ export const SHARED_SPECIFIERS = [
   "react-dom",
   "react-dom/client",
   "@demo/ui",
+  "platform-icons",
 ] as const;
 
 /** CSP 里必须存在的锚点（注入 hash 的位置） */
@@ -37,7 +38,8 @@ export function importMapOf(manifest: VendorManifest): Record<string, string> {
     e.react === undefined ||
     e["jsx-runtime"] === undefined ||
     e["react-dom"] === undefined ||
-    e["demo-ui"] === undefined
+    e["demo-ui"] === undefined ||
+    e["platform-icons"] === undefined
   ) {
     throw new Error("vendor manifest 缺少 entry（先重跑 page-vendor build）");
   }
@@ -48,6 +50,7 @@ export function importMapOf(manifest: VendorManifest): Record<string, string> {
     // react-dom 的根与 /client 是同一个 entry（同一实例、两个导出面）
     "react-dom/client": base + e["react-dom"],
     "@demo/ui": base + e["demo-ui"],
+    "platform-icons": base + e["platform-icons"],
   };
 }
 

@@ -6,14 +6,14 @@
 
 import { useState } from "react";
 import { Badge } from "@demo/ui";
+import { PlatformIcon, platformColor } from "platform-icons";
 import {
   openExternal,
   openProfile,
   play,
   type Item,
-  type Scope,
 } from "./api";
-import { platformColor, platformName } from "./platforms";
+import { platformName } from "./platforms";
 
 function formatCount(n: number): string {
   if (n >= 10000) return `${(n / 10000).toFixed(1).replace(/\.0$/, "")}万`;
@@ -38,14 +38,12 @@ interface ResultItemProps {
   item: Item;
   namespace: string;
   label?: string;
-  scope: Scope;
 }
 
 export function ResultItem({
   item,
   namespace,
   label,
-  scope,
 }: ResultItemProps): React.ReactElement {
   const [imgFailed, setImgFailed] = useState(false);
   const [playError, setPlayError] = useState<string | null>(null);
@@ -57,7 +55,7 @@ export function ResultItem({
   const isLive = item.liveStatus === "live" || item.liveStatus === "offline";
   // Apple 播客没有 Profile 面;entity 命中打开节目页,其余实体进主页。
   const isApple = namespace === "apple";
-  const isEntity = scope === "entity" && !isApple;
+  const isEntity = !isApple;
   const externalURL = entityPageURL(item);
   const onPlay = (): void => {
     if (!canPlay) return;
@@ -81,7 +79,7 @@ export function ResultItem({
   };
   const onCard = (): void => {
     if (isLive || isEntity) onOpenProfile();
-    else if (scope === "entity" && isApple) onOpenExternal();
+    else if (isApple) onOpenExternal();
     else onPlay();
   };
   const color = platformColor(namespace);
@@ -159,10 +157,7 @@ export function ResultItem({
         {authorName !== "" && meta.length > 0 && <span>·</span>}
         <span className="truncate">{meta.join(" · ")}</span>
         <span className="ml-auto flex shrink-0 items-center gap-1.5">
-          <span
-            className="size-2 shrink-0 rounded-full"
-            style={{ backgroundColor: color }}
-          />
+          <PlatformIcon namespace={namespace} />
           {name}
         </span>
       </div>

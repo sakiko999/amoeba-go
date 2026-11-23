@@ -1,4 +1,4 @@
-// search 结果的进程内 TTL 缓存:同 keyword+scope+platforms 的查询在 TTL 内
+// search 结果的进程内 TTL 缓存:同 keyword+platforms 的查询在 TTL 内
 // 直接复用上次快照(页面重挂载 / 返回再搜不重复打平台)。只缓存全部平台
 // 成功的快照——带失败组的结果是暂态,缓存会让一次抖动粘住整个 TTL。
 // 容量按插入序 FIFO 逐出,防关键词无限膨胀。
@@ -35,7 +35,7 @@ func newCache() *cache { return &cache{entries: map[string]cacheEntry{}} }
 func cacheKey(p QueryParams) string {
 	platforms := append([]string(nil), p.Platforms...)
 	sort.Strings(platforms)
-	return string(p.Scope) + "|" + strings.ToLower(p.Keyword) + "|" + strings.Join(platforms, ",")
+	return strings.ToLower(p.Keyword) + "|" + strings.Join(platforms, ",")
 }
 
 func (c *cache) get(key string, now time.Time) (Result, bool) {

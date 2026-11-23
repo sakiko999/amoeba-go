@@ -31,6 +31,9 @@
     "web/ui/src/**/*.ts",
     "web/ui/src/**/*.tsx",
     "web/sdk/src/**/*.ts",
-    "web/page-vendor/scripts/**/*.ts"
+    "web/page-vendor/scripts/**/*.ts",
+    "web/platform-icons/src/**/*.ts",
+    "web/platform-icons/src/**/*.tsx",
+    "web/platform-icons/scripts/**/*.ts"
   ]
 }

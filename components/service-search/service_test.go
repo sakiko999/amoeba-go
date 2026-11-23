@@ -228,19 +228,26 @@ func TestQueryValidationAndFilter(t *testing.T) {
 	if _, err := svc.Query(context.Background(), QueryParams{Keyword: " ", Scope: platform.SearchLive}, nil); err == nil {
 		t.Error("空 keyword 应报错")
 	}
-	if _, err := svc.Query(context.Background(), QueryParams{Keyword: "x", Scope: "video"}, nil); err == nil {
-		t.Error("非法 scope 应报错")
+	result, err := svc.Query(context.Background(), QueryParams{Keyword: "x", Scope: "video"}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Scope != platform.SearchEntity {
+		t.Errorf("scope = %q, want entity(旧参数被统一搜索覆盖)", result.Scope)
+	}
+	if len(result.Groups) != 4 {
+		t.Errorf("groups = %d, want 4 个 entity 平台", len(result.Groups))
 	}
 	// nil channel:非流式,单平台过滤。
-	result, err := svc.Query(context.Background(),
+	filtered, err := svc.Query(context.Background(),
 		QueryParams{Keyword: "x", Scope: platform.SearchEntity, Platforms: []string{"chonly"}}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(result.Groups) != 1 || result.Groups[0].Namespace != "chonly" || len(result.Groups[0].Items) != 1 {
-		t.Errorf("filtered result = %+v", result.Groups)
+	if len(filtered.Groups) != 1 || filtered.Groups[0].Namespace != "chonly" || len(filtered.Groups[0].Items) != 1 {
+		t.Errorf("filtered result = %+v", filtered.Groups)
 	}
-	raw, err := json.Marshal(result)
+	raw, err := json.Marshal(filtered)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -249,7 +256,7 @@ func TestQueryValidationAndFilter(t *testing.T) {
 	}
 }
 
-// 全程成功的结果进缓存:同 keyword+scope 第二次查询不再打平台。
+// 全程成功的结果进缓存:同 keyword 第二次查询不再打平台。
 func TestQueryCacheHit(t *testing.T) {
 	calls := 0
 	gw := gateway.New(func(string, ...any) {})
@@ -267,7 +274,7 @@ func TestQueryCacheHit(t *testing.T) {
 		t.Fatal(err)
 	}
 	svc := newSvc(t, gw)
-	p := QueryParams{Keyword: "缓存", Scope: platform.SearchLive}
+	p := QueryParams{Keyword: "缓存"}
 	first, err := svc.Query(context.Background(), p, nil)
 	if err != nil || calls != 1 {
 		t.Fatalf("first: %v, calls=%d", err, calls)
@@ -288,9 +295,9 @@ func TestQueryCacheSkipsFailed(t *testing.T) {
 	gw := gateway.New(func(string, ...any) {})
 	if err := gw.Register(platform.Spec{
 		Namespace: "flaky", Label: "抖动平台",
-		Tags: []string{"platform.data", "search.live"},
+		Tags: []string{"platform.data", "search.entity"},
 		Ops: stubOps(platform.SearchSpec{
-			Scopes: []platform.SearchScope{platform.SearchLive},
+			Scopes: []platform.SearchScope{platform.SearchEntity},
 			Search: func(ctx context.Context, p platform.SearchParams) (platform.FetchPage, error) {
 				calls++
 				return platform.FetchPage{}, errors.New("上游 502")
@@ -300,7 +307,7 @@ func TestQueryCacheSkipsFailed(t *testing.T) {
 		t.Fatal(err)
 	}
 	svc := newSvc(t, gw)
-	p := QueryParams{Keyword: "抖动", Scope: platform.SearchLive}
+	p := QueryParams{Keyword: "抖动"}
 	if _, err := svc.Query(context.Background(), p, nil); err != nil {
 		t.Fatal(err)
 	}

@@ -6,6 +6,7 @@
     "web/ui",
     "web/sdk",
     "web/page-vendor",
+    "web/platform-icons",
     "components/page-search",
     "components/page-player-h5",
     "components/page-profile",

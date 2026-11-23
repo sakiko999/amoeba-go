@@ -74,6 +74,11 @@ const ENTRIES: Array<{ name: string; input: string; external: string[] }> = [
     input: join(root, "entries", "demo-ui.ts"),
     external: ["react", "react/jsx-runtime", "react-dom", "react-dom/client"],
   },
+  {
+    name: "platform-icons",
+    input: join(root, "entries", "platform-icons.ts"),
+    external: ["react", "react/jsx-runtime"],
+  },
 ];
 
 const files: Record<string, string> = {};
@@ -116,6 +121,7 @@ const manifest = {
     react: pkgVersion("react"),
     "react-dom": pkgVersion("react-dom"),
     "@demo/ui": pkgVersion("@demo/ui"),
+    "platform-icons": "workspace",
   },
   entries: files,
 };

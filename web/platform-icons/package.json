@@ -1,0 +1,19 @@
+{
+  "name": "platform-icons",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "gen:favicons": "bun run scripts/gen-favicons.ts"
+  },
+  "exports": {
+    ".": "./src/index.tsx"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "react": "^19.3.0",
+    "simple-icons": "^16.38.1"
+  }
+}

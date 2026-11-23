@@ -1,6 +1,6 @@
 /**
  * 聚合搜索页:SearchBar + 平台 chips + 按平台分组的结果区。
- * 流式:Search.Query 每平台完成推一条分组,边到边填;新搜索/取消/切 scope
+ * 流式:Search.Query 每平台完成推一条分组,边到边填;新搜索/取消
  * 经世代计数 + channel.close() 使旧调用取消且旧回调失效;卸载同样取消。
  * 分组渲染按 Sources 声明序(权威快照),未到达的平台在 searching 中显示骨架。
  */
@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Skeleton } from "@demo/ui";
 import * as api from "./api";
-import type { PlatformGroup, QueryParams, Scope } from "./api";
+import type { PlatformGroup, QueryParams } from "./api";
 import { platformName } from "./platforms";
 import { PlatformChips } from "./PlatformChips";
 import { ResultGroup } from "./ResultGroup";
@@ -29,7 +29,6 @@ function upsertGroup(
 
 export function App(): React.ReactElement {
   const [keyword, setKeyword] = useState("");
-  const [scope, setScope] = useState<Scope>("live");
   const [sources, setSources] = useState<api.Source[] | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [groups, setGroups] = useState<PlatformGroup[]>([]);
@@ -48,15 +47,14 @@ export function App(): React.ReactElement {
   }, []);
 
   const doSearch = useCallback(
-    (opts: { scope: Scope; platform: string | null }): void => {
+    (platform: string | null): void => {
       const kw = keyword.trim();
       if (kw === "") return;
       stopSearch();
       const gen = genRef.current;
       const params: QueryParams = {
         keyword: kw,
-        scope: opts.scope,
-        ...(opts.platform !== null ? { platforms: [opts.platform] } : {}),
+        ...(platform !== null ? { platforms: [platform] } : {}),
       };
       setIssue(null);
       setPhase("searching");
@@ -81,37 +79,26 @@ export function App(): React.ReactElement {
     [keyword, stopSearch],
   );
 
-  const onScopeChange = useCallback(
-    (next: Scope): void => {
-      stopSearch();
-      setScope(next);
-      setSelected(null);
-      setGroups([]);
-      setPhase("idle");
-    },
-    [stopSearch],
-  );
-
   const onSelect = useCallback(
     (ns: string | null): void => {
       setSelected(ns);
-      if (phase !== "idle") doSearch({ scope, platform: ns });
+      if (phase !== "idle") doSearch(ns);
     },
-    [phase, scope, doSearch],
+    [phase, doSearch],
   );
 
-  const loadSources = useCallback(async (sc: Scope): Promise<void> => {
+  const loadSources = useCallback(async (): Promise<void> => {
     setSources(null);
     try {
-      setSources(await api.sources(sc));
+      setSources(await api.sources());
     } catch (err) {
       setIssue(`平台列表加载失败：${String(err)}`);
     }
   }, []);
 
   useEffect(() => {
-    void loadSources(scope);
-  }, [scope, loadSources]);
+    void loadSources();
+  }, [loadSources]);
 
   useEffect(() => cancelRef.current?.(), []); // 卸载:取消在途查询
 
@@ -139,10 +126,8 @@ export function App(): React.ReactElement {
       <SearchBar
         keyword={keyword}
         onKeywordChange={setKeyword}
-        scope={scope}
-        onScopeChange={onScopeChange}
         searching={searching}
-        onSearch={() => doSearch({ scope, platform: selected })}
+        onSearch={() => doSearch(selected)}
         onCancel={stopSearch}
       />
       {sources !== null && sources.length > 0 && (
@@ -183,9 +168,7 @@ export function App(): React.ReactElement {
                 </div>
               ) : null;
             }
-            return (
-              <ResultGroup key={src.namespace} group={group} scope={scope} />
-            );
+            return <ResultGroup key={src.namespace} group={group} />;
           })}
         </div>
       )}

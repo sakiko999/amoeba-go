@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Badge, Button, Card, CardContent } from "@demo/ui";
 import { Loader2, ShieldCheck } from "lucide-react";
+import { PlatformIcon } from "platform-icons";
 import {
   errText,
   loginCancel,
@@ -163,10 +164,7 @@ export function App(): React.ReactElement {
               <Card key={p.id}>
                 <CardContent className="flex flex-col gap-3 p-4">
                   <div className="flex items-center gap-2">
-                    <span
-                      className="size-2 rounded-full"
-                      style={{ backgroundColor: p.color ?? "#888" }}
-                    />
+                    <PlatformIcon namespace={p.id} />
                     <span className="text-sm font-medium">{p.label}</span>
                     {p.loggedIn ? (
                       <Badge className="bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/15">

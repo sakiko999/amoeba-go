@@ -11,6 +11,7 @@
   "devDependencies": {
     "@demo/ui": "workspace:*",
     "@host/sdk": "workspace:*",
+    "platform-icons": "workspace:*",
     "@tailwindcss/vite": "^4.3.3",
     "@types/react": "^19",
     "@types/react-dom": "^19",
