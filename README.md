@@ -48,3 +48,12 @@ go test ./...      # Go 侧
 ```
 
 Windows（WebView2）是当前唯一已验收平台；macOS/Linux 尚未做运行时适配。
+
+## 发布
+
+推送 `v*` tag 触发 GitHub Actions，构建并发布 Windows 完整包：
+
+```sh
+git tag v0.1
+git push origin v0.1
+```

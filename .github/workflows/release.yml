@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.5
+
+      - run: bun install
+      - run: bun run --cwd web/page-vendor build
+      - run: bun run build
+      - run: go test ./...
+
+      - name: Package
+        shell: pwsh
+        run: ./scripts/package-release.ps1 -Version $env:GITHUB_REF_NAME
+
+      - name: Publish
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          $asset = "release/amoeba-go-$tag-windows-amd64.zip"
+          gh release create $tag $asset --title "amoeba-go $tag" --generate-notes
