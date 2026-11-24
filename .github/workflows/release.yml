@@ -28,9 +28,13 @@ jobs:
       - run: bun run build
       - run: go test ./... -skip TestTidyHidesTargetWindow
 
-      - name: Package
+      - name: Package portable
         shell: pwsh
         run: ./scripts/package-release.ps1 -Version $env:GITHUB_REF_NAME
+
+      - name: Package installer
+        shell: pwsh
+        run: ./scripts/package-installer.ps1 -Version $env:GITHUB_REF_NAME
 
       - name: Publish
         shell: pwsh
@@ -38,5 +42,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = $env:GITHUB_REF_NAME
-          $asset = "release/amoeba-go-$tag-windows-amd64.zip"
-          gh release create $tag $asset --title "amoeba-go $tag" --generate-notes
+          gh release create $tag release/amoeba-go-$tag-windows-amd64.exe release/amoeba-go-setup-$tag-windows-amd64.exe --title "amoeba-go $tag" --generate-notes

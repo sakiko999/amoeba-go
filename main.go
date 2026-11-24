@@ -38,14 +38,19 @@ func main() {
 	if browser.RunCarrierIfRequested() {
 		return
 	}
-	pagesDirs := flag.String("pages", strings.Join(discoverPages(), ";"), "内置页面组件根目录(每子目录一个组件包;多个根用 ; 分隔;默认自动发现 components/*/out)")
-	vendorDir := flag.String("vendor", filepath.Join("web", "page-vendor", "out", "dist"), "vendor:// 共享层目录")
+	pagesFlag := flag.String("pages", "", "内置页面组件根目录(每子目录一个组件包;多个根用 ; 分隔;默认读内嵌资源)")
+	vendorFlag := flag.String("vendor", "", "vendor:// 共享层目录(默认读内嵌资源)")
 	flag.Parse()
 
 	userData, err := mygo.App.Path(mygo.PathUserData)
 	if err != nil {
 		log.Fatal(err)
 	}
+	cacheDir, err := mygo.App.Path(mygo.PathCache)
+	if err != nil {
+		log.Fatal(err)
+	}
+	pagesDirs, vendorDir := resolveAssets(*pagesFlag, *vendorFlag, cacheDir)
 	theme := newThemeStore(filepath.Join(userData, "host-state.json"))
 	// 亮暗源对齐宿主主题（须在 App.Run 前）：页面 prefers-color-scheme/mygo 原生菜单
 	// 跟宿主而不是系统，滚动条等 UA 控件不会停在系统一侧
@@ -56,17 +61,13 @@ func main() {
 	// 页面组件)都可调用 —— 页面本就可载任意 JS,不构成额外权限升级。
 	mygo.Use(fetch.Plugin)
 
-	cacheDir, err := mygo.App.Path(mygo.PathCache)
-	if err != nil {
-		log.Fatal(err)
-	}
 	browserPool, browserComp, err := browser.NewPoolService(filepath.Join(cacheDir, "browser-carrier"), log.Printf)
 	if err != nil {
 		log.Fatal(err)
 	}
 	bridge := browser.NewRouter(browserPool, log.Printf)
 
-	comps := registry.NewManager(strings.Split(*pagesDirs, ";"), filepath.Join(userData, "pages"))
+	comps := registry.NewManager(strings.Split(pagesDirs, ";"), filepath.Join(userData, "pages"))
 	comps.Logf = log.Printf
 	comps.Scan()
 
@@ -118,7 +119,7 @@ func main() {
 	if err := mygo.Protocol.Handle("page", comps.PageHandler()); err != nil {
 		log.Fatal(err)
 	}
-	if err := mygo.Protocol.Handle("vendor", registry.VendorHandler(*vendorDir)); err != nil {
+	if err := mygo.Protocol.Handle("vendor", registry.VendorHandler(vendorDir)); err != nil {
 		log.Fatal(err)
 	}
 
@@ -159,6 +160,42 @@ func main() {
 	if err := mygo.App.Run(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// resolveAssets 决定内置页面与 vendor 层的来源：显式 flag 优先；release 构建
+// 使用内嵌资源；开发构建回退到工作区自动发现。
+func resolveAssets(pagesFlag, vendorFlag, cacheDir string) (pagesDirs, vendorDir string) {
+	if pagesFlag != "" && vendorFlag != "" {
+		return pagesFlag, vendorFlag
+	}
+	roots, embeddedVendor, ok, err := embeddedAssets(cacheDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if ok {
+		if pagesFlag == "" {
+			pagesDirs = strings.Join(roots, ";")
+		} else {
+			pagesDirs = pagesFlag
+		}
+		if vendorFlag == "" {
+			vendorDir = embeddedVendor
+		} else {
+			vendorDir = vendorFlag
+		}
+		return pagesDirs, vendorDir
+	}
+	if pagesFlag == "" {
+		pagesDirs = strings.Join(discoverPages(), ";")
+	} else {
+		pagesDirs = pagesFlag
+	}
+	if vendorFlag == "" {
+		vendorDir = filepath.Join("web", "page-vendor", "out", "dist")
+	} else {
+		vendorDir = vendorFlag
+	}
+	return pagesDirs, vendorDir
 }
 
 // discoverPages 自动发现已构建的内置页面组件:components/*/out 下存在 page/component.json

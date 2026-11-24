@@ -51,7 +51,8 @@ if (mode === "pages" || mode === "fe" || mode === "dev" || mode === "build") {
 if (mode === "dev") {
   await run(["go", "run", "."]);
 } else if (mode === "build") {
-  await run(["go", "build", "-o", "tmp/mygo-host/mygo-host.exe", "."]);
+  await run(["bun", "run", "scripts/release-assets.ts"]);
+  await run(["go", "build", "-tags", "release", "-o", "tmp/mygo-host/mygo-host.exe", "."]);
 } else if (mode !== "chrome" && mode !== "pages" && mode !== "fe") {
   throw new Error(`未知子命令: ${mode}（dev|build|fe|chrome|pages）`);
 }

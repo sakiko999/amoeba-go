@@ -51,9 +51,14 @@ Windows（WebView2）是当前唯一已验收平台；macOS/Linux 尚未做运�
 
 ## 发布
 
-推送 `v*` tag 触发 GitHub Actions，构建并发布 Windows 完整包：
+推送 `v*` tag 触发 GitHub Actions，构建并发布 Windows 单文件与安装程序：
 
 ```sh
 git tag v0.1
 git push origin v0.1
 ```
+
+产物：
+
+- `amoeba-go-v0.1-windows-amd64.exe`：单文件，页面组件与共享层内嵌，首次启动解包到缓存。
+- `amoeba-go-setup-v0.1-windows-amd64.exe`：当前用户安装，含开始菜单快捷方式与卸载项。
