@@ -23,7 +23,7 @@ jobs:
         with:
           bun-version: 1.4.5
 
-      - run: bun install
+      - run: bun install --registry https://registry.npmjs.org
       - run: bun run --cwd web/page-vendor build
       - run: bun run build
       - run: go test ./...
