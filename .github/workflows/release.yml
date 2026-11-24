@@ -26,7 +26,7 @@ jobs:
       - run: bun install --registry https://registry.npmjs.org
       - run: bun run --cwd web/page-vendor build
       - run: bun run build
-      - run: go test ./...
+      - run: go test ./... -skip TestTidyHidesTargetWindow
 
       - name: Package
         shell: pwsh

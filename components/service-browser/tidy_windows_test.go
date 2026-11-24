@@ -21,6 +21,9 @@ import (
 )
 
 func TestTidyHidesTargetWindow(t *testing.T) {
+	if os.Getenv("CI") != "" {
+		t.Skip("需要交互式桌面会话：CI runner 无法枚举载具窗口")
+	}
 	svc := newTestService(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
